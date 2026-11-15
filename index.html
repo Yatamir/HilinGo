@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>HilinGo</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237C5CFF'/%3E%3Ctext x='24' y='46' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='36' fill='%23fff'%3EH%3C/text%3E%3Crect x='34' y='16' width='24' height='30' rx='8' fill='%23FFE566' transform='rotate(-8 46 31)'/%3E%3Ctext x='46' y='40' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='22' fill='%234A2DB0'%3EG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +71,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #speechNote,#rules{max-width:680px}
 
 /* game */
-#game{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#game{display:flex;flex-direction:column;height:100%;height:100dvh;overflow:hidden}
 #topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,50,180,.08);border-bottom:1px solid rgba(255,255,255,.8)}
 #status{font-size:clamp(16px,2.4vw,24px);font-weight:700;text-align:center;flex:1}
 #status .need{display:inline-block;min-width:1.6em;padding:0 8px;border-radius:10px;background-color:var(--yellow);font-size:1.3em;box-shadow:0 2px 0 #E0A800}
@@ -101,7 +101,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .count{font-size:14px;font-weight:700;background:#fff;border-radius:999px;padding:4px 10px;color:var(--muted);box-shadow:0 2px 0 rgba(80,50,160,.08)}
 /* circular countdown ring; number stays in #pt so tests and logic are unchanged */
 .ptimer{--t:1;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--c);min-width:54px;text-align:center;position:relative;background:conic-gradient(var(--c) calc(var(--t)*360deg), #EDE8F8 0);box-shadow:0 4px 10px rgba(80,50,160,.12);flex-shrink:0}
-.ptimer::before{content:"";position:absolute;inset:5px;background:#fff;border-radius:50%;z-index:0}
+.ptimer::before{content:"";position:absolute;inset:5px;background:#fff;border-radius:50%;z-index:-1}
 .ptimer{isolation:isolate}
 .ptimer:empty{visibility:hidden}
 .ptimer.low{color:var(--bad);background:conic-gradient(var(--bad) calc(var(--t)*360deg), #FDE8EA 0);animation:pulse .5s infinite alternate}
@@ -149,7 +149,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 @keyframes micinv{to{box-shadow:0 0 0 6px #fff,0 0 0 9px var(--c),0 8px 16px color-mix(in srgb, var(--c) 30%, transparent)}}
 #halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto;height:44px;padding:0 10px;font-size:18px}
 #halves.n3 .mic.ptt .ml,#halves.n4 .mic.ptt .ml{font-size:14px}
-#diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:3px 8px;white-space:pre-wrap;max-height:16vh;overflow:auto}
+#diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:3px 8px;white-space:pre-wrap;max-height:16vh;max-height:22dvh;overflow:auto;flex-shrink:0;padding-bottom:max(3px,env(safe-area-inset-bottom))}
 .override{font-size:14px;padding:6px 12px;border-radius:12px;background:#FFD0C8;color:#8A2030;font-weight:700;align-self:center}
 .half:not(.active) .inputs,.half:not(.active) .override{visibility:hidden}
 #history{font-size:14px;padding:6px 14px;background:rgba(255,255,255,.7);white-space:nowrap;overflow-x:auto;min-height:28px;font-weight:700}
@@ -188,6 +188,61 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  .lvl{font-size:15px;padding:12px 14px}
  .names input{width:min(170px,46%)}
 }
+
+/* ===== v2.4 phone layout: natural-height panels, page scrolls instead of overlapping ===== */
+@media (max-width:720px), (max-height:520px){
+ html,body{height:auto;min-height:100%}
+ #game{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+ #game.hidden{display:none!important}
+ #topbar{gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));padding-top:max(6px,env(safe-area-inset-top))}
+ #status{font-size:15px;line-height:1.3}
+ #status .need{font-size:1.15em;padding:0 6px;border-radius:8px;min-width:1.4em}
+ .smallbtn{padding:6px 9px;font-size:13px;border-radius:11px;box-shadow:0 2px 0 #E6E0F8;flex-shrink:0}
+ #timerbar{height:6px}
+ #history{font-size:13px;padding:3px 10px;min-height:22px}
+ #halves,#halves.n3,#halves.n4{flex:none;display:flex!important;flex-direction:column;gap:8px;min-height:auto;
+   padding:6px max(6px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))}
+ #halves .half,#halves.n3 .half,#halves.n4 .half{flex:none;padding:8px 10px;gap:6px;overflow:visible;transform:none;border-radius:20px;min-height:auto}
+ #halves.n3 .half:nth-child(3){grid-column:auto}
+ #halves .pname,#halves.n3 .pname,#halves.n4 .pname{font-size:17px;white-space:nowrap}
+ .half.active .pname::after{font-size:13px}
+ #halves .count,#halves.n3 .count,#halves.n4 .count{font-size:12px;padding:2px 8px;white-space:nowrap}
+ #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:38px;height:38px;min-width:38px;font-size:15px}
+ .ptimer::before{inset:4px}
+ #halves .word,#halves.n3 .word,#halves.n4 .word{min-height:40px;font-size:26px;border-radius:14px;padding:2px 8px}
+ .msg{min-height:0;font-size:14px;padding:2px 6px}
+ .msg:empty,.heard:empty{display:none}
+ .msg.err{font-size:15px;padding:4px 8px}
+ .note{font-size:14px;padding:4px 8px}
+ .heard{font-size:13px;min-height:0}
+ .override{font-size:13px;padding:5px 10px}
+ #halves .tiles,#halves.n3 .tiles,#halves.n4 .tiles{flex:none;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:auto;gap:5px;
+   align-content:start;overflow:visible;min-height:auto;width:100%;max-width:520px;margin-inline:auto;padding:3px}
+ #halves .tiles:has(> .tile:nth-child(23)){grid-template-columns:repeat(9,minmax(0,1fr))}
+ #halves .tile,#halves.n3 .tile,#halves.n4 .tile{aspect-ratio:1;height:auto;max-height:none;min-height:0;width:100%;font-size:19px;border-radius:9px;align-self:auto;
+   box-shadow:0 1px 0 #fff inset,0 3px 0 rgba(80,50,160,.16),0 5px 9px rgba(80,50,160,.08)}
+ #halves .tile.need{transform:scale(1.04);box-shadow:0 0 0 2px #FFD000,0 4px 10px rgba(255,196,0,.45)}
+ #halves .tile.gone{transform:scale(.8);box-shadow:none}
+ #halves .tile.need.gone{transform:scale(1.04);box-shadow:0 0 0 2px #FDCB6E;outline-width:2px;outline-offset:1px;animation:none}
+ #halves .inputs{gap:6px;align-items:stretch}
+ #halves .inputs input{font-size:16px;padding:8px;border-radius:12px}  /* 16px: no iOS auto-zoom */
+ #halves .mic,#halves.n3 .mic,#halves.n4 .mic{width:44px;height:44px;font-size:20px}
+ #halves .mic.ptt,#halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto;min-width:44px;height:44px;padding:0 12px;font-size:18px;gap:6px;border-radius:22px}
+ #halves .mic.ptt .ml-off,#halves .mic.ptt.on .ml-on{font-size:14px}
+ #halves .send,#halves.n3 .send,#halves.n4 .send{padding:0 12px;font-size:15px;border-radius:12px}
+ .half.active .mic.ptt:not(.on){animation:none}
+ /* waiting players: compact card = name + small board only */
+ .half:not(.active) .word,.half:not(.active) .msg,.half:not(.active) .note,.half:not(.active) .heard,
+ .half:not(.active) .override,.half:not(.active) .inputs{display:none!important}
+ #halves .half:not(.active){padding:6px 10px;gap:4px}
+ #halves .half:not(.active) .ptimer{display:none}
+ #halves .half:not(.active) .tiles{grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;padding:0;max-width:460px}
+ #halves .half:not(.active) .tiles:has(> .tile:nth-child(23)){grid-template-columns:repeat(13,minmax(0,1fr))}
+ #halves .half:not(.active) .tile{font-size:13px;border-radius:6px;box-shadow:0 2px 0 rgba(80,50,160,.12)}
+ #halves .half:not(.active) .tile.gone{box-shadow:none}
+ #diag{max-height:30dvh}
+}
+@media (max-width:360px){ #halves .tile{font-size:16px} .smallbtn{padding:5px 7px;font-size:12px} #status{font-size:14px} }
 </style>
 </head>
 <body>
@@ -556,7 +611,7 @@ const sndBad=()=>beep(180,.25,'square',.08);
 const sndTick=()=>beep(1000,.05,'sine',.05);
 
 function buildHalves(){
-  const h=$('#halves'); h.innerHTML=''; h.className='n'+G.boards.length;
+  const h=$('#halves'); h.innerHTML=''; h.className='n'+G.boards.length; lastActiveP=-1;
   range(G.boards.length).forEach(p=>{
     const d=document.createElement('div'); d.className='half p'+(p+1); d.id='half'+p;
     d.innerHTML=`<div class="hhead"><span class="pname">${esc(G.names[p])}</span><span class="count" id="cnt${p}"></span><span class="ptimer" id="pt${p}"></span></div>
@@ -599,7 +654,11 @@ function render(){
   $('#timerfill').style.background = `var(--p${G.turn+1})`;
   $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?esc(h.word):'⏰'}</span>`).join(S.arrow);
   $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
+  // phone: keep the active player's panel on screen when the turn passes (layout only)
+  if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn;
+    if(phoneMQ && phoneMQ.matches) requestAnimationFrame(()=>{ const h=$('#half'+G.turn); if(h&&h.scrollIntoView) try{ h.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(_){ h.scrollIntoView(false); } }); }
 }
+let lastActiveP=-1; const phoneMQ = window.matchMedia ? matchMedia('(max-width:720px), (max-height:520px)') : null;
 // typing mode: as soon as the active player types, the mic is switched off for this turn so
 // (in Safari) recognition restarts / mic-permission prompts can't steal the keyboard focus.
 let typing=false, emptyEnds=0;
@@ -710,7 +769,7 @@ function burstConfetti(){
 $('#go').onclick=startGame;
 $('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); };
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
-$('#diagBtn').onclick=()=>{ const on=$('#diag').classList.toggle('hidden')===false; try{ localStorage.setItem('wg_diag',on?'1':'0'); }catch(_){} drawDiag(); };
+$('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
 $('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S.resume:S.pause; if(paused) stopRec(); else { lastT=performance.now(); afterTurnChange(); } };
 
 /* speech
@@ -723,13 +782,13 @@ $('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S
 const STABLE_MS=1000, DEAF_MS=6000;
 let recSession=0, heardNote=['','','',''], recCtl=null;
 const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hearing anything
-// ---- diagnostics: lifecycle log (🔍 button). On by default in push-to-talk (Safari) so it can be screenshotted.
+// ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
-function drawDiag(){ const e=$('#diag'); if(!e||e.classList.contains('hidden')) return;
+function drawDiag(){ const e=$('#diag'); if(!e) return;
   e.textContent='mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
-(function(){ let on=PTT; try{ const v=localStorage.getItem('wg_diag'); if(v!==null) on=v==='1'; }catch(_){} if(on) $('#diag').classList.remove('hidden'); drawDiag(); })();
+(function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
 // choose the best candidate: first alternative/word that is valid now; else first word of top alternative
 function pickWord(alts){

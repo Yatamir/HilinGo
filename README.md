@@ -1,7 +1,4 @@
-# HilinGo
-HilinGo – a word-chain game for the family, named after Hili 💜
-
-# HilinGo – word-chain game (v2.3)
+# HilinGo – word-chain game (v2.5)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -34,3 +31,15 @@ v2.2: renamed to HilinGo (named after Hili). Start-screen logo is "Hilin" + high
 v2.3: Portuguese (Português) as a 5th language, start-screen button "Português 🇵🇹🇧🇷". Speech recognition uses pt-BR (Brazilian Portuguese); European Portuguese (pt-PT) words are also in the dictionary. Letter board is A–Z; accents are folded for first/last-letter logic (á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter, same latin() normalizer as English/Dutch). Accented typed or spoken words are accepted. UI strings are in Brazilian Portuguese. Dictionary words_pt.js is loaded lazily like en/nl.
   Portuguese word list: hermitdave/FrequencyWords (OpenSubtitles 2018, union of filtered pt_full + pt_br_full), CC BY-SA 4.0, https://github.com/hermitdave/FrequencyWords –
   same filtering (letters only after folding, len>=2, frequency>=8, no triple-repeated letters): 227,775 words. No change to Safari push-to-talk or the v2.2 visual design.
+
+## v2.4 – iPhone layout
+- Phone (≤720px wide, or landscape ≤520px tall): panels stack vertically at natural height and the page scrolls; nothing overlaps.
+  Active panel: 8-column board (9 for A–Z), input + Send + mic row inside the panel. Waiting players: compact card (name + small 11/13-column board).
+- Compact header on phones; safe-area insets (viewport-fit=cover) and dvh units for the Safari toolbar.
+- Mic diagnostic log (🔍) is hidden by default on every device; tap 🔍 to show it.
+- Countdown number inside the timer ring is visible again.
+- New test: tests_phone.mjs (WebKit iPhone 13 + Chromium, 2/3/4 players, he/en, bounding-box overlap checks).
+
+## v2.5 – auto-mic everywhere + plan with the next board
+- "Turn the mic on automatically every turn" is checked by default in every browser with speech recognition, Safari / iPhone included; the 🎤 button still works as a manual fallback (tap to stop / start). Start-screen note: "במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤" (en/nl/pt equivalents). Old Safari notes (localhost settings, "Chrome recommended", "not recommended in Safari") removed.
+- Phone layout: the active player's panel and the NEXT player's panel are always fully on screen together (iPhone 13 / SE portrait, landscape side by side). With 3–4 players the panels are reordered on phones only (active first, next right after); desktop layout unchanged.

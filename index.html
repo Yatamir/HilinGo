@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="2.5">
+<meta name="hilingo-version" content="2.6">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -331,9 +331,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
     <div class="card">
       <div class="levels">
-        <button class="lvl" data-s="20">קל · 20 שניות</button>
-        <button class="lvl sel" data-s="10">בינוני · 10 שניות</button>
-        <button class="lvl" data-s="5">קשה · 5 שניות</button>
+        <button class="lvl" data-s="30">קל · 30 שניות</button>
+        <button class="lvl sel" data-s="20">בינוני · 20 שניות</button>
+        <button class="lvl" data-s="10">קשה · 10 שניות</button>
       </div>
     </div>
     <div class="card card-opts">
@@ -394,10 +394,10 @@ const WG = (()=>{
   function newGame(opts={}){
     const n = Math.max(2, Math.min(4, opts.players || (opts.names&&opts.names.length) || 2));
     const names = (opts.names||[]).slice(0,n); for(let i=names.length;i<n;i++) names.push('שחקן '+(i+1));
-    return { seconds: opts.seconds||10, names, n, lang,
+    return { seconds: opts.seconds||20, names, n, lang,
       boards:Array.from({length:n},()=>new Set(L.letters)), turn:0, required:null,
       used:new Set(), history:[], missStreak:0, missLetter:null, missers:new Set(), maxMisses:maxMissesFor(n),
-      timeLeft: opts.seconds||10, over:false, winner:null, winners:[], reason:'' };
+      timeLeft: opts.seconds||20, over:false, winner:null, winners:[], reason:'' };
   }
   const nextP = (g,p) => (p+1) % g.boards.length;
   // check a word for the current player; returns {ok, reason}
@@ -459,14 +459,14 @@ const WG = (()=>{
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin };
 })();
-window.WG = WG; window.HILINGO_VERSION='2.5';
+window.WG = WG; window.HILINGO_VERSION='2.6';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
 const STR = {
  he:{ dir:'rtl', speech:'he-IL', title:'HilinGo', tagline:'משחק שרשרת מילים', arrow:' ← ', yourTurn:'" · תורך!"', player:i=>'שחקן '+i, playerAria:i=>'שם שחקן '+i,
   intro:'כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!',
-  players:'מספר שחקנים:', lvl:{20:'קל · 20 שניות',10:'בינוני · 10 שניות',5:'קשה · 5 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
+  players:'מספר שחקנים:', lvl:{30:'קל · 30 שניות',20:'בינוני · 20 שניות',10:'קשה · 10 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
   loading:'טוען מילון…', dictFail:'המילון לא נטען',
   rules:'חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
@@ -497,7 +497,7 @@ const STR = {
  },
  en:{ dir:'ltr', speech:'en-US', title:'HilinGo', tagline:'A word-chain game', arrow:' → ', yourTurn:'" · your turn!"', player:i=>'Player '+i, playerAria:i=>'Player '+i+' name',
   intro:'Each player says a word that starts with the last letter of the previous word. The first letter of your word is crossed off your board. Empty your board first to win!',
-  players:'Players:', lvl:{20:'Easy · 20 sec',10:'Medium · 10 sec',5:'Hard · 5 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
+  players:'Players:', lvl:{30:'Easy · 30 sec',20:'Medium · 20 sec',10:'Hard · 10 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
   loading:'Loading dictionary…', dictFail:'Dictionary failed to load',
   rules:"Rules: case and accents don't matter · no repeating a word · time's up? the same letter passes to the next player · if everyone misses the same letter in a row, the next player picks any letter · 6 misses in a row (2 players) or two full rounds of misses (3–4 players) end the game; fewest letters left wins.",
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
@@ -528,7 +528,7 @@ const STR = {
  },
  nl:{ dir:'ltr', speech:'nl-NL', title:'HilinGo', tagline:'Een woordkettingspel', arrow:' → ', yourTurn:'" · jouw beurt!"', player:i=>'Speler '+i, playerAria:i=>'Naam speler '+i,
   intro:'Elke speler zegt een woord dat begint met de laatste letter van het vorige woord. De eerste letter van jouw woord wordt van jouw bord geschrapt. Wie als eerste zijn bord leeg heeft, wint!',
-  players:'Spelers:', lvl:{20:'Makkelijk · 20 sec',10:'Gemiddeld · 10 sec',5:'Moeilijk · 5 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
+  players:'Spelers:', lvl:{30:'Makkelijk · 30 sec',20:'Gemiddeld · 20 sec',10:'Moeilijk · 10 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
   loading:'Woordenboek laden…', dictFail:'Woordenboek niet geladen',
   rules:'Regels: hoofdletters en accenten tellen niet (é = e) · IJ telt als I + J · een woord mag maar één keer · tijd om? dezelfde letter gaat naar de volgende speler · mist iedereen dezelfde letter na elkaar, dan kiest de volgende een vrije letter · 6 missers op rij (2 spelers) of twee volle rondes missers (3–4 spelers) beëindigen het spel; wie de minste letters over heeft, wint.',
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
@@ -559,7 +559,7 @@ const STR = {
  },
  pt:{ dir:'ltr', speech:'pt-BR', title:'HilinGo', tagline:'Um jogo de corrente de palavras', arrow:' → ', yourTurn:'" · sua vez!"', player:i=>'Jogador '+i, playerAria:i=>'Nome do jogador '+i,
   intro:'Cada jogador diz uma palavra que começa com a última letra da palavra anterior. A primeira letra da sua palavra é apagada do seu tabuleiro. Quem esvaziar o tabuleiro primeiro, vence!',
-  players:'Jogadores:', lvl:{20:'Fácil · 20 segundos',10:'Médio · 10 segundos',5:'Difícil · 5 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
+  players:'Jogadores:', lvl:{30:'Fácil · 30 segundos',20:'Médio · 20 segundos',10:'Difícil · 10 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
   rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence.',
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
@@ -593,7 +593,7 @@ let LANG='he', S=STR.he, NPLAYERS=2;
 
 /* ======================= UI ======================= */
 const $ = s=>document.querySelector(s);
-let G=null, seconds=10, timerId=null, lastT=0, paused=false, pendingOverride=[null,null,null,null];
+let G=null, seconds=20, timerId=null, lastT=0, paused=false, pendingOverride=[null,null,null,null];
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec=null, recFor=null;
 const isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|CriOS|Edg/.test(navigator.userAgent);
@@ -849,7 +849,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v2.5 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v2.6 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

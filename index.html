@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="2.8">
+<meta name="hilingo-version" content="2.9">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -120,6 +120,21 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .msg.good{color:#0A9A5C;font-weight:700}
 .heard{min-height:20px;font-size:14px;text-align:center;color:#555;background:rgba(255,255,255,.7);border-radius:10px;padding:2px 6px}
 .heard:not(:empty){box-shadow:0 0 0 2px color-mix(in srgb, var(--c) 35%, transparent)}
+/* v2.9 hint: 💡 button sits in the same row as the listening/heard bar; a shown hint replaces the bar's text visually
+   (the recognizer keeps running and #hd keeps being updated underneath) */
+.hrow{display:flex;align-items:center;gap:6px;min-height:20px}
+.hrow .heard,.hrow .hinttxt{flex:1;min-width:0}
+.hinttxt{display:none;font-size:14px;text-align:center;color:#6A4300;background:#FFF6CF;border-radius:10px;padding:2px 8px;box-shadow:0 0 0 2px #FDCB6E;line-height:1.35}
+.hinttxt small{display:block;font-size:11px;font-weight:700;color:#A0681A}
+.hrow.hinting .heard{display:none}
+.hrow.hinting .hinttxt{display:block}
+.hintbtn{flex-shrink:0;margin-inline-start:auto;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:700;background:linear-gradient(180deg,#FFF3A0,#FFE566);color:#6A4300;box-shadow:0 2px 0 #E0A800;white-space:nowrap}
+.hintbtn:active{transform:translateY(1px);box-shadow:0 1px 0 #E0A800}
+.hintbtn:disabled{opacity:.4;filter:grayscale(.6);cursor:default}
+.half:not(.active) .hintbtn{visibility:hidden}
+.msg.hintm{color:#8A5A00;font-weight:700}
+.tile.back{animation:backin .8s}
+@keyframes backin{0%{transform:scale(.6);background-color:#3DD68C;color:#fff}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 .half.active .pname::after{content:var(--yourturn," · תורך!");font-size:16px}
 .tiles{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-content:center;min-height:0}
 /* 3D tiles — .need/.need.gone MUST keep a solid background-color and a non-none box-shadow (tests) */
@@ -220,6 +235,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  .msg.err{font-size:15px;padding:4px 8px}
  .note{font-size:14px;padding:4px 8px}
  .heard{font-size:13px;min-height:0}
+ .hinttxt{font-size:13px} .hintbtn{font-size:13px;padding:3px 9px} .hrow{min-height:0}
  .override{font-size:13px;padding:5px 10px}
  #halves .tiles,#halves.n3 .tiles,#halves.n4 .tiles{flex:none;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:auto;gap:5px;
    align-content:start;overflow:visible;min-height:auto;width:100%;max-width:520px;margin-inline:auto;padding:3px}
@@ -238,7 +254,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  .half.active .mic.ptt:not(.on){animation:none}
  /* waiting players: compact card = name + small board only */
  .half:not(.active) .word,.half:not(.active) .msg,.half:not(.active) .note,.half:not(.active) .heard,
- .half:not(.active) .override,.half:not(.active) .inputs{display:none!important}
+ .half:not(.active) .override,.half:not(.active) .inputs,.half:not(.active) .hrow{display:none!important}
  #halves .half:not(.active){padding:6px 10px;gap:4px}
  #halves .half:not(.active) .ptimer{display:none}
  #halves .half:not(.active) .tiles{grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;padding:0;max-width:460px}
@@ -288,7 +304,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .half.active .tiles:has(> .tile:nth-child(23)),#halves .half:not(.active) .tiles:has(> .tile:nth-child(23)){grid-template-columns:repeat(13,minmax(0,1fr))}
  #halves .half.active .tile{font-size:16px;border-radius:7px}
  #halves .word,#halves.n3 .word,#halves.n4 .word{min-height:28px;font-size:20px;border-radius:10px;padding:0 8px}
- .msg,.heard,.note{font-size:12px;padding:1px 6px}
+ .msg,.heard,.note,.hinttxt{font-size:12px;padding:1px 6px} .hintbtn{font-size:12px;padding:1px 8px}
  .msg.err{font-size:13px;padding:2px 6px}
  .override{font-size:12px;padding:3px 8px}
  #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:30px;height:30px;min-width:30px;font-size:13px}
@@ -361,6 +377,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 <div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
 <script src="words.js" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -390,6 +407,20 @@ const WG = (()=>{
   const isWord = w => !!(DICTS[lang] && DICTS[lang].has(w));
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
   const maxMissesFor = n => n===2 ? MAX_MISSES : 2*n;   // 3–4 players: two full rounds
+  // v2.9 hints: at most MAX_HINTS per turn. A turn in which the player used ≥1 hint never deletes a letter.
+  // Two of a player's own turns IN A ROW with a hint (answered or timed out) → the last letter deleted from
+  // their board comes back; the streak then resets to 0 (two more hint-turns in a row are needed for the next one).
+  // A turn of theirs without a hint resets the streak.
+  const MAX_HINTS = 3;
+  function useHint(g){ if(g.over || g.hintsThisTurn>=MAX_HINTS) return 0; return ++g.hintsThisTurn; }
+  function settleHints(g, p){
+    const hinted = g.hintsThisTurn>0; let restored=null;
+    if(hinted){ g.hintStreak[p]++;
+      if(g.hintStreak[p]>=2){ g.hintStreak[p]=0; const l=g.deleted[p].pop(); if(l){ g.boards[p].add(l); restored=l; } } }
+    else g.hintStreak[p]=0;
+    g.hintsThisTurn=0;
+    return {hinted, restored};
+  }
 
   function newGame(opts={}){
     const n = Math.max(2, Math.min(4, opts.players || (opts.names&&opts.names.length) || 2));
@@ -397,7 +428,8 @@ const WG = (()=>{
     return { seconds: opts.seconds||30, names, n, lang,
       boards:Array.from({length:n},()=>new Set(L.letters)), turn:0, required:null,
       used:new Set(), history:[], missStreak:0, missLetter:null, missers:new Set(), maxMisses:maxMissesFor(n),
-      timeLeft: opts.seconds||30, over:false, winner:null, winners:[], reason:'' };
+      timeLeft: opts.seconds||30, over:false, winner:null, winners:[], reason:'',
+      hintsThisTurn:0, hintStreak:Array(n).fill(0), deleted:Array.from({length:n},()=>[]) };
   }
   const nextP = (g,p) => (p+1) % g.boards.length;
   // check a word for the current player; returns {ok, reason}
@@ -416,30 +448,34 @@ const WG = (()=>{
     const r = check(g, raw, force);
     if(!r.ok) return r;
     const w = r.word, p = g.turn, f = firstLetter(w);
-    const removed = g.boards[p].has(f);
-    if(removed) g.boards[p].delete(f);
+    const hintedNow = g.hintsThisTurn>0;
+    const removed = !hintedNow && g.boards[p].has(f);   // v2.9: used a hint this turn → no deletion
+    if(removed){ g.boards[p].delete(f); g.deleted[p].push(f); }
+    const hs = settleHints(g, p);
     g.used.add(w);
-    g.history.push({player:p, word:w, removed: removed?f:null});
+    g.history.push({player:p, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored});
     g.missStreak=0; g.missLetter=null; g.missers.clear();
     g.required = lastLetter(w);
-    if(g.boards[p].size===0){ finish(g, p, 'empty'); return {ok:true, word:w, removed:removed?f:null}; }
+    const res = {ok:true, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored};
+    if(g.boards[p].size===0){ finish(g, p, 'empty'); return res; }
     g.turn = nextP(g,p); g.timeLeft = g.seconds;
-    return {ok:true, word:w, removed: removed?f:null};
+    return res;
   }
   // current player ran out of time: same letter passes to the next player; if everyone
   // missed this letter in a row, the next player gets a free letter.
   function timeout(g){
     if(g.over) return {};
     const p = g.turn;
-    g.history.push({player:p, word:null});
+    const hs = settleHints(g, p);
+    g.history.push({player:p, word:null, hinted:hs.hinted, restored:hs.restored});
     if(g.missLetter!==g.required){ g.missLetter=g.required; g.missers=new Set(); }
     g.missers.add(p);
     g.missStreak++;
     let freed=false;
     if(g.required && g.missers.size===g.boards.length){ g.required=null; g.missLetter=null; g.missers=new Set(); freed=true; }
-    if(g.missStreak>=(g.maxMisses||MAX_MISSES)){ finish(g, null, 'misses'); return {freed, ended:true}; }
+    if(g.missStreak>=(g.maxMisses||MAX_MISSES)){ finish(g, null, 'misses'); return {freed, ended:true, player:p, restored:hs.restored}; }
     g.turn = nextP(g,p); g.timeLeft = g.seconds;
-    return {freed};
+    return {freed, player:p, restored:hs.restored};
   }
   function tick(g, dt){ // dt seconds
     if(g.over) return null;
@@ -457,9 +493,9 @@ const WG = (()=>{
     } else { g.winner=winner; g.winners=[winner]; }
   }
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
-    base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin };
+    base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint };
 })();
-window.WG = WG; window.HILINGO_VERSION='2.8';
+window.WG = WG; window.HILINGO_VERSION='2.9';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -468,7 +504,7 @@ const STR = {
   intro:'כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!',
   players:'מספר שחקנים:', lvl:{45:'קל · 45 שניות',30:'בינוני · 30 שניות',15:'קשה · 15 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
   loading:'טוען מילון…', dictFail:'המילון לא נטען',
-  rules:'חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.',
+  rules:'חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק. · 💡 רמז: עד 3 רמזים בתור, רק למילים שעוד לא נאמרו; מי שנעזר ברמז לא מוחק אות באותו תור, ואחרי שני תורות ברצף עם רמז האות האחרונה שנמחקה לו חוזרת ללוח.',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
   override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש',
@@ -487,6 +523,8 @@ const STR = {
   noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤',
   ptt:'לחצו ודברו', pttOn:'מקשיב… ⏹', tapToTalk:'לחצו על 🎤 (או Enter בתיבה ריקה) ואז אמרו את המילה', tapAgain:'לא נקלטה מילה – לחצו שוב על 🎤 ודברו',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
+  hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו",
+  hintNoDel:"💡 נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`💡 רמז בשני תורות ברצף – האות ${l} חזרה ללוח`,
   errs:{'not-allowed':'Safari חוסם את המיקרופון. Safari ← הגדרות (Settings) ← אתרים (Websites) ← מיקרופון ← localhost ← "אפשר" (Allow), ואז לרענן את הדף.',
    'service-not-allowed':'זיהוי הדיבור כבוי במק. הגדרות המערכת ← Apple Intelligence ו-Siri (או Siri) ← להפעיל את Siri; וגם הגדרות המערכת ← מקלדת ← הכתבה ← להפעיל, עם עברית ברשימת השפות. אחר כך לסגור את Safari (Cmd+Q) ולפתוח שוב.',
    'audio-capture':'לא נמצא מיקרופון, או שאפליקציה אחרת תופסת אותו (Zoom, FaceTime וכו׳). בדקו בהגדרות המערכת ← סאונד ← קלט.',
@@ -499,7 +537,7 @@ const STR = {
   intro:'Each player says a word that starts with the last letter of the previous word. The first letter of your word is crossed off your board. Empty your board first to win!',
   players:'Players:', lvl:{45:'Easy · 45 sec',30:'Medium · 30 sec',15:'Hard · 15 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
   loading:'Loading dictionary…', dictFail:'Dictionary failed to load',
-  rules:"Rules: case and accents don't matter · no repeating a word · time's up? the same letter passes to the next player · if everyone misses the same letter in a row, the next player picks any letter · 6 misses in a row (2 players) or two full rounds of misses (3–4 players) end the game; fewest letters left wins.",
+  rules:"Rules: case and accents don't matter · no repeating a word · time's up? the same letter passes to the next player · if everyone misses the same letter in a row, the next player picks any letter · 6 misses in a row (2 players) or two full rounds of misses (3–4 players) end the game; fewest letters left wins. · 💡 Hint: up to 3 per turn, only for words not used yet; a turn with a hint crosses off no letter, and hints in two turns in a row bring your last crossed-off letter back.",
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
   micHint:" If the microphone doesn't work, tap 🎤 in the game.",
   override:"It's a real word – accept anyway", micTitle:'Speak', inputPh:'Type a word', send:'Send', endBtn:'End game', pause:'Pause', resume:'Resume', again:'New game',
@@ -518,6 +556,8 @@ const STR = {
   noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤",
   ptt:'Tap & speak', pttOn:'Listening… ⏹', tapToTalk:'Tap 🎤 (or Enter in the empty box), then say your word', tapAgain:'No word caught – tap 🎤 again and speak',
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
+  hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter",
+  hintNoDel:"💡 Hint used – no letter crossed off this turn", hintRestored:l=>`💡 Hints two turns in a row – ${l} is back on your board`,
   errs:{'not-allowed':'Safari is blocking the microphone. Safari → Settings → Websites → Microphone → localhost → "Allow", then reload.',
    'service-not-allowed':'Speech recognition is off on this Mac. System Settings → Apple Intelligence & Siri (or Siri) → turn Siri on; and System Settings → Keyboard → Dictation → On. Then quit Safari (Cmd+Q) and reopen.',
    'audio-capture':'No microphone found, or another app (Zoom, FaceTime…) is using it. Check System Settings → Sound → Input.',
@@ -530,7 +570,7 @@ const STR = {
   intro:'Elke speler zegt een woord dat begint met de laatste letter van het vorige woord. De eerste letter van jouw woord wordt van jouw bord geschrapt. Wie als eerste zijn bord leeg heeft, wint!',
   players:'Spelers:', lvl:{45:'Makkelijk · 45 sec',30:'Gemiddeld · 30 sec',15:'Moeilijk · 15 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
   loading:'Woordenboek laden…', dictFail:'Woordenboek niet geladen',
-  rules:'Regels: hoofdletters en accenten tellen niet (é = e) · IJ telt als I + J · een woord mag maar één keer · tijd om? dezelfde letter gaat naar de volgende speler · mist iedereen dezelfde letter na elkaar, dan kiest de volgende een vrije letter · 6 missers op rij (2 spelers) of twee volle rondes missers (3–4 spelers) beëindigen het spel; wie de minste letters over heeft, wint.',
+  rules:'Regels: hoofdletters en accenten tellen niet (é = e) · IJ telt als I + J · een woord mag maar één keer · tijd om? dezelfde letter gaat naar de volgende speler · mist iedereen dezelfde letter na elkaar, dan kiest de volgende een vrije letter · 6 missers op rij (2 spelers) of twee volle rondes missers (3–4 spelers) beëindigen het spel; wie de minste letters over heeft, wint. · 💡 Hint: max. 3 per beurt, alleen voor woorden die nog niet gezegd zijn; met een hint wordt die beurt geen letter geschrapt, en twee beurten op rij een hint zet je laatst geschrapte letter terug.',
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
   micHint:' Werkt de microfoon niet? Tik dan in het spel op 🎤.',
   override:'Het is een echt woord – toch goedkeuren', micTitle:'Spreek', inputPh:'Typ een woord', send:'Stuur', endBtn:'Spel stoppen', pause:'Pauze', resume:'Verder', again:'Nieuw spel',
@@ -549,6 +589,8 @@ const STR = {
   noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤',
   ptt:'Tik & spreek', pttOn:'Luistert… ⏹', tapToTalk:'Tik op 🎤 (of Enter in het lege vak) en zeg je woord', tapAgain:'Geen woord gehoord – tik opnieuw op 🎤 en spreek',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
+  hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter",
+  hintNoDel:"💡 Hint gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`💡 Twee beurten op rij een hint – de ${l} staat weer op je bord`,
   errs:{'not-allowed':'Safari blokkeert de microfoon. Safari → Instellingen → Websites → Microfoon → localhost → "Sta toe", en herlaad de pagina.',
    'service-not-allowed':'Spraakherkenning staat uit op deze Mac. Systeeminstellingen → Apple Intelligence en Siri (of Siri) → Siri aan; en Systeeminstellingen → Toetsenbord → Dicteren → Aan. Stop daarna Safari (Cmd+Q) en open opnieuw.',
    'audio-capture':'Geen microfoon gevonden, of een andere app (Zoom, FaceTime…) gebruikt hem. Controleer Systeeminstellingen → Geluid → Invoer.',
@@ -561,7 +603,7 @@ const STR = {
   intro:'Cada jogador diz uma palavra que começa com a última letra da palavra anterior. A primeira letra da sua palavra é apagada do seu tabuleiro. Quem esvaziar o tabuleiro primeiro, vence!',
   players:'Jogadores:', lvl:{45:'Fácil · 45 segundos',30:'Médio · 30 segundos',15:'Difícil · 15 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
-  rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence.',
+  rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence. · 💡 Dica: até 3 por turno, só para palavras ainda não usadas; no turno com dica nenhuma letra é apagada, e dicas em dois turnos seguidos devolvem a última letra apagada.',
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
   micHint:' Se o microfone não funcionar, toque em 🎤 no jogo.',
   override:'É uma palavra de verdade – aceitar mesmo assim', micTitle:'Fale', inputPh:'Digite uma palavra', send:'Enviar', endBtn:'Encerrar jogo', pause:'Pausar', resume:'Continuar', again:'Novo jogo',
@@ -580,6 +622,8 @@ const STR = {
   noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤',
   ptt:'Toque e fale', pttOn:'Ouvindo… ⏹', tapToTalk:'Toque em 🎤 (ou Enter na caixa vazia) e diga a palavra', tapAgain:'Nenhuma palavra captada – toque de novo em 🎤 e fale',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
+  hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra",
+  hintNoDel:"💡 Você usou dica – nenhuma letra foi apagada neste turno", hintRestored:l=>`💡 Dica em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
   errs:{'not-allowed':'O Safari está bloqueando o microfone. Safari → Ajustes → Sites → Microfone → localhost → "Permitir", e recarregue a página.',
    'service-not-allowed':'O reconhecimento de voz está desligado neste Mac. Ajustes do Sistema → Apple Intelligence e Siri (ou Siri) → ligar a Siri; e Ajustes do Sistema → Teclado → Ditação → Ligado. Depois feche o Safari (Cmd+Q) e abra de novo.',
    'audio-capture':'Nenhum microfone encontrado, ou outro app (Zoom, FaceTime…) está usando. Confira em Ajustes do Sistema → Som → Entrada.',
@@ -662,7 +706,8 @@ function buildHalves(){
   range(G.boards.length).forEach(p=>{
     const d=document.createElement('div'); d.className='half p'+(p+1); d.id='half'+p;
     d.innerHTML=`<div class="hhead"><span class="pname">${esc(G.names[p])}</span><span class="count" id="cnt${p}"></span><span class="ptimer" id="pt${p}"></span></div>
-      <div class="word" id="w${p}">&nbsp;</div><div class="msg" id="m${p}"></div><div class="note" id="nt${p}"></div><div class="heard" id="hd${p}"></div>
+      <div class="word" id="w${p}">&nbsp;</div><div class="msg" id="m${p}"></div><div class="note" id="nt${p}"></div>
+      <div class="hrow" id="hr${p}"><div class="heard" id="hd${p}"></div><div class="hinttxt" id="hn${p}" aria-live="polite"></div><button class="hintbtn" id="hb${p}" title="${esc(S.hintTitle)}">${esc(S.hint)}</button></div>
       <button class="override hidden" id="ov${p}">${esc(S.override)}</button>
       <div class="tiles" id="t${p}">${WG.LETTERS.map(l=>`<div class="tile" data-l="${l}">${l}</div>`).join('')}</div>
       <div class="inputs"><button class="mic${PTT?' ptt':''}" id="mic${p}" title="${esc(S.micTitle)}">🎤<span class="ml ml-off">${esc(S.ptt)}</span><span class="ml ml-on">${esc(S.pttOn)}</span></button>
@@ -675,6 +720,7 @@ function buildHalves(){
     $('#in'+p).addEventListener('input',()=>enterTyping(p));
     $('#mic'+p).onclick=()=>micToggle(p,'click');   // synchronous: recognition.start() runs inside the click
     $('#ov'+p).onclick=()=>{ if(pendingOverride[p]) submit(p,pendingOverride[p],true); };
+    $('#hb'+p).onclick=()=>showHint(p);   // v2.9: never touches the recognizer
     if(!SR) $('#mic'+p).classList.add('hidden');
   });
 }
@@ -702,7 +748,7 @@ function render(){
   $('#status').innerHTML = G.required ? S.statusNeed(n, G.required, !G.boards[G.turn].has(G.required)) : S.statusFree(n);
   $('#timerfill').style.width = (100*G.timeLeft/G.seconds)+'%';
   $('#timerfill').style.background = `var(--p${G.turn+1})`;
-  $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?esc(h.word):'⏰'}</span>`).join(S.arrow);
+  $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?esc(h.word):'⏰'}${h.hinted?'<small title="hint">💡</small>':''}</span>`).join(S.arrow);
   $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
   // phone: keep the active AND the next player's panels on screen when the turn passes (layout only)
   if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn; keepPairInView(); }
@@ -735,6 +781,52 @@ function setMsg(p,txt,kind){ const e=$('#m'+p); if(!e) return; e.textContent=txt
 function setHeard(p,txt){ const e=$('#hd'+p); if(e) e.textContent=txt||''; const m=$('#mic'+p); if(m) m.classList.toggle('heard', !!(txt&&/שמעתי|Heard|Gehoord|הוקלד|Typed|Getypt|✔/.test(txt))); }
 function showWord(p,w,cls){ const e=$('#w'+p); if(!e) return; e.textContent=w||'\u00a0'; e.className='word'+(cls?' '+cls:''); }
 
+/* ---- v2.9 hints ----
+   Tapping 💡 shows a short description of an unused dictionary word that starts with the required letter
+   (free choice: a letter still on the player's board). The text replaces the listening bar visually; the
+   recognizer is NOT stopped/restarted (no stopRec/startRec here) and #hd keeps updating underneath. */
+let hintUI={key:null,shown:new Set()};
+const turnKey=()=>G ? G.history.length+':'+G.turn : '';
+function hintCandidates(g,p){
+  const list=(window.HILINGO_HINTS||{})[g.lang||WG.lang]||[];
+  const ok=(w,anyLetter)=>{ const n=WG.normalize(w); if(!n||n.length<2||g.used.has(n)||!WG.isWord(n)) return false;
+    const f=WG.firstLetter(n); return g.required ? f===g.required : (anyLetter || g.boards[p].has(f)); };
+  let c=list.map((h,i)=>({i,word:WG.normalize(h[0]),desc:h[1]})).filter(h=>ok(list[h.i][0],false));
+  if(!c.length && !g.required) c=list.map((h,i)=>({i,word:WG.normalize(h[0]),desc:h[1]})).filter(h=>ok(list[h.i][0],true));
+  return c;
+}
+function pickHint(g,p,shown){
+  const c=hintCandidates(g,p).filter(h=>!shown.has(h.i));
+  return c.length ? c[Math.floor(Math.random()*c.length)] : null;
+}
+function setHintText(p,txt,tag){
+  const row=$('#hr'+p), e=$('#hn'+p); if(!row||!e) return;
+  if(!txt){ e.textContent=''; row.classList.remove('hinting'); return; }
+  e.innerHTML=esc(txt)+(tag?'<small>'+esc(tag)+'</small>':''); row.classList.add('hinting');
+}
+function updateHintBtns(){
+  if(!G) return;
+  range(G.boards.length).forEach(q=>{ const b=$('#hb'+q); if(!b) return;
+    b.disabled = G.over || q!==G.turn || G.hintsThisTurn>=WG.MAX_HINTS; });
+}
+function syncHintUI(){   // a new turn: fresh hint state, every bar back to the listening/heard text
+  if(!G) return;
+  const k=turnKey();
+  if(hintUI.key!==k){ hintUI={key:k,shown:new Set()}; range(G.boards.length).forEach(q=>setHintText(q,'')); }
+  updateHintBtns();
+}
+function showHint(p){
+  if(!G||G.over||paused||p!==G.turn) return;
+  syncHintUI();
+  if(G.hintsThisTurn>=WG.MAX_HINTS){ updateHintBtns(); return; }
+  const h=pickHint(G,p,hintUI.shown);
+  if(!h){ setHintText(p,S.hintNone, G.hintsThisTurn?S.hintTag(G.hintsThisTurn):''); diag('hint: none'); return; }
+  const n=WG.useHint(G); hintUI.shown.add(h.i);
+  setHintText(p,'💡 '+h.desc,S.hintTag(n));
+  diag('hint '+n+'/'+WG.MAX_HINTS); updateHintBtns(); focusInput(p);
+}
+function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return; t.classList.add('back'); setTimeout(()=>t.classList.remove('back'),800); }
+
 function submit(p,raw,force=false,src='typed'){
   if(!G||G.over||paused||p!==G.turn) return false;
   $('#in'+p).value='';
@@ -756,15 +848,17 @@ function submit(p,raw,force=false,src='typed'){
   stopRec();
   showWord(p, r.word, 'ok'); sndOk();
   const f0=WG.firstLetter(r.word);
-  setMsg(p, r.removed ? S.okRemoved(r.removed) : S.okKept(f0), 'good');
+  if(r.hinted) setMsg(p, S.hintNoDel+(r.restored?' · '+S.hintRestored(r.restored):''), 'hintm');
+  else setMsg(p, r.removed ? S.okRemoved(r.removed) : S.okKept(f0), 'good');
   heardNote=['','','','']; setHeard(p, S.accepted+r.word);
   if(r.removed){ const t=$(`#t${p} .tile[data-l="${r.removed}"]`); t.classList.add('boom'); setTimeout(()=>t.classList.remove('boom'),700); }
+  if(r.restored) tileBack(p, r.restored);
   others(p).forEach(q=>{ setMsg(q,''); showWord(q,''); setHeard(q,''); });
   render(); afterTurnChange();
   return true;
 }
 function afterTurnChange(){
-  clearOthers(G.over?-1:G.turn);
+  clearOthers(G.over?-1:G.turn); syncHintUI();
   if(G.over){ endScreen(); return; }
   typing=false; emptyEnds=0;
   const p=G.turn; focusInput(p);
@@ -789,6 +883,7 @@ function loop(t){
     const r=WG.tick(G, Math.min(dt,.5));
     if(G.timeLeft>0 && G.timeLeft<=3 && Math.ceil(G.timeLeft)!==before && recFor===null) sndTick();   // no audio while the mic listens (Safari)
     if(r){ stopRec(); sndBad(); showWord(p,S.timeUp,'bad'); heardNote=['','','','']; setHeard(p,''); setMsg(p,'');
+      if(r.restored){ setMsg(p,S.hintRestored(r.restored),'hintm'); tileBack(p,r.restored); }
       if(!G.over) setMsg(G.turn, r.freed ? (G.boards.length===2?S.freed2:S.freedN) : (G.required?S.cont(G.required):''));
       afterTurnChange(); }
     render();
@@ -803,11 +898,12 @@ function startGame(){
   $('#start').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#endov').classList.add('hidden');
   paused=false; $('#pauseBtn').textContent=S.pause;
   try{ window.scrollTo(0,0); }catch(_){}   // phone: the start screen may be scrolled down to the Go button
+  hintUI={key:null,shown:new Set()};
   buildHalves(); render(); lastT=performance.now(); cancelAnimationFrame(timerId); timerId=requestAnimationFrame(loop);
   afterTurnChange();
 }
 function endScreen(){
-  stopRec(); render();
+  stopRec(); render(); updateHintBtns();
   const winners=G.winners&&G.winners.length?G.winners:(G.winner>=0?[G.winner]:[]);
   $('#endTitle').textContent = G.winner===-1 ? (G.boards.length===2||winners.length<2 ? S.draw : S.drawN(winners.map(i=>G.names[i]))) : S.won(G.names[G.winner]);
   $('#endText').textContent = (G.reason==='empty'?S.endEmpty:G.reason==='misses'?S.endMisses:S.endManual)+
@@ -849,7 +945,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v2.8 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v2.9 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

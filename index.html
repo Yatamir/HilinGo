@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.2">
+<meta name="hilingo-version" content="4.3">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
@@ -214,18 +214,14 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #halves.n3 .mic.ptt .ml,#halves.n4 .mic.ptt .ml{font-size:14px}
 #diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:3px 8px;white-space:pre-wrap;max-height:16vh;max-height:22dvh;overflow:auto;flex-shrink:0;padding-bottom:max(3px,env(safe-area-inset-bottom))}
 #game{position:relative}
-#soloTimer:not(.hidden){display:flex;justify-content:center;pointer-events:none;padding:8px 0 12px}
-#soloClock{width:176px;height:176px;border-radius:50%;background:linear-gradient(180deg,#fff,#F4F0FF);display:grid;place-items:center;box-shadow:0 1px 0 #fff inset,0 0 0 3px #fff,0 0 0 8px rgba(31,199,182,.42),0 10px 22px rgba(80,50,160,.10)}
-#soloTime{font-weight:800;font-size:46px;line-height:1;color:#3b5bdb;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";letter-spacing:.02em;direction:ltr;unicode-bidi:isolate}
+#soloTimer:not(.hidden){display:flex;justify-content:center;position:static;pointer-events:none;padding:4px 0 8px;flex-shrink:0}
+#soloClock{width:96px;height:96px;border-radius:50%;background:linear-gradient(180deg,#fff,#F4F0FF);display:grid;place-items:center;box-shadow:0 1px 0 #fff inset,0 0 0 2px #fff,0 0 0 5px rgba(31,199,182,.4),0 6px 14px rgba(80,50,160,.08)}
+#soloTime{font-weight:800;font-size:24px;line-height:1;color:#3b5bdb;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";letter-spacing:.02em;direction:ltr;unicode-bidi:isolate}
 #soloBest{text-align:center;font-weight:800;font-size:18px;color:#3b5bdb;margin:2px 0 0}
 #endRecord{font-size:22px;font-weight:800;color:#3b5bdb;margin:8px 0}
 #endRecord.new{animation:recpop .7s ease}
 @keyframes recpop{0%{transform:scale(.86)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
-@media (max-width:720px),(max-height:520px){
- #game.solo #soloTimer:not(.hidden){position:absolute;left:0;right:0;z-index:2;bottom:max(18px,env(safe-area-inset-bottom));padding:0}
- #soloClock{width:168px;height:168px}
- #soloTime{font-size:42px}
-}
+#micRestart{padding:4px 10px;font-size:13px}
 .override{font-size:14px;padding:6px 12px;border-radius:12px;background:#FFD0C8;color:#8A2030;font-weight:700;align-self:center}
 .half:not(.active) .inputs,.half:not(.active) .override{visibility:hidden}
 #history{font-size:14px;padding:6px 14px;background:rgba(255,255,255,.7);white-space:nowrap;overflow-x:auto;min-height:28px;font-weight:700}
@@ -321,7 +317,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 }
 /* ===== v2.5 phone: the active player AND the next player are always fully on screen together ===== */
 @media (max-width:720px), (max-height:520px){
- #halves .half{order:var(--ord,0)}                       /* 3–4 players: active first, next right after (set in render) */
+ #halves .half{order:0}
  #halves .half.next{opacity:.95;filter:none}            /* the next board is for planning – keep it crisp */
  #halves .half:not(.active){padding:5px 10px 6px;gap:3px}
  #halves .half:not(.active) .hhead{min-height:0}
@@ -542,7 +538,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="opts" id="learnTargets"><span class="optlbl" id="targetLbl">אני לומד</span><button type="button" class="opt" data-lang="he">עברית</button><button type="button" class="opt" data-lang="en">English</button><button type="button" class="opt" data-lang="nl">Nederlands</button><button type="button" class="opt sel" data-lang="pt">Português</button></div>
     </div>
     <div class="card" id="playersCard">
-      <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc" data-n="solo" id="pcSolo">שחקן 1</button><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
+      <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc" data-n="solo" id="pcSolo">1</button><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
       <div class="names">
         <input id="n1" value="" placeholder="שחקן 1" aria-label="שם שחקן 1">
         <input id="n2" value="" placeholder="שחקן 2" aria-label="שם שחקן 2">
@@ -564,7 +560,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.2</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.3</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -574,7 +570,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div id="topbar">
     <button class="smallbtn" id="endBtn">סיום משחק</button>
     <div id="status"></div>
-    <button class="smallbtn" id="diagBtn" title="mic log">🔍</button><button class="smallbtn" id="pauseBtn">השהיה</button>
+    <button class="smallbtn" id="diagBtn" title="mic log">🔍</button><button class="smallbtn hidden" id="micRestart" type="button"></button><button class="smallbtn" id="pauseBtn">השהיה</button>
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="history"></div>
@@ -587,7 +583,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.2</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.3</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -862,7 +858,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.2';
+window.WG = WG; window.HILINGO_VERSION='4.3';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -899,7 +895,7 @@ const STR = {
   draw:'תיקו! 🤝', drawN:names=>`תיקו בין ${names.join(' ו־')}! 🤝`, won:n=>`🏆 ${n} ניצח/ה!`,
   endEmpty:'הלוח התרוקן! ', endMisses:'יותר מדי החמצות ברצף. ', endManual:'המשחק הסתיים. ', letters:'אותיות', words:'מילים',
   srNA:'זיהוי דיבור לא זמין – אפשר להקליד', listening:'מקשיב…', notHeard:'לא שמעתי מילה – נסו שוב', noPerm:'אין הרשאה למיקרופון – אפשר להקליד', micBlocked:'המיקרופון חסום',
-  noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤',
+  noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤', micRestart:'לחצו להפעלת המיקרופון',
   ptt:'לחצו ודברו', pttOn:'מקשיב… ⏹', tapToTalk:'לחצו על 🎤 (או Enter בתיבה ריקה) ואז אמרו את המילה', tapAgain:'לא נקלטה מילה – לחצו שוב על 🎤 ודברו',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו",
@@ -942,7 +938,7 @@ const STR = {
   draw:"It's a draw! 🤝", drawN:names=>`Draw between ${names.join(' & ')}! 🤝`, won:n=>`🏆 ${n} wins!`,
   endEmpty:'Board cleared! ', endMisses:'Too many misses in a row. ', endManual:'Game over. ', letters:'letters', words:'words',
   srNA:'Speech recognition unavailable – please type', listening:'Listening…', notHeard:"Didn't catch a word – try again", noPerm:'No microphone permission – please type', micBlocked:'Mic blocked',
-  noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤",
+  noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤", micRestart:'Tap to restart mic',
   ptt:'Tap & speak', pttOn:'Listening… ⏹', tapToTalk:'Tap 🎤 (or Enter in the empty box), then say your word', tapAgain:'No word caught – tap 🎤 again and speak',
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter",
@@ -985,7 +981,7 @@ const STR = {
   draw:'Gelijkspel! 🤝', drawN:names=>`Gelijkspel tussen ${names.join(' & ')}! 🤝`, won:n=>`🏆 ${n} wint!`,
   endEmpty:'Bord leeg! ', endMisses:'Te veel missers op rij. ', endManual:'Spel afgelopen. ', letters:'letters', words:'woorden',
   srNA:'Spraakherkenning niet beschikbaar – typ maar', listening:'Luistert…', notHeard:'Geen woord gehoord – probeer opnieuw', noPerm:'Geen toegang tot de microfoon – typ maar', micBlocked:'Microfoon geblokkeerd',
-  noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤',
+  noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤', micRestart:'Tik om de microfoon te herstarten',
   ptt:'Tik & spreek', pttOn:'Luistert… ⏹', tapToTalk:'Tik op 🎤 (of Enter in het lege vak) en zeg je woord', tapAgain:'Geen woord gehoord – tik opnieuw op 🎤 en spreek',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter",
@@ -1028,7 +1024,7 @@ const STR = {
   draw:'Empate! 🤝', drawN:names=>`Empate entre ${names.join(' e ')}! 🤝`, won:n=>`🏆 ${n} venceu!`,
   endEmpty:'Tabuleiro vazio! ', endMisses:'Erros demais em seguida. ', endManual:'O jogo terminou. ', letters:'letras', words:'palavras',
   srNA:'Reconhecimento de voz indisponível – digite a palavra', listening:'Ouvindo…', notHeard:'Não ouvi uma palavra – tente de novo', noPerm:'Sem permissão para o microfone – digite a palavra', micBlocked:'Microfone bloqueado',
-  noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤',
+  noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤', micRestart:'Toque para religar o microfone',
   ptt:'Toque e fale', pttOn:'Ouvindo… ⏹', tapToTalk:'Toque em 🎤 (ou Enter na caixa vazia) e diga a palavra', tapAgain:'Nenhuma palavra captada – toque de novo em 🎤 e fale',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra",
@@ -1054,7 +1050,13 @@ const isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|CriOS|Edg/.
 // at a time, and often goes "deaf" after automatic restarts. So in Safari every turn is tap-🎤-and-speak.
 // ?ptt=1 / ?ptt=0 force the mode (tests).
 const PTT = !!SR && (/[?&]ptt=1/.test(location.search) || (isSafari && !/[?&]ptt=0/.test(location.search)));
-if(!SR) $('#autoMic').checked=false;   // v2.5: auto-mic is ON by default everywhere (incl. Safari / iPhone); 🎤 stays as manual fallback
+if(!SR) $('#autoMic').checked=false;   // no recognizer: typing only
+else {
+  // New key so a fresh visit, and anyone who never saved a choice, starts with auto-mic on.
+  let saved=null; try{ saved=localStorage.getItem('hilingo_automic_v2'); }catch(_){}
+  $('#autoMic').checked = saved==null ? true : saved==='1';
+  $('#autoMic').addEventListener('change', ()=>{ try{ localStorage.setItem('hilingo_automic_v2', $('#autoMic').checked?'1':'0'); }catch(_){} });
+}
 const range = n => Array.from({length:n},(_,i)=>i);
 const others = p => range(G.boards.length).filter(q=>q!==p);
 const defName = i => S.player(i+1);
@@ -1083,8 +1085,8 @@ function applyLang(code){
   const root=document.documentElement; root.lang=LANG; root.dir=S.dir; root.style.setProperty('--yourturn', S.yourTurn);
   document.title=S.title; $('#tagline').textContent=S.tagline; $('#intro').textContent=MODE==='learn'?S.learnIntro:S.intro; $('#pcLbl').textContent=S.players;
   const mp=$('#modePlay'), ml=$('#modeLearn'); if(mp) mp.textContent=S.modePlay; if(ml) ml.textContent=S.modeLearn;
-  const soloB=$('#pcSolo'); if(soloB) soloB.textContent=S.soloBtn;
   if(typeof paintSoloBest==='function') paintSoloBest();
+  const mr=$('#micRestart'); if(mr) mr.textContent=S.micRestart||'';
   const nlab=$('#nativeLbl'); if(nlab) nlab.textContent=S.nativeLbl;
   const tlab=$('#targetLbl'); if(tlab) tlab.textContent=S.targetLbl;
   if(MODE==='learn' && LEARN_TARGET===LANG) LEARN_TARGET=LANG==='pt'?'he':'pt';
@@ -1144,6 +1146,7 @@ function buildHalves(){
     $('#hb'+p).onclick=()=>showHint(p);   // v3.0: never touches the recognizer
     if(!SR) $('#mic'+p).classList.add('hidden');
   });
+  pinBoards();
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -1152,7 +1155,6 @@ function render(){
   range(nP).forEach(p=>{
     const hf=$('#half'+p); hf.classList.toggle('active', !G.over && G.turn===p); hf.classList.toggle('next', !G.over && p===nextOf);
     // phone layout only (CSS uses --ord inside the phone media query): 3–4 players → active first, next player right after it
-    const ord = nP>2 ? (p-G.turn+nP)%nP : p; if(hf.style.getPropertyValue('--ord')!==String(ord)) hf.style.setProperty('--ord', ord);
     $('#cnt'+p).textContent = S.left(G.boards[p].size);
     document.querySelectorAll(`#t${p} .tile`).forEach(t=>{
       const inactive = t.dataset.off==='1' || WG.isInactive(t.dataset.l);
@@ -1174,7 +1176,14 @@ function render(){
   $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?wordHTML(h):'⏰'}${h.hinted?'<small title="hint">💡</small>':''}</span>`).join(S.arrow);
   $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
   // phone: keep the active AND the next player's panels on screen when the turn passes (layout only)
-  if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn; keepPairInView(); }
+  if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn; pinBoards(); }
+}
+function pinBoards(){
+  // Stacked layout: the large active card stays the first box, compact cards stay below in player order.
+  if(!G || !(phoneMQ && phoneMQ.matches)) return;
+  const h=$('#halves'); if(!h) return;
+  const order=[G.turn, ...range(G.boards.length).filter(p=>p!==G.turn)];
+  order.forEach(p=>{ const el=$('#half'+p); if(el) h.appendChild(el); });
 }
 function keepPairInView(){
   if(!G || G.over || !(phoneMQ && phoneMQ.matches)) return;
@@ -1378,7 +1387,7 @@ function fmtSolo(ms){
   if(s>SOLO_CAP) s=SOLO_CAP;
   return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 }
-function soloStoreKey(){ return 'hilingo_solo_best_'+LANG; }
+function soloStoreKey(){ return 'hilingo_solo_best2_'+LANG; }
 function readSoloBest(){
   try{ const n=parseInt(localStorage.getItem(soloStoreKey()),10); return Number.isFinite(n)&&n>=0?n:null; }
   catch(_){ return null; }
@@ -1444,7 +1453,8 @@ function startGame(){
 }
 function endScreen(){
   stopRec(); render(); updateHintBtns();
-  const mark=(SOLO && MODE!=='learn') ? stopSoloClock(true) : null;
+  const natural=G&&(G.reason==='empty'||G.reason==='misses');
+  const mark=(SOLO && MODE!=='learn') ? stopSoloClock(!!natural) : null;
   const er=$('#endRecord');
   if(er){
     if(mark && mark.record){ er.textContent='My New record '+mark.text; er.classList.add('new'); er.classList.remove('hidden'); }
@@ -1573,9 +1583,11 @@ let recSession=0, heardNote=['','','',''], recCtl=null;
 const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hearing anything
 // ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
-function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
+let lastMicAt=performance.now();
+function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
+  if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.3 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1702,6 +1714,60 @@ function stopRec(){
   if(recFor!==null){ const m=$('#mic'+recFor); m&&m.classList.remove('on'); }
   recFor=null; recCtl=null;
 }
+function showRestartChip(p){
+  const b=$('#micRestart'); if(!b) return;
+  b.textContent=(S&&S.micRestart)||'Tap to restart mic';
+  b.dataset.p=String(p);
+  b.classList.remove('hidden');
+  diag('restart chip');
+}
+function hideRestartChip(){ const b=$('#micRestart'); if(b) b.classList.add('hidden'); }
+let micRecoverAt=0;
+function recoverMic(why){
+  const now=performance.now();
+  if(now-micRecoverAt<800) return;
+  micRecoverAt=now;
+  const learnOn=$('#learn') && !$('#learn').classList.contains('hidden');
+  diag('recover '+why+(learnOn?' learn':''));
+  if(learnOn){
+    if(typeof srRunning!=='undefined' && srRunning && typeof stopSession==='function'){
+      stopSession('recover').then(()=>{
+        if(typeof learnHandsFree==='function' && learnHandsFree() && typeof beginListen==='function'){
+          const side=(typeof learnState!=='undefined' && (learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'))?'target':'native';
+          beginListen(side);
+        } else showRestartChip(0);
+      });
+    }
+    return;
+  }
+  if(!G||G.over||paused||typing) return;
+  if(introHold&&!introHold.done) return;
+  const p=G.turn;
+  if(!$('#autoMic').checked){ showRestartChip(p); return; }
+  stopRec();
+  hideRestartChip();
+  startRec(p,'recover');
+  if(recFor!==p) showRestartChip(p);
+}
+document.addEventListener('visibilitychange', ()=>{ diag('visibility '+document.visibilityState); if(document.visibilityState==='visible') setTimeout(()=>recoverMic('visible'), 300); });
+window.addEventListener('pageshow', ()=>{ diag('pageshow'); setTimeout(()=>recoverMic('pageshow'), 300); });
+window.addEventListener('focus', ()=>{ diag('focus'); });
+window.addEventListener('blur', ()=>{ diag('blur'); });
+setInterval(()=>{
+  if(!G||G.over||paused||typing||!$('#autoMic').checked) return;
+  if($('#learn') && !$('#learn').classList.contains('hidden')) return;
+  if(introHold&&!introHold.done) return;
+  if(recFor===null) return;
+  if(performance.now()-lastMicAt>12000) recoverMic('silent');
+}, 2000);
+$('#micRestart').onclick=()=>{
+  hideRestartChip();
+  diag('chip tap');
+  if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnMicTap==='function'){ learnMicTap(); return; }
+  if(!G||G.over||paused) return;
+  stopRec();
+  startRec(G.turn,'chip');
+};
 
 /* ======================= LEARN MODE (v3.6) =======================
    One learner, no timer, no letter deletion, no turns. Play mode never enters this. */
@@ -2803,6 +2869,7 @@ $('#learnIn').addEventListener('keydown', e=>{
 });
 syncTargetButtons();
 paintSoloBest();
+window.__hilingoFinish=reason=>{ if(!G||G.over) return false; WG.finish(G, reason==='empty'?G.turn:null, reason||'empty'); endScreen(); return G.reason; };
 
 </script>
 </body>

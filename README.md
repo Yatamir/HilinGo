@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.3)
+# HilinGo – word-chain game (v3.4)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,12 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.4 – iPad / tablet boards fit on screen
+- iPad portrait and landscape (including Safari with the tab bar open) keep every letter tile on screen. The mic, text box and send button sit below the grid; they no longer cover the last row (Y/Z, or ת/ש). Both players' boards stay inside the viewport — tiles scale down with the space (CSS grid + `min()` / container query size, capped at 72px) instead of overflowing sideways.
+- `svh` plus safe-area insets keep `#game` inside the visible height when the browser chrome is showing. Phone layout (≤720px, or landscape ≤520px tall) is unchanged.
+- The purple flicker behind the tiles and the mic was Safari repainting `background-attachment: fixed` through the animated tile/mic layers, plus the countdown ring's `z-index: -1` disc escaping while the timer updates. The backdrop is a fixed layer now, and the ring is a mask with no negative z-index. The timer bar no longer casts a purple glow.
+- Layout check: `node tests_tablet.mjs` (install `playwright-core` once; uses the system Google Chrome). Two players, Portuguese and Hebrew, at 768×1024, 1024×768, 820×1180, 1180×820, 1024×1366, a short 1024×640 Safari-chrome height, phone 390×844 and desktop 1440×900. Every tile must sit on screen, above the mic / input / send row.
 
 ## v3.3 – Portuguese: K, W, Y off the board, and a fallback chain letter
 - Portuguese only. Hebrew, English and Dutch still chain on the last letter, and K, W, Y stay normal tiles there.

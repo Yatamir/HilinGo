@@ -33,15 +33,15 @@ function serve(root) {
 
 async function check(page, tag, shot) {
   const solo = (await page.locator('#pcSolo').innerText()).trim();
-  if (solo !== 'שחקן 1') bad(tag + ' he label ' + solo);
-  else ok(tag + ' Hebrew solo label');
+  if (solo !== '1') bad(tag + ' he label ' + solo);
+  else ok(tag + ' solo button is 1');
   await page.click('#langs .opt[data-lang="en"]');
   const en = (await page.locator('#pcSolo').innerText()).trim();
   await page.click('#langs .opt[data-lang="nl"]');
   const nl = (await page.locator('#pcSolo').innerText()).trim();
   await page.click('#langs .opt[data-lang="he"]');
-  if (en !== 'Player 1' || nl !== 'Solo') bad(tag + ' labels ' + en + ' / ' + nl);
-  else ok(tag + ' Player 1 and Solo');
+  if (en !== '1' || nl !== '1') bad(tag + ' labels ' + en + ' / ' + nl);
+  else ok(tag + ' solo button stays 1');
 
   await page.click('#playersCard .pc[data-n="2"]');
   await page.click('#go');
@@ -65,7 +65,7 @@ async function check(page, tag, shot) {
   const running = await page.evaluate(() => ({
     t: document.getElementById('soloTime').textContent,
     hidden: document.getElementById('soloTimer').classList.contains('hidden'),
-    saved: localStorage.getItem('hilingo_solo_best_he'),
+    saved: localStorage.getItem('hilingo_solo_best2_he'),
     under: document.getElementById('learn').classList.contains('hidden'),
   }));
   if (!/^\d\d:\d\d$/.test(running.t) || running.t === '00:00' || running.hidden || running.saved != null) bad(tag + ' running ' + JSON.stringify(running));
@@ -74,16 +74,16 @@ async function check(page, tag, shot) {
 
   await page.evaluate(() => document.getElementById('start').classList.remove('hidden'));
   await page.click('#go');
-  const dropped = await page.evaluate(() => localStorage.getItem('hilingo_solo_best_he'));
+  const dropped = await page.evaluate(() => localStorage.getItem('hilingo_solo_best2_he'));
   if (dropped != null) bad(tag + ' restart saved ' + dropped);
   else ok(tag + ' restart before the end does not save');
 
   await page.waitForFunction(() => document.getElementById('soloTime').textContent !== '00:00');
-  await page.click('#endBtn');
+  await page.evaluate(() => window.__hilingoFinish('empty'));
   await page.waitForSelector('#endRecord:not(.hidden)');
   const done = await page.evaluate(() => ({
     rec: document.getElementById('endRecord').textContent,
-    store: localStorage.getItem('hilingo_solo_best_he'),
+    store: localStorage.getItem('hilingo_solo_best2_he'),
     clock: document.getElementById('soloTimer').classList.contains('hidden'),
   }));
   if (!/^My New record \d\d:\d\d$/.test(done.rec) || done.store == null || !done.clock) bad(tag + ' finish ' + JSON.stringify(done));

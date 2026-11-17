@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.1">
+<meta name="hilingo-version" content="4.2">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
@@ -213,6 +213,19 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto;height:44px;padding:0 10px;font-size:18px}
 #halves.n3 .mic.ptt .ml,#halves.n4 .mic.ptt .ml{font-size:14px}
 #diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:3px 8px;white-space:pre-wrap;max-height:16vh;max-height:22dvh;overflow:auto;flex-shrink:0;padding-bottom:max(3px,env(safe-area-inset-bottom))}
+#game{position:relative}
+#soloTimer:not(.hidden){display:flex;justify-content:center;pointer-events:none;padding:8px 0 12px}
+#soloClock{width:176px;height:176px;border-radius:50%;background:linear-gradient(180deg,#fff,#F4F0FF);display:grid;place-items:center;box-shadow:0 1px 0 #fff inset,0 0 0 3px #fff,0 0 0 8px rgba(31,199,182,.42),0 10px 22px rgba(80,50,160,.10)}
+#soloTime{font-weight:800;font-size:46px;line-height:1;color:#3b5bdb;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";letter-spacing:.02em;direction:ltr;unicode-bidi:isolate}
+#soloBest{text-align:center;font-weight:800;font-size:18px;color:#3b5bdb;margin:2px 0 0}
+#endRecord{font-size:22px;font-weight:800;color:#3b5bdb;margin:8px 0}
+#endRecord.new{animation:recpop .7s ease}
+@keyframes recpop{0%{transform:scale(.86)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
+@media (max-width:720px),(max-height:520px){
+ #game.solo #soloTimer:not(.hidden){position:absolute;left:0;right:0;z-index:2;bottom:max(18px,env(safe-area-inset-bottom));padding:0}
+ #soloClock{width:168px;height:168px}
+ #soloTime{font-size:42px}
+}
 .override{font-size:14px;padding:6px 12px;border-radius:12px;background:#FFD0C8;color:#8A2030;font-weight:700;align-self:center}
 .half:not(.active) .inputs,.half:not(.active) .override{visibility:hidden}
 #history{font-size:14px;padding:6px 14px;background:rgba(255,255,255,.7);white-space:nowrap;overflow-x:auto;min-height:28px;font-weight:700}
@@ -529,13 +542,14 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="opts" id="learnTargets"><span class="optlbl" id="targetLbl">אני לומד</span><button type="button" class="opt" data-lang="he">עברית</button><button type="button" class="opt" data-lang="en">English</button><button type="button" class="opt" data-lang="nl">Nederlands</button><button type="button" class="opt sel" data-lang="pt">Português</button></div>
     </div>
     <div class="card" id="playersCard">
-      <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
+      <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc" data-n="solo" id="pcSolo">שחקן 1</button><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
       <div class="names">
         <input id="n1" value="" placeholder="שחקן 1" aria-label="שם שחקן 1">
         <input id="n2" value="" placeholder="שחקן 2" aria-label="שם שחקן 2">
         <input id="n3" value="" placeholder="שחקן 3" aria-label="שם שחקן 3" class="hidden">
         <input id="n4" value="" placeholder="שחקן 4" aria-label="שם שחקן 4" class="hidden">
       </div>
+      <p id="soloBest" class="hidden"></p>
     </div>
     <div class="card" id="levelsCard">
       <div class="levels">
@@ -550,7 +564,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.2</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -565,6 +579,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="history"></div>
   <div id="halves"></div>
+  <div id="soloTimer" class="hidden" aria-hidden="true"><div id="soloClock"><div id="soloTime" dir="ltr">00:00</div></div></div>
   <div id="diag" class="hidden"></div>
 </section>
 
@@ -572,7 +587,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.2</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -597,7 +612,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 </section>
 <div id="learnDbg" class="hidden" dir="ltr"><div class="dbgbar"><button type="button" id="dbgCopy" aria-label="Copy all"><svg class="ico-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="12" height="12" rx="2.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" fill="#4060E0" stroke="#fff" stroke-width="2"/></svg>Copy all</button><button type="button" id="dbgClear">Clear log</button><button type="button" id="dbgPt">Test pt-BR mic</button><span id="dbgCopied" class="hidden">Copied ✓</span></div><pre id="learnDbgText"></pre></div>
 
-<div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
+<div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
 <div id="wordsov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wordsTitle">
   <div id="wordsbox">
@@ -847,7 +862,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.1';
+window.WG = WG; window.HILINGO_VERSION='4.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -855,7 +870,7 @@ const STR = {
  he:{ dir:'rtl', speech:'he-IL', title:'HilinGo', tagline:'משחק שרשרת מילים', arrow:' ← ', yourTurn:'" · תורך!"', player:i=>'שחקן '+i, playerAria:i=>'שם שחקן '+i,
   intro:'כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!',
   players:'מספר שחקנים:', lvl:{45:'קל · 45 שניות',30:'בינוני · 30 שניות',15:'קשה · 15 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
-  modePlay:'משחק', modeLearn:'למידה', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
+  modePlay:'משחק', modeLearn:'למידה', soloBtn:'שחקן 1', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
   learnIntro:'אמרו מילה בשפה שלכם. היא תופיע בשפה השנייה, ואז תחזרו עליה.',
   learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnClear:'נקה', learnSaid:'אמרתי', learnBack:'חזרה',
   learnDictation:code=>code==='pt'
@@ -900,7 +915,7 @@ const STR = {
  en:{ dir:'ltr', speech:'en-US', title:'HilinGo', tagline:'A word-chain game', arrow:' → ', yourTurn:'" · your turn!"', player:i=>'Player '+i, playerAria:i=>'Player '+i+' name',
   intro:'Each player says a word that starts with the last letter of the previous word. The first letter of your word is crossed off your board. Empty your board first to win!',
   players:'Players:', lvl:{45:'Easy · 45 sec',30:'Medium · 30 sec',15:'Hard · 15 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
-  modePlay:'Play', modeLearn:'Learn', learnGo:"Let's learn!", nativeLbl:'I speak', targetLbl:'I want to learn',
+  modePlay:'Play', modeLearn:'Learn', soloBtn:'Player 1', learnGo:"Let's learn!", nativeLbl:'I speak', targetLbl:'I want to learn',
   learnIntro:'Say a word in your language. It appears in the other language, then you say it back.',
   learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnClear:'Clear', learnSaid:'I said it', learnBack:'Back',
   learnDictation:code=>'To let the game hear '+({pt:'Portuguese (Brazil)',nl:'Dutch',en:'English',he:'Hebrew'}[code]||code)+', add that keyboard in Settings > General > Keyboard > Keyboards, and make sure dictation is turned on.',
@@ -943,7 +958,7 @@ const STR = {
  nl:{ dir:'ltr', speech:'nl-NL', title:'HilinGo', tagline:'Een woordkettingspel', arrow:' → ', yourTurn:'" · jouw beurt!"', player:i=>'Speler '+i, playerAria:i=>'Naam speler '+i,
   intro:'Elke speler zegt een woord dat begint met de laatste letter van het vorige woord. De eerste letter van jouw woord wordt van jouw bord geschrapt. Wie als eerste zijn bord leeg heeft, wint!',
   players:'Spelers:', lvl:{45:'Makkelijk · 45 sec',30:'Gemiddeld · 30 sec',15:'Moeilijk · 15 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
-  modePlay:'Spelen', modeLearn:'Leren', learnGo:'Laten we leren!', nativeLbl:'Ik spreek', targetLbl:'Ik wil leren',
+  modePlay:'Spelen', modeLearn:'Leren', soloBtn:'Solo', learnGo:'Laten we leren!', nativeLbl:'Ik spreek', targetLbl:'Ik wil leren',
   learnIntro:'Zeg een woord in jouw taal. Het verschijnt in de andere taal, en dan zeg je het na.',
   learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnClear:'Wissen', learnSaid:'Ik zei het', learnBack:'Terug',
   learnDictation:code=>'Om '+({pt:'Portugees (Brazilië)',nl:'Nederlands',en:'Engels',he:'Hebreeuws'}[code]||code)+' te laten verstaan, voeg dat toetsenbord toe via Instellingen > Algemeen > Toetsenbord > Toetsenborden, en zet dicteren aan.',
@@ -986,7 +1001,7 @@ const STR = {
  pt:{ dir:'ltr', speech:'pt-BR', title:'HilinGo', tagline:'Um jogo de corrente de palavras', arrow:' → ', yourTurn:'" · sua vez!"', player:i=>'Jogador '+i, playerAria:i=>'Nome do jogador '+i,
   intro:'Cada jogador diz uma palavra que começa com a última letra da anterior. A primeira letra da sua palavra sai do seu tabuleiro. K, W e Y ficam inativas e não contam. Se essa última letra já saiu do tabuleiro de quem joga a seguir, e a palavra tem B, C, D, F, G, H, J, N, P, Q, T, V ou X, a próxima começa pela que estiver mais perto do fim. Quem esvaziar o tabuleiro primeiro, vence!',
   players:'Jogadores:', lvl:{45:'Fácil · 45 segundos',30:'Médio · 30 segundos',15:'Difícil · 15 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
-  modePlay:'Jogar', modeLearn:'Aprender', learnGo:'Vamos aprender!', nativeLbl:'Eu falo', targetLbl:'Quero aprender',
+  modePlay:'Jogar', modeLearn:'Aprender', soloBtn:'Solo', learnGo:'Vamos aprender!', nativeLbl:'Eu falo', targetLbl:'Quero aprender',
   learnIntro:'Diga uma palavra no seu idioma. Ela aparece no outro idioma e você repete.',
   learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnClear:'Limpar', learnSaid:'Eu disse', learnBack:'Voltar',
   learnDictation:code=>'Para o jogo ouvir '+({pt:'português (Brasil)',nl:'holandês',en:'inglês',he:'hebraico'}[code]||code)+', adicione esse teclado em Ajustes > Geral > Teclado > Teclados e ative o Ditado.',
@@ -1027,7 +1042,7 @@ const STR = {
    'bad-grammar':'Erro no reconhecimento de voz – tente de novo.'},
  },
 };
-let LANG='he', S=STR.he, NPLAYERS=2, MODE='play', LEARN_TARGET='pt';
+let LANG='he', S=STR.he, NPLAYERS=2, SOLO=false, MODE='play', LEARN_TARGET='pt';
 
 /* ======================= UI ======================= */
 const $ = s=>document.querySelector(s);
@@ -1068,6 +1083,8 @@ function applyLang(code){
   const root=document.documentElement; root.lang=LANG; root.dir=S.dir; root.style.setProperty('--yourturn', S.yourTurn);
   document.title=S.title; $('#tagline').textContent=S.tagline; $('#intro').textContent=MODE==='learn'?S.learnIntro:S.intro; $('#pcLbl').textContent=S.players;
   const mp=$('#modePlay'), ml=$('#modeLearn'); if(mp) mp.textContent=S.modePlay; if(ml) ml.textContent=S.modeLearn;
+  const soloB=$('#pcSolo'); if(soloB) soloB.textContent=S.soloBtn;
+  if(typeof paintSoloBest==='function') paintSoloBest();
   const nlab=$('#nativeLbl'); if(nlab) nlab.textContent=S.nativeLbl;
   const tlab=$('#targetLbl'); if(tlab) tlab.textContent=S.targetLbl;
   if(MODE==='learn' && LEARN_TARGET===LANG) LEARN_TARGET=LANG==='pt'?'he':'pt';
@@ -1084,9 +1101,11 @@ function applyLang(code){
   if(LANG!=='he' && !WG.hasDict(LANG)) ensureDict(LANG).then(ok=>{ if(ok) WG.setLang(LANG); if(LANG===code){ updateGo(); if(!ok && MODE!=='learn'){ $('#go').textContent=S.dictFail; } } });
 }
 function setPlayers(n){
-  NPLAYERS = [2,3,4].includes(+n) ? +n : 2;
+  SOLO = String(n)==='solo';
+  NPLAYERS = SOLO ? 2 : ([2,3,4].includes(+n) ? +n : 2);
   [1,2,3,4].forEach(i=>$('#n'+i).classList.toggle('hidden', i>NPLAYERS));
-  document.querySelectorAll('.pc').forEach(b=>b.classList.toggle('sel', +b.dataset.n===NPLAYERS));
+  document.querySelectorAll('.pc').forEach(b=>b.classList.toggle('sel', SOLO ? b.dataset.n==='solo' : +b.dataset.n===NPLAYERS));
+  if(typeof paintSoloBest==='function') paintSoloBest();
 }
 document.querySelectorAll('#langs .opt').forEach(b=>b.onclick=()=>applyLang(b.dataset.lang));
 document.querySelectorAll('.pc').forEach(b=>b.onclick=()=>setPlayers(b.dataset.n));
@@ -1352,12 +1371,71 @@ function loop(t){
   }
   timerId=requestAnimationFrame(loop);
 }
+const SOLO_CAP=99*60+59;
+let soloRunning=false, soloFrozen=false, soloSaved=false, soloAccum=0, soloStart=0, soloRaf=0;
+function fmtSolo(ms){
+  let s=Math.floor(Math.max(0, ms)/1000);
+  if(s>SOLO_CAP) s=SOLO_CAP;
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+function soloStoreKey(){ return 'hilingo_solo_best_'+LANG; }
+function readSoloBest(){
+  try{ const n=parseInt(localStorage.getItem(soloStoreKey()),10); return Number.isFinite(n)&&n>=0?n:null; }
+  catch(_){ return null; }
+}
+function writeSoloBest(sec){ try{ localStorage.setItem(soloStoreKey(), String(sec)); }catch(_){} }
+function paintSoloBest(){
+  const el=$('#soloBest'); if(!el) return;
+  const n=readSoloBest();
+  if(n==null){ el.textContent=''; el.classList.add('hidden'); return; }
+  el.textContent='My New record '+fmtSolo(n*1000);
+  el.classList.remove('hidden');
+}
+function soloElapsed(){ return soloAccum+(soloRunning&&!soloFrozen?performance.now()-soloStart:0); }
+function soloFrame(){
+  if(!soloRunning||soloFrozen) return;
+  const el=$('#soloTime'); if(el) el.textContent=fmtSolo(soloElapsed());
+  soloRaf=requestAnimationFrame(soloFrame);
+}
+function startSoloClock(){
+  soloSaved=false; soloFrozen=false; soloAccum=0; soloStart=performance.now(); soloRunning=true;
+  const el=$('#soloTime'); if(el) el.textContent='00:00';
+  const box=$('#soloTimer'); if(box) box.classList.remove('hidden');
+  $('#game').classList.add('solo');
+  cancelAnimationFrame(soloRaf); soloRaf=requestAnimationFrame(soloFrame);
+}
+function stopSoloClock(save){
+  const ms=soloElapsed();
+  soloRunning=false; soloFrozen=false;
+  cancelAnimationFrame(soloRaf);
+  const box=$('#soloTimer'); if(box) box.classList.add('hidden');
+  if(!save||!SOLO||soloSaved) return null;
+  soloSaved=true;
+  const sec=Math.min(SOLO_CAP, Math.floor(ms/1000));
+  const prev=readSoloBest();
+  const text=fmtSolo(sec*1000);
+  if(prev==null||sec<prev){ writeSoloBest(sec); return {record:true, text}; }
+  return {record:false, text};
+}
+function freezeSolo(){
+  if(!soloRunning||soloFrozen) return;
+  soloAccum+=performance.now()-soloStart; soloFrozen=true;
+  cancelAnimationFrame(soloRaf);
+}
+function thawSolo(){
+  if(!SOLO||!soloFrozen) return;
+  soloFrozen=false; soloStart=performance.now(); soloRunning=true;
+  soloRaf=requestAnimationFrame(soloFrame);
+}
 function startGame(){
   if(LANG!=='he' && !WG.hasDict(LANG)){ ensureDict(LANG).then(ok=>{ if(ok){ updateGo(); startGame(); } }); return; }
+  if(soloRunning) stopSoloClock(false);
   WG.setLang(LANG);
   G=WG.newGame({seconds, players:NPLAYERS, names:range(NPLAYERS).map(playerName)});
   pendingOverride=[null,null,null,null]; heardNote=['','','',''];
   $('#start').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#endov').classList.add('hidden');
+  $('#game').classList.toggle('solo', SOLO && MODE!=='learn');
+  if(SOLO && MODE!=='learn') startSoloClock(); else stopSoloClock(false);
   paused=false; $('#pauseBtn').textContent=S.pause;
   try{ window.scrollTo(0,0); }catch(_){}   // phone: the start screen may be scrolled down to the Go button
   hintUI={key:null,shown:new Set()};
@@ -1366,6 +1444,13 @@ function startGame(){
 }
 function endScreen(){
   stopRec(); render(); updateHintBtns();
+  const mark=(SOLO && MODE!=='learn') ? stopSoloClock(true) : null;
+  const er=$('#endRecord');
+  if(er){
+    if(mark && mark.record){ er.textContent='My New record '+mark.text; er.classList.add('new'); er.classList.remove('hidden'); }
+    else { er.classList.remove('new'); er.classList.add('hidden'); }
+  }
+  paintSoloBest();
   const winners=G.winners&&G.winners.length?G.winners:(G.winner>=0?[G.winner]:[]);
   $('#endTitle').textContent = G.winner===-1 ? (G.boards.length===2||winners.length<2 ? S.draw : S.drawN(winners.map(i=>G.names[i]))) : S.won(G.names[G.winner]);
   $('#endText').textContent = (G.reason==='empty'?S.endEmpty:G.reason==='misses'?S.endMisses:S.endManual)+
@@ -1471,10 +1556,10 @@ $('#wordsList').onclick=e=>{
   if(t.classList.contains('mw-x')){ pendingDelete=w; renderMyWords(); }
   else if(t.classList.contains('mw-yes')){ WG.removeCustomWord(w, LANG); pendingDelete=null; renderMyWords(); }
 };
-$('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); };
+$('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; stopSoloClock(false); $('#game').classList.remove('solo'); $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); paintSoloBest(); };
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
 $('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
-$('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S.resume:S.pause; if(paused) stopRec(); else { lastT=performance.now(); afterTurnChange(); } };
+$('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S.resume:S.pause; if(paused){ stopRec(); freezeSolo(); } else { lastT=performance.now(); thawSolo(); afterTurnChange(); } };
 
 /* speech
    Chrome: optional auto-mic each turn (as before). Safari (PTT): tap 🎤 / Enter-in-empty-box / Space →
@@ -1490,7 +1575,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1782,6 +1867,7 @@ function setMode(mode){
   if(native) native.classList.toggle('hidden', MODE!=='learn');
   if(rules) rules.classList.toggle('hidden', MODE==='learn');
   if(MODE==='learn' && (!LEARN_TARGET || LEARN_TARGET===LANG)) LEARN_TARGET=LANG==='pt'?'he':'pt';
+  if(MODE==='learn') stopSoloClock(false);
   syncTargetButtons();
   const intro=$('#intro'); if(intro) intro.textContent=MODE==='learn'?S.learnIntro:S.intro;
   updateGo();
@@ -2716,6 +2802,7 @@ $('#learnIn').addEventListener('keydown', e=>{
   if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); submitLearnTyped(); }
 });
 syncTargetButtons();
+paintSoloBest();
 
 </script>
 </body>

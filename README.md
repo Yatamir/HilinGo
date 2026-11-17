@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.4)
+# HilinGo – word-chain game (v3.5)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,10 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.5 – Hili says "HilinGo"
+- Every new game, in every language, plays `audio/hilingo.mp3` once: Hili saying "HilinGo" (about 2.2 seconds). The clip is preloaded. Playback starts inside the tap on the start button (יאללה, מתחילים! / Let's play! / Spelen! / Vamos jogar!), including a game started again after New game / play again / rematch returns to that button. iOS Safari allows the sound only from that tap.
+- The microphone for the opening turn — auto-mic or a tap on 🎤 — waits until the clip fires `ended`. If that never happens, it waits about 3 seconds and then continues. Later turns are unchanged. If the browser blocks or fails the sound, nothing is shown and the game starts as before.
 
 ## v3.4 – iPad / tablet boards fit on screen
 - iPad portrait and landscape (including Safari with the tab bar open) keep every letter tile on screen. The mic, text box and send button sit below the grid; they no longer cover the last row (Y/Z, or ת/ש). Both players' boards stay inside the viewport — tiles scale down with the space (CSS grid + `min()` / container query size, capped at 72px) instead of overflowing sideways.

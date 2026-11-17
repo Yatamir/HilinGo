@@ -1,5 +1,5 @@
 /**
- * HilinGo v3.4 — iPad / tablet boards must fit.
+ * HilinGo v3.5 — iPad / tablet boards must fit.
  *   npm install playwright-core
  *   node tests_tablet.mjs
  * Uses system Google Chrome (override with CHROME=...).
@@ -28,7 +28,7 @@ const VIEWPORTS = [
 ];
 
 function serve(root) {
-  const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.json': 'application/json' };
+    const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.json': 'application/json', '.mp3': 'audio/mpeg' };
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1');
     let p = path.join(root, decodeURIComponent(url.pathname));
@@ -126,7 +126,7 @@ try {
       const m = await measure(page);
       const label = `${lang} ${w}x${h}`;
       const fails = [];
-      if (m.ver !== '3.4') fails.push('version ' + m.ver);
+      if (m.ver !== '3.5') fails.push('version ' + m.ver);
       if (m.scrollW > w + 2) fails.push('horizontal scroll ' + m.scrollW);
       if (m.zBefore === '-1') fails.push('timer ring still z-index -1');
       if (m.clipped.length) fails.push('tiles offscreen ' + m.clipped.slice(0, 8).join(','));

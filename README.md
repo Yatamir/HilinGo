@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v2.5)
+# HilinGo – word-chain game (v3.0)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -43,3 +43,9 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 ## v2.5 – auto-mic everywhere + plan with the next board
 - "Turn the mic on automatically every turn" is checked by default in every browser with speech recognition, Safari / iPhone included; the 🎤 button still works as a manual fallback (tap to stop / start). Start-screen note: "במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤" (en/nl/pt equivalents). Old Safari notes (localhost settings, "Chrome recommended", "not recommended in Safari") removed.
 - Phone layout: the active player's panel and the NEXT player's panel are always fully on screen together (iPhone 13 / SE portrait, landscape side by side). With 3–4 players the panels are reordered on phones only (active first, next right after); desktop layout unchanged.
+
+## v3.0 – words you add stay on this device
+- "זו מילה אמיתית – אשרו בכל זאת" (and the en/nl/pt equivalents) saves that word in localStorage under `hilingo_custom_words_<lang>` (a JSON array). The word is normalized the same way dictionary lookups are (Hebrew niqqud stripped, Latin case and accents folded).
+- On load and on language switch those words are merged into that language's dictionary, so later games accept them like built-in words (validation, chaining, used-word tracking). Hints still come from the built-in hint list.
+- Start screen → "המילים שלי" / "My words" / "Mijn woorden" / "Minhas palavras" lists the saved words for the current language. ✕ asks a short confirm, then removes the word. Hebrew stays RTL.
+- If localStorage is unavailable (private mode), the word still counts until the page is closed and nothing throws. Nothing is sent to a server or shared with anyone else.

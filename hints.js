@@ -1,4 +1,4 @@
-/* HilinGo v2.9 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. */
+/* HilinGo v3.0 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. */
 window.HILINGO_HINTS={"he":[
 ["אריה","מלך החיות, יש לו רעמה גדולה ושואג חזק"],
 ["אבטיח","פרי ענק, ירוק מבחוץ ואדום ומתוק מבפנים"],

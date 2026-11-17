@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="2.9">
+<meta name="hilingo-version" content="3.0">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -74,6 +74,29 @@ label.chk{font-size:15px;color:var(--muted);display:flex;align-items:center;just
 label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .card-opts{display:flex;flex-direction:column;gap:4px}
 #speechNote,#rules{max-width:680px}
+.linkbtn{background:transparent;color:var(--p1);font-size:15px;font-weight:700;padding:4px 12px;border-radius:999px}
+.linkbtn:hover{background:rgba(255,255,255,.72)}
+#wordsov{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));background:rgba(42,33,82,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#wordsbox{background:#fff;border-radius:28px;padding:22px 20px 18px;width:min(92vw,420px);max-height:min(86vh,86dvh,640px);display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 60px rgba(42,33,82,.25);border:3px solid #F3EEFF;text-align:center}
+#wordsbox h2{margin:0;font-size:26px}
+#wordsNote{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+#wordsList{list-style:none;margin:0;padding:0;overflow:auto;display:flex;flex-direction:column;gap:8px;text-align:start;min-height:0}
+#wordsList li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;background:#F6F2FF;border-radius:14px;padding:8px 10px;font-weight:700;font-size:18px}
+.mw-word{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mw-x{flex-shrink:0;width:34px;height:34px;border-radius:10px;background:#fff;color:#8A2030;font-size:16px;font-weight:800;box-shadow:0 2px 0 #E6E0F8;line-height:1}
+.mw-x:active{transform:translateY(1px)}
+.mw-ask{flex-shrink:0;font-size:14px;font-weight:700;color:#8A2030}
+.mw-yes,.mw-no{flex-shrink:0;padding:6px 10px;border-radius:10px;font-weight:800;font-size:14px}
+.mw-yes{background:#FFD0C8;color:#8A2030}
+.mw-no{background:#fff;color:var(--txt);box-shadow:0 2px 0 #E6E0F8}
+#wordsEmpty{margin:0;color:var(--muted);font-size:15px}
+#wordsClose.big{font-size:18px;padding:12px 32px;width:auto;align-self:center}
+@media (max-width:720px){
+ #wordsbox{padding:16px 14px 14px;border-radius:22px}
+ #wordsbox h2{font-size:22px}
+ #wordsList li{font-size:17px}
+ #wordsClose.big{width:100%}
+}
 
 /* game */
 #game{display:flex;flex-direction:column;height:100%;height:100dvh;overflow:hidden}
@@ -120,7 +143,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .msg.good{color:#0A9A5C;font-weight:700}
 .heard{min-height:20px;font-size:14px;text-align:center;color:#555;background:rgba(255,255,255,.7);border-radius:10px;padding:2px 6px}
 .heard:not(:empty){box-shadow:0 0 0 2px color-mix(in srgb, var(--c) 35%, transparent)}
-/* v2.9 hint: 💡 button sits in the same row as the listening/heard bar; a shown hint replaces the bar's text visually
+/* v3.0 hint: 💡 button sits in the same row as the listening/heard bar; a shown hint replaces the bar's text visually
    (the recognizer keeps running and #hd keeps being updated underneath) */
 .hrow{display:flex;align-items:center;gap:6px;min-height:20px}
 .hrow .heard,.hrow .hinttxt{flex:1;min-width:0}
@@ -357,6 +380,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <label class="chk"><input type="checkbox" id="sound" checked> <span id="soundL">צלילים</span></label>
     </div>
   </div>
+  <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -375,6 +399,16 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 </section>
 
 <div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
+
+<div id="wordsov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wordsTitle">
+  <div id="wordsbox">
+    <h2 id="wordsTitle">המילים שלי</h2>
+    <p id="wordsNote">נשמרות רק במכשיר הזה, לשפה הנוכחית.</p>
+    <ul id="wordsList"></ul>
+    <p id="wordsEmpty" class="hidden">עוד לא הוספתם מילים.</p>
+    <button type="button" class="big" id="wordsClose">סגור</button>
+  </div>
+</div>
 
 <script src="words.js" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
 <script src="hints.js"></script>
@@ -395,19 +429,88 @@ const WG = (()=>{
   };
   // Latin: NFKD (é→e, ë→e, ĳ→ij), drop combining marks, lowercase, first run of a–z
   function latin(raw){ if(!raw) return ''; const s=String(raw).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss'); const m=s.match(/[a-z]+/); return m?m[0]:''; }
-  let lang='he', L=LANGS.he; const DICTS={};
+  let lang='he', L=LANGS.he; const DICTS={}, BUILTIN={};
+  // Words the player accepted with "real word" stay on this device only.
+  // localStorage key hilingo_custom_words_<lang> is a JSON array of normalized words.
+  // Hints keep using the built-in HILINGO_HINTS list; custom words are not added there.
+  // If localStorage throws (private mode), memCustom keeps the words for this page only.
+  const memCustom={}, customLoaded={};
+  const customKey = code => 'hilingo_custom_words_'+code;
+  const normFor = (code, raw) => { try { return (LANGS[code]||L).normalize(raw); } catch(_){ return ''; } };
+  function sanitizeList(code, arr){
+    const out=[], seen=new Set();
+    for(const item of arr||[]){
+      const w=normFor(code, item);
+      if(!w || w.length<2 || seen.has(w)) continue;
+      seen.add(w); out.push(w);
+    }
+    return out;
+  }
+  function readCustom(code){
+    if(customLoaded[code]) return (memCustom[code]||[]).slice();
+    let parsed=[];
+    try {
+      const raw=localStorage.getItem(customKey(code));
+      if(raw){ const arr=JSON.parse(raw); if(Array.isArray(arr)) parsed=arr; }
+      const clean=sanitizeList(code, parsed.concat(memCustom[code]||[]));
+      memCustom[code]=clean; customLoaded[code]=true;
+      const same=parsed.length===clean.length && parsed.every((x,i)=>x===clean[i]);
+      if(!same){ try { localStorage.setItem(customKey(code), JSON.stringify(clean)); } catch(_){} }
+    } catch(_){
+      if(!memCustom[code]) memCustom[code]=[];
+      customLoaded[code]=true;
+    }
+    return memCustom[code].slice();
+  }
+  function writeCustom(code, words){
+    const clean=sanitizeList(code, words);
+    memCustom[code]=clean; customLoaded[code]=true;
+    try { localStorage.setItem(customKey(code), JSON.stringify(clean)); } catch(_){}
+    return clean;
+  }
+  // Rebuild the active dictionary from the built-in list plus this language's saved words.
+  function applyCustom(code){
+    const set=new Set(BUILTIN[code]||[]);
+    for(const w of readCustom(code)) set.add(w);
+    DICTS[code]=set;
+    return set.size;
+  }
+  function addCustomWord(raw, code=lang){
+    const w=normFor(code, raw);
+    if(!w || w.length<2) return null;
+    if(!(BUILTIN[code] && BUILTIN[code].has(w))){
+      const list=readCustom(code);
+      if(!list.includes(w)) writeCustom(code, list.concat(w));
+    }
+    if(!DICTS[code]) DICTS[code]=new Set(BUILTIN[code]||[]);
+    DICTS[code].add(w);
+    return w;
+  }
+  function removeCustomWord(raw, code=lang){
+    const w=normFor(code, raw);
+    if(!w) return null;
+    writeCustom(code, readCustom(code).filter(x=>x!==w));
+    if(DICTS[code] && !(BUILTIN[code] && BUILTIN[code].has(w))) DICTS[code].delete(w);
+    return w;
+  }
+  function customWords(code=lang){ return readCustom(code); }
   const base = ch => L.base(ch);
-  function loadDict(str, code=lang){ DICTS[code] = new Set((str||'').split(/\s+/).filter(Boolean)); return DICTS[code].size; }
+  function loadDict(str, code=lang){
+    BUILTIN[code]=new Set((str||'').split(/\s+/).filter(Boolean));
+    return applyCustom(code);
+  }
   function setLang(code){ if(!LANGS[code]) code='he'; lang=code; L=LANGS[code];
-    if(!DICTS[code] || (!DICTS[code].size && window[L.dictVar])) loadDict(window[L.dictVar]||'', code); return code; }
-  const hasDict = code => !!(DICTS[code] && DICTS[code].size);
+    if(!BUILTIN[code] || (!BUILTIN[code].size && window[L.dictVar])) loadDict(window[L.dictVar]||'', code);
+    else applyCustom(code);
+    return code; }
+  const hasDict = code => !!(BUILTIN[code] && BUILTIN[code].size);
   const normalize = raw => L.normalize(raw);
   const firstLetter = w => base(w[0]);
   const lastLetter  = w => base(w[w.length-1]);
   const isWord = w => !!(DICTS[lang] && DICTS[lang].has(w));
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
   const maxMissesFor = n => n===2 ? MAX_MISSES : 2*n;   // 3–4 players: two full rounds
-  // v2.9 hints: at most MAX_HINTS per turn. A turn in which the player used ≥1 hint never deletes a letter.
+  // v3.0 hints: at most MAX_HINTS per turn. A turn in which the player used ≥1 hint never deletes a letter.
   // Two of a player's own turns IN A ROW with a hint (answered or timed out) → the last letter deleted from
   // their board comes back; the streak then resets to 0 (two more hint-turns in a row are needed for the next one).
   // A turn of theirs without a hint resets the streak.
@@ -449,7 +552,7 @@ const WG = (()=>{
     if(!r.ok) return r;
     const w = r.word, p = g.turn, f = firstLetter(w);
     const hintedNow = g.hintsThisTurn>0;
-    const removed = !hintedNow && g.boards[p].has(f);   // v2.9: used a hint this turn → no deletion
+    const removed = !hintedNow && g.boards[p].has(f);   // v3.0: used a hint this turn → no deletion
     if(removed){ g.boards[p].delete(f); g.deleted[p].push(f); }
     const hs = settleHints(g, p);
     g.used.add(w);
@@ -493,9 +596,10 @@ const WG = (()=>{
     } else { g.winner=winner; g.winners=[winner]; }
   }
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
-    base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint };
+    base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
+    addCustomWord, removeCustomWord, customWords };
 })();
-window.WG = WG; window.HILINGO_VERSION='2.9';
+window.WG = WG; window.HILINGO_VERSION='3.0';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -508,6 +612,7 @@ const STR = {
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
   override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש',
+  myWords:'המילים שלי', myWordsNote:'נשמרות רק במכשיר הזה, לשפה הנוכחית.', myWordsEmpty:'עוד לא הוספתם מילים.', myWordsAsk:'למחוק?', myWordsYes:'כן', myWordsNo:'לא', myWordsClose:'סגור', myWordsDeleteAria:'מחיקת המילה',
   micOff:'המיקרופון כבוי', left:n=>`נשארו ${n} אותיות`,
   noteGone:l=>`האות ${l} כבר נמחקה אצלך – אמור מילה ב־${l}, לא יימחק כלום`,
   statusNeed:(n,l,gone)=>`תור של <b>${n}</b> – מילה שמתחילה ב־<span class="need">${l}</span>`+(gone?' <small>(כבר נמחקה אצלך – לא יימחק כלום)</small>':''),
@@ -541,6 +646,7 @@ const STR = {
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
   micHint:" If the microphone doesn't work, tap 🎤 in the game.",
   override:"It's a real word – accept anyway", micTitle:'Speak', inputPh:'Type a word', send:'Send', endBtn:'End game', pause:'Pause', resume:'Resume', again:'New game',
+  myWords:'My words', myWordsNote:'Saved on this device only, for the current language.', myWordsEmpty:"You haven't added any words yet.", myWordsAsk:'Delete?', myWordsYes:'Yes', myWordsNo:'No', myWordsClose:'Close', myWordsDeleteAria:'Delete word',
   micOff:'Mic off', left:n=>`${n} letters left`,
   noteGone:l=>`${l} is already crossed off – say a word starting with ${l}, nothing will be removed`,
   statusNeed:(n,l,gone)=>`<b>${n}</b>'s turn – a word starting with <span class="need">${l}</span>`+(gone?' <small>(already crossed off – nothing will be removed)</small>':''),
@@ -574,6 +680,7 @@ const STR = {
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
   micHint:' Werkt de microfoon niet? Tik dan in het spel op 🎤.',
   override:'Het is een echt woord – toch goedkeuren', micTitle:'Spreek', inputPh:'Typ een woord', send:'Stuur', endBtn:'Spel stoppen', pause:'Pauze', resume:'Verder', again:'Nieuw spel',
+  myWords:'Mijn woorden', myWordsNote:'Alleen op dit apparaat bewaard, voor de huidige taal.', myWordsEmpty:'Nog geen woorden toegevoegd.', myWordsAsk:'Verwijderen?', myWordsYes:'Ja', myWordsNo:'Nee', myWordsClose:'Sluiten', myWordsDeleteAria:'Woord verwijderen',
   micOff:'Microfoon uit', left:n=>`nog ${n} letters`,
   noteGone:l=>`De ${l} is al geschrapt – zeg een woord met ${l}, er wordt niets geschrapt`,
   statusNeed:(n,l,gone)=>`<b>${n}</b> is aan de beurt – een woord met <span class="need">${l}</span>`+(gone?' <small>(al geschrapt – er wordt niets geschrapt)</small>':''),
@@ -607,6 +714,7 @@ const STR = {
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
   micHint:' Se o microfone não funcionar, toque em 🎤 no jogo.',
   override:'É uma palavra de verdade – aceitar mesmo assim', micTitle:'Fale', inputPh:'Digite uma palavra', send:'Enviar', endBtn:'Encerrar jogo', pause:'Pausar', resume:'Continuar', again:'Novo jogo',
+  myWords:'Minhas palavras', myWordsNote:'Salvas só neste aparelho, para o idioma atual.', myWordsEmpty:'Nenhuma palavra adicionada ainda.', myWordsAsk:'Apagar?', myWordsYes:'Sim', myWordsNo:'Não', myWordsClose:'Fechar', myWordsDeleteAria:'Apagar palavra',
   micOff:'Microfone desligado', left:n=>`restam ${n} letras`,
   noteGone:l=>`A letra ${l} já foi apagada – diga uma palavra com ${l}, nada será apagado`,
   statusNeed:(n,l,gone)=>`Vez de <b>${n}</b> – uma palavra começando com <span class="need">${l}</span>`+(gone?' <small>(já apagada – nada será apagado)</small>':''),
@@ -637,7 +745,7 @@ let LANG='he', S=STR.he, NPLAYERS=2;
 
 /* ======================= UI ======================= */
 const $ = s=>document.querySelector(s);
-let G=null, seconds=30, timerId=null, lastT=0, paused=false, pendingOverride=[null,null,null,null];
+let G=null, seconds=30, timerId=null, lastT=0, paused=false, pendingOverride=[null,null,null,null], pendingDelete=null;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec=null, recFor=null;
 const isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|CriOS|Edg/.test(navigator.userAgent);
@@ -676,6 +784,8 @@ function applyLang(code){
   $('#autoMicL').textContent=S.autoMic; $('#soundL').textContent=S.sound; $('#rules').textContent=S.rules;
   [1,2,3,4].forEach(i=>{ const e=$('#n'+i); e.placeholder=S.player(i); e.setAttribute('aria-label',S.playerAria(i)); });
   $('#endBtn').textContent=S.endBtn; $('#pauseBtn').textContent=paused?S.resume:S.pause; $('#again').textContent=S.again;
+  const mw=$('#myWordsBtn'); if(mw) mw.textContent=S.myWords;
+  if($('#wordsov') && !$('#wordsov').classList.contains('hidden')){ pendingDelete=null; renderMyWords(); }
   $('#speechNote').textContent = SR ? S.speechOk+S.micHint : S.speechNo;
   document.querySelectorAll('#langs .opt').forEach(b=>b.classList.toggle('sel', b.dataset.lang===LANG));
   WG.setLang(LANG); updateGo();
@@ -720,7 +830,7 @@ function buildHalves(){
     $('#in'+p).addEventListener('input',()=>enterTyping(p));
     $('#mic'+p).onclick=()=>micToggle(p,'click');   // synchronous: recognition.start() runs inside the click
     $('#ov'+p).onclick=()=>{ if(pendingOverride[p]) submit(p,pendingOverride[p],true); };
-    $('#hb'+p).onclick=()=>showHint(p);   // v2.9: never touches the recognizer
+    $('#hb'+p).onclick=()=>showHint(p);   // v3.0: never touches the recognizer
     if(!SR) $('#mic'+p).classList.add('hidden');
   });
 }
@@ -781,7 +891,7 @@ function setMsg(p,txt,kind){ const e=$('#m'+p); if(!e) return; e.textContent=txt
 function setHeard(p,txt){ const e=$('#hd'+p); if(e) e.textContent=txt||''; const m=$('#mic'+p); if(m) m.classList.toggle('heard', !!(txt&&/שמעתי|Heard|Gehoord|הוקלד|Typed|Getypt|✔/.test(txt))); }
 function showWord(p,w,cls){ const e=$('#w'+p); if(!e) return; e.textContent=w||'\u00a0'; e.className='word'+(cls?' '+cls:''); }
 
-/* ---- v2.9 hints ----
+/* ---- v3.0 hints ----
    Tapping 💡 shows a short description of an unused dictionary word that starts with the required letter
    (free choice: a letter still on the player's board). The text replaces the listening bar visually; the
    recognizer is NOT stopped/restarted (no stopRec/startRec here) and #hd keeps updating underneath. */
@@ -845,6 +955,7 @@ function submit(p,raw,force=false,src='typed'){
     focusInput(p);
     return false;
   }
+  if(force) WG.addCustomWord(r.word);
   stopRec();
   showWord(p, r.word, 'ok'); sndOk();
   const f0=WG.firstLetter(r.word);
@@ -926,6 +1037,38 @@ function burstConfetti(){
     box.appendChild(p); }
 }
 $('#go').onclick=startGame;
+function renderMyWords(){
+  const box=$('#wordsov'); if(!box) return;
+  $('#wordsTitle').textContent=S.myWords;
+  $('#wordsNote').textContent=S.myWordsNote;
+  $('#wordsEmpty').textContent=S.myWordsEmpty;
+  $('#wordsClose').textContent=S.myWordsClose;
+  const words=WG.customWords(LANG);
+  const ul=$('#wordsList'); ul.innerHTML='';
+  $('#wordsEmpty').classList.toggle('hidden', words.length>0);
+  words.forEach((w,i)=>{
+    const li=document.createElement('li');
+    if(pendingDelete===w){
+      li.innerHTML=`<span class="mw-word" dir="auto">${esc(w)}</span><span class="mw-ask">${esc(S.myWordsAsk)}</span><button type="button" class="mw-yes" data-i="${i}">${esc(S.myWordsYes)}</button><button type="button" class="mw-no">${esc(S.myWordsNo)}</button>`;
+    } else {
+      li.innerHTML=`<span class="mw-word" dir="auto">${esc(w)}</span><button type="button" class="mw-x" data-i="${i}" aria-label="${esc(S.myWordsDeleteAria)}">✕</button>`;
+    }
+    ul.appendChild(li);
+  });
+}
+function openMyWords(){ pendingDelete=null; renderMyWords(); $('#wordsov').classList.remove('hidden'); const c=$('#wordsClose'); if(c) c.focus(); }
+function closeMyWords(){ pendingDelete=null; $('#wordsov').classList.add('hidden'); }
+$('#myWordsBtn').onclick=openMyWords;
+$('#wordsClose').onclick=closeMyWords;
+$('#wordsov').onclick=e=>{ if(e.target.id==='wordsov') closeMyWords(); };
+$('#wordsList').onclick=e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  const words=WG.customWords(LANG);
+  if(t.classList.contains('mw-no')){ pendingDelete=null; renderMyWords(); return; }
+  const w=words[+t.dataset.i]; if(!w) return;
+  if(t.classList.contains('mw-x')){ pendingDelete=w; renderMyWords(); }
+  else if(t.classList.contains('mw-yes')){ WG.removeCustomWord(w, LANG); pendingDelete=null; renderMyWords(); }
+};
 $('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); };
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
 $('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
@@ -945,7 +1088,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v2.9 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.0 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -964,6 +1107,7 @@ function micToggle(p,how){
   setMsg(p,''); startRec(p,how||'click');
 }
 document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
+  if(e.key==='Escape' && $('#wordsov') && !$('#wordsov').classList.contains('hidden')){ closeMyWords(); return; }
   if(e.code!=='Space'||e.repeat||!SR||!G||G.over||$('#game').classList.contains('hidden')) return;
   const t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON'||t.isContentEditable)) return;
   e.preventDefault(); micToggle(G.turn,'space');

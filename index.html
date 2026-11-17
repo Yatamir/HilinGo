@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.2">
+<meta name="hilingo-version" content="3.3">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -167,7 +167,12 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .tile.gone::after{content:"";position:absolute;inset:20%;background:linear-gradient(45deg,transparent 45%,var(--bad) 45%,var(--bad) 55%,transparent 55%)}
 .tile.need.gone{background-color:#FFF3C4;background-image:none;color:#B7791F;transform:scale(1.08);box-shadow:0 0 0 3px #FDCB6E,0 0 0 7px rgba(253,203,110,.4);outline:3px dashed #E17055;outline-offset:2px;animation:needpulse 1s infinite alternate}
 .tile.need.gone::after{opacity:.55}
+/* v3.3 Portuguese: K, W, Y stay visible but inactive — grey, no red strike (that look is .gone) */
+.tile.inactive{background-color:#E4E0EE;background-image:none;color:#A39BB8;box-shadow:inset 0 0 0 1px #D5D0E4;transform:none;cursor:default;opacity:1}
+.tile.inactive::after{content:none;display:none}
 @keyframes needpulse{to{box-shadow:0 0 0 3px #FDCB6E,0 0 0 9px rgba(253,203,110,.55)}}
+/* letter of the previous word that the next player must start with */
+.word .picked,#history .picked{color:#4A2DB0;background-color:#FFE566;border-radius:.18em;box-shadow:0 0 0 2px #F0C000;padding:0 .06em}
 .note{min-height:0;font-size:17px;font-weight:700;text-align:center;border-radius:12px;padding:6px 10px;background-color:#FFF3C4;color:#7A4B00;border:2px dashed #FDCB6E}
 .note:empty{display:none}
 .tile.boom{animation:boom .7s}
@@ -338,6 +343,12 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .send,#halves.n3 .send,#halves.n4 .send{padding:0 10px}
 }
 @media (max-width:360px){ #halves .tile{font-size:16px} .smallbtn{padding:5px 7px;font-size:12px} #status{font-size:14px} }
+/* inactive tiles stay grey on phones too — the waiting-player tile rule would otherwise give them a 3D shadow */
+#halves .half .tile.inactive,
+#halves .half.active .tile.inactive,
+#halves .half:not(.active) .tile.inactive{
+  background-color:#E4E0EE;background-image:none;color:#A39BB8;
+  box-shadow:inset 0 0 0 1px #D5D0E4;transform:none;opacity:1}
 /* v3.1: non-blocking "saved on this device" pill. Never takes taps, focus, or layout space. */
 #saveToast{position:fixed;z-index:7;left:50%;top:72px;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#F4FFF9,#E5FFF3);color:#067A48;font-weight:800;font-size:13px;line-height:1.2;text-align:center;white-space:nowrap;border:2px solid #3DD68C;box-shadow:0 6px 16px rgba(42,33,82,.12);pointer-events:none;opacity:0;transition:opacity .2s ease}
 #saveToast.show{opacity:1}
@@ -419,6 +430,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
+// Portuguese v3.3: K, W, Y are drawn on the board but inactive (not in the playable set, never required, not counted for a win).
+// The next required letter is the previous word's last letter, unless that letter is already deleted on the NEXT player's board
+// and the word contains one of B C D F G H J N P Q T V X — then it is the special letter closest to the end.
+// Other languages keep last-letter chaining.
 const WG = (()=>{
   const HE_LETTERS = 'אבגדהוזחטיכלמנסעפצקרשת'.split('');
   const AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -445,6 +460,10 @@ const WG = (()=>{
   // set of real lemmas kept in words_pt.js (hífen, pólen, tórax, fax, …).
   const PT_END_OK = new Set('aeioulmrsz'.split(''));
   const PT_END_ALLOW = new Set('hifen polen abdomen liquen eletron proton neutron gluten himen semen canon ion neon plancton radon colon germen lumen torax latex onix climax fax coccix fenix cortex silex borax helix'.split(' '));
+  // Inactive: shown grey, never deleted, never required, ignored by the win count.
+  const PT_INACTIVE = new Set('KWY'.split(''));
+  // Special chain letters. If the last letter is already gone for the next player, the one closest to the end is required.
+  const PT_SPECIAL = new Set('BCDFGHJNPQTVX'.split(''));
   function ptEndingOk(w){ return !!(w && (PT_END_OK.has(w[w.length-1]) || PT_END_ALLOW.has(w))); }
   function sanitizeList(code, arr){
     const out=[], seen=new Set();
@@ -518,6 +537,34 @@ const WG = (()=>{
   const normalize = raw => L.normalize(raw);
   const firstLetter = w => base(w[0]);
   const lastLetter  = w => base(w[w.length-1]);
+  function isInactive(ch, code=lang){
+    if(code!=='pt') return false;
+    const b=String(ch||'').toUpperCase();
+    return PT_INACTIVE.has(b);
+  }
+  // Next required letter. Non-Portuguese: last letter of the word.
+  // Portuguese: last letter, unless it is already deleted on `board` (the player who must speak next)
+  // AND the word has a special letter — then the special letter closest to the end.
+  // No special letter → keep the last letter. K/W/Y are never returned.
+  // If the chosen special letter is also already deleted, it is still returned.
+  // `index` is the position of that letter in the accent-folded word (for the highlight).
+  function chainLetter(word, board, code=lang){
+    const w = code===lang ? normalize(word) : (LANGS[code]||L).normalize(word);
+    const fold = code===lang ? base : (LANGS[code]||L).base;
+    const letters=[];
+    for(const ch of w){ const b=fold(ch); if(b) letters.push(b); }
+    const lastIdx=letters.length-1;
+    const last=lastIdx>=0?letters[lastIdx]:'';
+    if(code!=='pt') return {letter:last, index:lastIdx};
+    const onBoard=!!(board && last && board.has(last) && !PT_INACTIVE.has(last));
+    if(onBoard) return {letter:last, index:lastIdx};
+    for(let i=lastIdx;i>=0;i--){
+      if(PT_SPECIAL.has(letters[i])) return {letter:letters[i], index:i};
+    }
+    if(PT_INACTIVE.has(last)) return {letter:null, index:-1};
+    return {letter:last, index:lastIdx};
+  }
+  const playableLetters = () => L.letters.filter(l=>!isInactive(l));
   const isWord = w => !!(DICTS[lang] && DICTS[lang].has(w));
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
   const maxMissesFor = n => n===2 ? MAX_MISSES : 2*n;   // 3–4 players: two full rounds
@@ -540,7 +587,7 @@ const WG = (()=>{
     const n = Math.max(2, Math.min(4, opts.players || (opts.names&&opts.names.length) || 2));
     const names = (opts.names||[]).slice(0,n); for(let i=names.length;i<n;i++) names.push('שחקן '+(i+1));
     return { seconds: opts.seconds||30, names, n, lang,
-      boards:Array.from({length:n},()=>new Set(L.letters)), turn:0, required:null,
+      boards:Array.from({length:n},()=>new Set(playableLetters())), turn:0, required:null,
       used:new Set(), history:[], missStreak:0, missLetter:null, missers:new Set(), maxMisses:maxMissesFor(n),
       timeLeft: opts.seconds||30, over:false, winner:null, winners:[], reason:'',
       hintsThisTurn:0, hintStreak:Array(n).fill(0), deleted:Array.from({length:n},()=>[]) };
@@ -568,12 +615,16 @@ const WG = (()=>{
     if(removed){ g.boards[p].delete(f); g.deleted[p].push(f); }
     const hs = settleHints(g, p);
     g.used.add(w);
-    g.history.push({player:p, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored});
+    // The player who must say the next word is the next seat, (p+1) % n — not the player who just spoke.
+    // Their board decides the exception. A later timeout keeps this same letter (it does not re-check).
+    const nxt = nextP(g, p);
+    const chain = chainLetter(w, g.boards[nxt], g.lang);
+    g.history.push({player:p, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored, link:chain.index});
     g.missStreak=0; g.missLetter=null; g.missers.clear();
-    g.required = lastLetter(w);
-    const res = {ok:true, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored};
+    g.required = chain.letter;
+    const res = {ok:true, word:w, removed: removed?f:null, hinted:hs.hinted, restored:hs.restored, required:chain.letter, link:chain.index};
     if(g.boards[p].size===0){ finish(g, p, 'empty'); return res; }
-    g.turn = nextP(g,p); g.timeLeft = g.seconds;
+    g.turn = nxt; g.timeLeft = g.seconds;
     return res;
   }
   // current player ran out of time: same letter passes to the next player; if everyone
@@ -609,9 +660,9 @@ const WG = (()=>{
   }
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
-    addCustomWord, removeCustomWord, customWords };
+    addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.2';
+window.WG = WG; window.HILINGO_VERSION='3.3';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -722,10 +773,10 @@ const STR = {
    'bad-grammar':'Fout bij spraakherkenning – probeer opnieuw.'},
  },
  pt:{ dir:'ltr', speech:'pt-BR', title:'HilinGo', tagline:'Um jogo de corrente de palavras', arrow:' → ', yourTurn:'" · sua vez!"', player:i=>'Jogador '+i, playerAria:i=>'Nome do jogador '+i,
-  intro:'Cada jogador diz uma palavra que começa com a última letra da palavra anterior. A primeira letra da sua palavra é apagada do seu tabuleiro. Quem esvaziar o tabuleiro primeiro, vence!',
+  intro:'Cada jogador diz uma palavra que começa com a última letra da anterior. A primeira letra da sua palavra sai do seu tabuleiro. K, W e Y ficam inativas e não contam. Se essa última letra já saiu do tabuleiro de quem joga a seguir, e a palavra tem B, C, D, F, G, H, J, N, P, Q, T, V ou X, a próxima começa pela que estiver mais perto do fim. Quem esvaziar o tabuleiro primeiro, vence!',
   players:'Jogadores:', lvl:{45:'Fácil · 45 segundos',30:'Médio · 30 segundos',15:'Difícil · 15 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
-  rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence. · 💡 Dica: até 3 por turno, só para palavras ainda não usadas; no turno com dica nenhuma letra é apagada, e dicas em dois turnos seguidos devolvem a última letra apagada.',
+  rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence. · 💡 Dica: até 3 por turno, só para palavras ainda não usadas; no turno com dica nenhuma letra é apagada, e dicas em dois turnos seguidos devolvem a última letra apagada. · K, W e Y ficam acinzentadas: não saem, não contam para vencer e nunca são pedidas. Se a última letra já foi apagada no tabuleiro do próximo e a palavra contém B, C, D, F, G, H, J, N, P, Q, T, V ou X, a letra pedida é a mais perto do fim (mesmo que essa também já tenha sido apagada); sem nenhuma dessas, continua a última letra.',
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
   micHint:' Se o microfone não funcionar, toque em 🎤 no jogo.',
   override:'É uma palavra de verdade – aceitar mesmo assim', micTitle:'Fale', inputPh:'Digite uma palavra', send:'Enviar', endBtn:'Encerrar jogo', pause:'Pausar', resume:'Continuar', again:'Novo jogo',
@@ -835,7 +886,7 @@ function buildHalves(){
       <div class="word" id="w${p}">&nbsp;</div><div class="msg" id="m${p}"></div><div class="note" id="nt${p}"></div>
       <div class="hrow" id="hr${p}"><div class="heard" id="hd${p}"></div><div class="hinttxt" id="hn${p}" aria-live="polite"></div><button class="hintbtn" id="hb${p}" title="${esc(S.hintTitle)}">${esc(S.hint)}</button></div>
       <button class="override hidden" id="ov${p}">${esc(S.override)}</button>
-      <div class="tiles" id="t${p}">${WG.LETTERS.map(l=>`<div class="tile" data-l="${l}">${l}</div>`).join('')}</div>
+      <div class="tiles" id="t${p}">${WG.LETTERS.map(l=>{ const off=WG.isInactive(l); return `<div class="tile${off?' inactive':''}" data-l="${l}" data-off="${off?1:0}"${off?' aria-disabled="true"':''}>${l}</div>`; }).join('')}</div>
       <div class="inputs"><button class="mic${PTT?' ptt':''}" id="mic${p}" title="${esc(S.micTitle)}">🎤<span class="ml ml-off">${esc(S.ptt)}</span><span class="ml ml-on">${esc(S.pttOn)}</span></button>
         <input id="in${p}" placeholder="${esc(S.inputPh)}" autocomplete="off" enterkeyhint="send"><button class="send" id="send${p}">${esc(S.send)}</button></div>`;
     h.appendChild(d);
@@ -860,8 +911,10 @@ function render(){
     const ord = nP>2 ? (p-G.turn+nP)%nP : p; if(hf.style.getPropertyValue('--ord')!==String(ord)) hf.style.setProperty('--ord', ord);
     $('#cnt'+p).textContent = S.left(G.boards[p].size);
     document.querySelectorAll(`#t${p} .tile`).forEach(t=>{
-      t.classList.toggle('gone', !G.boards[p].has(t.dataset.l));
-      t.classList.toggle('need', !G.over && G.turn===p && G.required===t.dataset.l);
+      const inactive = t.dataset.off==='1' || WG.isInactive(t.dataset.l);
+      t.classList.toggle('inactive', inactive);
+      t.classList.toggle('gone', !inactive && !G.boards[p].has(t.dataset.l));
+      t.classList.toggle('need', !inactive && !G.over && G.turn===p && G.required===t.dataset.l);
     });
     const goneNeed = !G.over && G.turn===p && G.required && !G.boards[p].has(G.required);
     const nt=$('#nt'+p), ntxt = goneNeed ? S.noteGone(G.required) : '';
@@ -874,7 +927,7 @@ function render(){
   $('#status').innerHTML = G.required ? S.statusNeed(n, G.required, !G.boards[G.turn].has(G.required)) : S.statusFree(n);
   $('#timerfill').style.width = (100*G.timeLeft/G.seconds)+'%';
   $('#timerfill').style.background = `var(--p${G.turn+1})`;
-  $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?esc(h.word):'⏰'}${h.hinted?'<small title="hint">💡</small>':''}</span>`).join(S.arrow);
+  $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?wordHTML(h):'⏰'}${h.hinted?'<small title="hint">💡</small>':''}</span>`).join(S.arrow);
   $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
   // phone: keep the active AND the next player's panels on screen when the turn passes (layout only)
   if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn; keepPairInView(); }
@@ -905,7 +958,18 @@ const finePointer = window.matchMedia && matchMedia('(pointer:fine)').matches;
 function focusInput(p){ if(!finePointer) return; const e=$('#in'+p); if(e){ try{ e.focus({preventScroll:true}); }catch(_){ e.focus(); } } }
 function setMsg(p,txt,kind){ const e=$('#m'+p); if(!e) return; e.textContent=txt; e.className='msg'+(kind?' '+kind:''); }
 function setHeard(p,txt){ const e=$('#hd'+p); if(e) e.textContent=txt||''; const m=$('#mic'+p); if(m) m.classList.toggle('heard', !!(txt&&/שמעתי|Heard|Gehoord|הוקלד|Typed|Getypt|✔/.test(txt))); }
-function showWord(p,w,cls){ const e=$('#w'+p); if(!e) return; e.textContent=w||'\u00a0'; e.className='word'+(cls?' '+cls:''); }
+function wordHTML(h){
+  const w=h.word;
+  if(!w || G.lang!=='pt' || h.link==null || h.link<0 || h.link>=w.length) return esc(w);
+  return esc(w.slice(0,h.link))+'<span class="picked">'+esc(w.charAt(h.link))+'</span>'+esc(w.slice(h.link+1));
+}
+function showWord(p,w,cls,link){
+  const e=$('#w'+p); if(!e) return;
+  if(w && G && G.lang==='pt' && link!=null && link>=0 && link<w.length){
+    e.innerHTML=esc(w.slice(0,link))+'<span class="picked">'+esc(w.charAt(link))+'</span>'+esc(w.slice(link+1));
+  } else e.textContent=w||'\u00a0';
+  e.className='word'+(cls?' '+cls:'');
+}
 
 /* ---- v3.0 hints ----
    Tapping 💡 shows a short description of an unused dictionary word that starts with the required letter
@@ -916,7 +980,9 @@ const turnKey=()=>G ? G.history.length+':'+G.turn : '';
 function hintCandidates(g,p){
   const list=(window.HILINGO_HINTS||{})[g.lang||WG.lang]||[];
   const ok=(w,anyLetter)=>{ const n=WG.normalize(w); if(!n||n.length<2||g.used.has(n)||!WG.isWord(n)) return false;
-    const f=WG.firstLetter(n); return g.required ? f===g.required : (anyLetter || g.boards[p].has(f)); };
+    const f=WG.firstLetter(n);
+    if(WG.isInactive(f, g.lang)) return false;
+    return g.required ? f===g.required : (anyLetter || g.boards[p].has(f)); };
   let c=list.map((h,i)=>({i,word:WG.normalize(h[0]),desc:h[1]})).filter(h=>ok(list[h.i][0],false));
   if(!c.length && !g.required) c=list.map((h,i)=>({i,word:WG.normalize(h[0]),desc:h[1]})).filter(h=>ok(list[h.i][0],true));
   return c;
@@ -974,7 +1040,7 @@ function submit(p,raw,force=false,src='typed'){
   let savedHere=false;
   if(force){ WG.addCustomWord(r.word); savedHere=savedOnDevice(r.word); }
   stopRec();
-  showWord(p, r.word, 'ok'); sndOk();
+  showWord(p, r.word, 'ok', r.link); sndOk();
   const f0=WG.firstLetter(r.word);
   if(r.hinted) setMsg(p, S.hintNoDel+(r.restored?' · '+S.hintRestored(r.restored):''), 'hintm');
   else setMsg(p, r.removed ? S.okRemoved(r.removed) : S.okKept(f0), 'good');
@@ -1148,7 +1214,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.3 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

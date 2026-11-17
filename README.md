@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.5)
+# HilinGo – word-chain game (v3.6)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,19 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.6 – Learn mode
+- Start screen: Play / Learn. Play is unchanged. In Learn, pick the language you speak and the language you are learning (he, en, nl, pt; any two different ones). The start button becomes "Let's learn!" / "יאללה, לומדים!" / "Laten we leren!" / "Vamos aprender!".
+- Hili's intro (`audio/hilingo.mp3`) plays when Learn starts, the same way it does for a game, and the microphone waits until it ends.
+- One learner, no timer, no turns, no letters removed. Say or type a word in your language. The other panel shows the translation, large, and speaks it with `speechSynthesis` (pt-BR, he-IL, nl-NL, en-US). 🔊 plays it again. The mic stays closed until that speech finishes, then listens in the target language.
+- A repeat counts when any recognition alternative matches, accents and nikud folded, case ignored, or within one letter (Levenshtein) for a word of 5+ letters. A match shows ✅ and is saved on this device for that language pair. A miss shows what was heard, and you can retry, hear it again, or skip.
+- "My words" on the Learn screen, and on the start screen while Learn is selected, lists the saved pairs. Tap one to hear it and practice it again. ✕ deletes it.
+- Translations come from `learn_dict.js` first (about 1,980 everyday nouns, verbs and adjectives). Hebrew lookup strips nikud and folds final letters (ך→כ and the rest). If the word is missing, HilinGo asks the free MyMemory API (`https://api.mymemory.translated.net/get`, no key). If that fails, it says it couldn't translate and you can try another word.
+- Dictionary sources, combined here under CC BY-SA 4.0:
+  - Open Multilingual Wordnet 1.4 (https://github.com/omwn/omw-data). English: Princeton WordNet 3.0, Copyright 2006 Princeton University, WordNet license (https://wordnet.princeton.edu/license-and-commercial-use). Hebrew: Hebrew Wordnet, Copyright 2007 Noam Ordan and Shuly Wintner, University of Haifa, WordNet license. Dutch: Open Dutch WordNet, CC BY-SA 4.0. Portuguese: OpenWN-PT, CC BY-SA 3.0.
+  - Wiktionary lemmas aligned to those synsets by Francis Bond and Ryan Foster (2013), CC BY-SA 3.0. Wiktionary is preferred; the wordnets fill gaps such as כלב.
+  - Ranking: hermitdave/FrequencyWords, OpenSubtitles 2018 (en, he, nl, pt_BR, pt), CC BY-SA 4.0. Portuguese uses the Brazilian list first, so כלב → cachorro (not cão).
+- Test: `node tests_learn.mjs` (playwright-core, mocked speech recognition and speechSynthesis). `tests_tablet.mjs` and `tests_intro.mjs` still cover the game.
 
 ## v3.5 – Hili says "HilinGo"
 - Every new game, in every language, plays `audio/hilingo.mp3` once: Hili saying "HilinGo" (about 2.2 seconds). The clip is preloaded. Playback starts inside the tap on the start button (יאללה, מתחילים! / Let's play! / Spelen! / Vamos jogar!), including a game started again after New game / play again / rematch returns to that button. iOS Safari allows the sound only from that tap.

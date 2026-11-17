@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.5">
+<meta name="hilingo-version" content="3.6">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -34,7 +34,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     radial-gradient(820px 520px at 88% 112%, rgba(255,229,102,.46), transparent 55%),
     radial-gradient(620px 420px at -8% 108%, rgba(20,212,200,.22), transparent 50%),
     linear-gradient(180deg,#F6F2FF 0%,#EEF4FF 48%,#FFF8E8 100%)}
-#start,#game{position:relative;z-index:1}
+#start,#game,#learn{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none}
 .hidden{display:none!important}
 
@@ -427,6 +427,44 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 /* v3.1: non-blocking "saved on this device" pill. Never takes taps, focus, or layout space. */
 #saveToast{position:fixed;z-index:7;left:50%;top:72px;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#F4FFF9,#E5FFF3);color:#067A48;font-weight:800;font-size:13px;line-height:1.2;text-align:center;white-space:nowrap;border:2px solid #3DD68C;box-shadow:0 6px 16px rgba(42,33,82,.12);pointer-events:none;opacity:0;transition:opacity .2s ease}
 #saveToast.show{opacity:1}
+/* v3.6 learn mode. Panels are .lpanel, never .half, so the game board checks stay on the two player grids. */
+.opt:disabled{opacity:.38;cursor:default;transform:none}
+#pairCard .opt.sel{border-color:var(--p2);background:linear-gradient(180deg,#E7FBFA,#D8F8F6);color:#0E7C74;box-shadow:0 3px 0 #9AE8E2}
+#learn{display:flex;flex-direction:column;height:100%;height:100dvh;max-height:100dvh;overflow:hidden;
+  padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom)}
+@supports (height:100svh){#learn{height:100svh;max-height:100dvh}}
+.ltop{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,50,180,.08);border-bottom:1px solid rgba(255,255,255,.8);flex-shrink:0}
+#learnStatus{font-size:clamp(16px,2.4vw,22px);font-weight:800;text-align:center;flex:1;min-width:0}
+#learnHalves{flex:1;display:flex;min-height:0;min-width:0;padding:8px;gap:8px}
+.lpanel{flex:1;display:flex;flex-direction:column;padding:14px;gap:8px;min-height:0;min-width:0;border-radius:24px;background:linear-gradient(180deg,#fff 0%,var(--pl,#F6F2FF) 100%);box-shadow:0 10px 28px rgba(50,30,120,.08)}
+.lpanel.p1{--pl:var(--p1l)} .lpanel.p2{--pl:var(--p2l)}
+#learn .word{min-height:120px;font-size:clamp(40px,6vw,84px);line-height:1.15;word-break:break-word}
+#learn .word.bigok{font-size:clamp(72px,12vw,140px);min-height:140px;color:var(--green)}
+#learn .inputs input{font-size:18px}
+.speakbtn{width:48px;height:48px;min-width:48px;border-radius:50%;background:var(--c,var(--p2));color:#fff;font-size:22px;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--p2)) 70%, #000)}
+.speakbtn:active{transform:translateY(2px)}
+.learn-actions{display:flex;justify-content:center;flex-shrink:0}
+#learnSkip{padding:10px 22px;font-size:16px}
+.mw-pair{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:transparent;font:inherit;font-weight:800;font-size:18px;text-align:start;color:inherit;padding:4px 2px}
+.mw-native,.mw-target{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.mw-eq{color:var(--muted);flex-shrink:0}
+@media (max-width:720px),(max-height:520px){
+ #learn{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+ #learn.hidden{display:none!important}
+ .ltop{padding:8px max(8px,env(safe-area-inset-right)) 8px max(8px,env(safe-area-inset-left));padding-top:max(8px,env(safe-area-inset-top))}
+ #learnHalves{flex-direction:column;padding:8px max(8px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+ #learn .word{min-height:76px;font-size:clamp(32px,9vw,52px)}
+ #learn .word.bigok{font-size:80px;min-height:96px}
+ #learn .inputs input{font-size:16px}
+ #learn .mic{width:44px;height:44px}
+ #learn .mic.ptt{width:auto;min-width:44px;height:44px}
+}
+@media (max-height:520px) and (orientation:landscape){
+ #learnHalves{flex-direction:row;align-items:stretch}
+ #learn .word{min-height:56px;font-size:clamp(28px,5vw,44px)}
+ #learn .word.bigok{font-size:64px;min-height:72px}
+}
 </style>
 </head>
 <body>
@@ -446,10 +484,16 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     <p id="intro">כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!</p>
   </div>
   <div class="setup">
-    <div class="card">
-      <div class="opts" id="langs"><button class="opt sel" data-lang="he">עברית</button><button class="opt" data-lang="en">English</button><button class="opt" data-lang="nl">Nederlands</button><button class="opt" data-lang="pt">Português 🇵🇹🇧🇷</button></div>
+    <div class="card" id="modeCard">
+      <div class="opts" id="modes"><button type="button" class="opt sel" id="modePlay" data-mode="play">משחק</button><button type="button" class="opt" id="modeLearn" data-mode="learn">למידה</button></div>
     </div>
     <div class="card">
+      <div class="opts" id="langs"><span class="optlbl hidden" id="nativeLbl">השפה שלי</span><button class="opt sel" data-lang="he">עברית</button><button class="opt" data-lang="en">English</button><button class="opt" data-lang="nl">Nederlands</button><button class="opt" data-lang="pt">Português 🇵🇹🇧🇷</button></div>
+    </div>
+    <div class="card hidden" id="pairCard">
+      <div class="opts" id="learnTargets"><span class="optlbl" id="targetLbl">אני לומד</span><button type="button" class="opt" data-lang="he">עברית</button><button type="button" class="opt" data-lang="en">English</button><button type="button" class="opt" data-lang="nl">Nederlands</button><button type="button" class="opt sel" data-lang="pt">Português</button></div>
+    </div>
+    <div class="card" id="playersCard">
       <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
       <div class="names">
         <input id="n1" value="" placeholder="שחקן 1" aria-label="שם שחקן 1">
@@ -458,7 +502,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
         <input id="n4" value="" placeholder="שחקן 4" aria-label="שם שחקן 4" class="hidden">
       </div>
     </div>
-    <div class="card">
+    <div class="card" id="levelsCard">
       <div class="levels">
         <button class="lvl" data-s="45">קל · 45 שניות</button>
         <button class="lvl sel" data-s="30">בינוני · 30 שניות</button>
@@ -488,6 +532,33 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div id="diag" class="hidden"></div>
 </section>
 
+<section id="learn" class="hidden">
+  <div class="ltop">
+    <button type="button" class="smallbtn" id="learnBack">חזרה</button>
+    <div id="learnStatus"></div>
+    <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
+  </div>
+  <div id="learnHalves">
+    <div class="lpanel p1 active" id="learnOwn">
+      <div class="hhead"><span class="pname" id="learnOwnName"></span></div>
+      <div class="word" id="learnOwnWord" dir="auto">&nbsp;</div>
+      <div class="msg" id="learnOwnMsg"></div>
+      <div class="hrow"><div class="heard" id="learnHeard"></div></div>
+      <div class="inputs">
+        <button type="button" class="mic" id="learnMic">🎤<span class="ml ml-off"></span><span class="ml ml-on"></span></button>
+        <input id="learnIn" autocomplete="off" enterkeyhint="send" dir="auto">
+        <button type="button" class="send" id="learnSend"></button>
+      </div>
+    </div>
+    <div class="lpanel p2" id="learnOther">
+      <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak">🔊</button></div>
+      <div class="word" id="learnOtherWord" dir="auto">&nbsp;</div>
+      <div class="msg" id="learnOtherMsg"></div>
+      <div class="learn-actions"><button type="button" class="smallbtn hidden" id="learnSkip"></button></div>
+    </div>
+  </div>
+</section>
+
 <div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
 <div id="wordsov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wordsTitle">
@@ -502,6 +573,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 
 <script src="words.js" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
 <script src="hints.js"></script>
+<script src="learn_dict.js"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -737,7 +809,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.5';
+window.WG = WG; window.HILINGO_VERSION='3.6';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -745,6 +817,12 @@ const STR = {
  he:{ dir:'rtl', speech:'he-IL', title:'HilinGo', tagline:'משחק שרשרת מילים', arrow:' ← ', yourTurn:'" · תורך!"', player:i=>'שחקן '+i, playerAria:i=>'שם שחקן '+i,
   intro:'כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!',
   players:'מספר שחקנים:', lvl:{45:'קל · 45 שניות',30:'בינוני · 30 שניות',15:'קשה · 15 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
+  modePlay:'משחק', modeLearn:'למידה', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
+  learnIntro:'אמרו מילה בשפה שלכם. היא תופיע בשפה השנייה, ואז תחזרו עליה.',
+  learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnBack:'חזרה',
+  learnNoTr:'לא הצלחתי לתרגם, נסו מילה אחרת', learnOk:'יפה!', learnAgain:'אמרו מילה חדשה',
+  learnWrong:'לא אותו דבר — נסו שוב', learnSpeak:'השמיעו שוב',
+  learnWordsNote:'נשמרות רק במכשיר הזה, לזוג השפות הזה.', learnWordsEmpty:'עוד אין מילים.',
   loading:'טוען מילון…', dictFail:'המילון לא נטען',
   rules:'חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק. · 💡 רמז: עד 3 רמזים בתור, רק למילים שעוד לא נאמרו; מי שנעזר ברמז לא מוחק אות באותו תור, ואחרי שני תורות ברצף עם רמז האות האחרונה שנמחקה לו חוזרת ללוח.',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
@@ -780,6 +858,12 @@ const STR = {
  en:{ dir:'ltr', speech:'en-US', title:'HilinGo', tagline:'A word-chain game', arrow:' → ', yourTurn:'" · your turn!"', player:i=>'Player '+i, playerAria:i=>'Player '+i+' name',
   intro:'Each player says a word that starts with the last letter of the previous word. The first letter of your word is crossed off your board. Empty your board first to win!',
   players:'Players:', lvl:{45:'Easy · 45 sec',30:'Medium · 30 sec',15:'Hard · 15 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
+  modePlay:'Play', modeLearn:'Learn', learnGo:"Let's learn!", nativeLbl:'I speak', targetLbl:'I want to learn',
+  learnIntro:'Say a word in your language. It appears in the other language, then you say it back.',
+  learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnBack:'Back',
+  learnNoTr:"Couldn't translate, try another word", learnOk:'Nice!', learnAgain:'Say a new word',
+  learnWrong:'Not quite — try again', learnSpeak:'Hear again',
+  learnWordsNote:'Saved on this device only, for this language pair.', learnWordsEmpty:'No words yet.',
   loading:'Loading dictionary…', dictFail:'Dictionary failed to load',
   rules:"Rules: case and accents don't matter · no repeating a word · time's up? the same letter passes to the next player · if everyone misses the same letter in a row, the next player picks any letter · 6 misses in a row (2 players) or two full rounds of misses (3–4 players) end the game; fewest letters left wins. · 💡 Hint: up to 3 per turn, only for words not used yet; a turn with a hint crosses off no letter, and hints in two turns in a row bring your last crossed-off letter back.",
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
@@ -815,6 +899,12 @@ const STR = {
  nl:{ dir:'ltr', speech:'nl-NL', title:'HilinGo', tagline:'Een woordkettingspel', arrow:' → ', yourTurn:'" · jouw beurt!"', player:i=>'Speler '+i, playerAria:i=>'Naam speler '+i,
   intro:'Elke speler zegt een woord dat begint met de laatste letter van het vorige woord. De eerste letter van jouw woord wordt van jouw bord geschrapt. Wie als eerste zijn bord leeg heeft, wint!',
   players:'Spelers:', lvl:{45:'Makkelijk · 45 sec',30:'Gemiddeld · 30 sec',15:'Moeilijk · 15 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
+  modePlay:'Spelen', modeLearn:'Leren', learnGo:'Laten we leren!', nativeLbl:'Ik spreek', targetLbl:'Ik wil leren',
+  learnIntro:'Zeg een woord in jouw taal. Het verschijnt in de andere taal, en dan zeg je het na.',
+  learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnBack:'Terug',
+  learnNoTr:'Vertalen lukt niet, probeer een ander woord', learnOk:'Mooi!', learnAgain:'Zeg een nieuw woord',
+  learnWrong:'Niet hetzelfde — probeer opnieuw', learnSpeak:'Nog eens horen',
+  learnWordsNote:'Alleen op dit apparaat bewaard, voor dit talenpaar.', learnWordsEmpty:'Nog geen woorden.',
   loading:'Woordenboek laden…', dictFail:'Woordenboek niet geladen',
   rules:'Regels: hoofdletters en accenten tellen niet (é = e) · IJ telt als I + J · een woord mag maar één keer · tijd om? dezelfde letter gaat naar de volgende speler · mist iedereen dezelfde letter na elkaar, dan kiest de volgende een vrije letter · 6 missers op rij (2 spelers) of twee volle rondes missers (3–4 spelers) beëindigen het spel; wie de minste letters over heeft, wint. · 💡 Hint: max. 3 per beurt, alleen voor woorden die nog niet gezegd zijn; met een hint wordt die beurt geen letter geschrapt, en twee beurten op rij een hint zet je laatst geschrapte letter terug.',
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
@@ -850,6 +940,12 @@ const STR = {
  pt:{ dir:'ltr', speech:'pt-BR', title:'HilinGo', tagline:'Um jogo de corrente de palavras', arrow:' → ', yourTurn:'" · sua vez!"', player:i=>'Jogador '+i, playerAria:i=>'Nome do jogador '+i,
   intro:'Cada jogador diz uma palavra que começa com a última letra da anterior. A primeira letra da sua palavra sai do seu tabuleiro. K, W e Y ficam inativas e não contam. Se essa última letra já saiu do tabuleiro de quem joga a seguir, e a palavra tem B, C, D, F, G, H, J, N, P, Q, T, V ou X, a próxima começa pela que estiver mais perto do fim. Quem esvaziar o tabuleiro primeiro, vence!',
   players:'Jogadores:', lvl:{45:'Fácil · 45 segundos',30:'Médio · 30 segundos',15:'Difícil · 15 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
+  modePlay:'Jogar', modeLearn:'Aprender', learnGo:'Vamos aprender!', nativeLbl:'Eu falo', targetLbl:'Quero aprender',
+  learnIntro:'Diga uma palavra no seu idioma. Ela aparece no outro idioma e você repete.',
+  learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnBack:'Voltar',
+  learnNoTr:'Não consegui traduzir, tente outra palavra', learnOk:'Legal!', learnAgain:'Diga uma palavra nova',
+  learnWrong:'Não foi essa — tente de novo', learnSpeak:'Ouvir de novo',
+  learnWordsNote:'Salvas só neste aparelho, para este par de idiomas.', learnWordsEmpty:'Nenhuma palavra ainda.',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
   rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence. · 💡 Dica: até 3 por turno, só para palavras ainda não usadas; no turno com dica nenhuma letra é apagada, e dicas em dois turnos seguidos devolvem a última letra apagada. · K, W e Y ficam acinzentadas: não saem, não contam para vencer e nunca são pedidas. Se a última letra já foi apagada no tabuleiro do próximo e a palavra contém B, C, D, F, G, H, J, N, P, Q, T, V ou X, a letra pedida é a mais perto do fim (mesmo que essa também já tenha sido apagada); sem nenhuma dessas, continua a última letra.',
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
@@ -883,7 +979,7 @@ const STR = {
    'bad-grammar':'Erro no reconhecimento de voz – tente de novo.'},
  },
 };
-let LANG='he', S=STR.he, NPLAYERS=2;
+let LANG='he', S=STR.he, NPLAYERS=2, MODE='play', LEARN_TARGET='pt';
 
 /* ======================= UI ======================= */
 const $ = s=>document.querySelector(s);
@@ -915,13 +1011,19 @@ function ensureDict(code){
 }
 function updateGo(){
   const go=$('#go');
+  if(MODE==='learn'){ go.disabled=false; go.textContent=S.learnGo; return; }
   if(LANG!=='he' && !WG.hasDict(LANG)){ go.disabled=true; go.textContent=S.loading; }
   else { go.disabled=false; go.textContent=S.go; }
 }
 function applyLang(code){
   LANG = STR[code] ? code : 'he'; S=STR[LANG];
   const root=document.documentElement; root.lang=LANG; root.dir=S.dir; root.style.setProperty('--yourturn', S.yourTurn);
-  document.title=S.title; $('#tagline').textContent=S.tagline; $('#intro').textContent=S.intro; $('#pcLbl').textContent=S.players;
+  document.title=S.title; $('#tagline').textContent=S.tagline; $('#intro').textContent=MODE==='learn'?S.learnIntro:S.intro; $('#pcLbl').textContent=S.players;
+  const mp=$('#modePlay'), ml=$('#modeLearn'); if(mp) mp.textContent=S.modePlay; if(ml) ml.textContent=S.modeLearn;
+  const nlab=$('#nativeLbl'); if(nlab) nlab.textContent=S.nativeLbl;
+  const tlab=$('#targetLbl'); if(tlab) tlab.textContent=S.targetLbl;
+  if(MODE==='learn' && LEARN_TARGET===LANG) LEARN_TARGET=LANG==='pt'?'he':'pt';
+  if(typeof syncTargetButtons==='function') syncTargetButtons();
   document.querySelectorAll('.lvl').forEach(b=>b.textContent=S.lvl[b.dataset.s]);
   $('#autoMicL').textContent=S.autoMic; $('#soundL').textContent=S.sound; $('#rules').textContent=S.rules;
   [1,2,3,4].forEach(i=>{ const e=$('#n'+i); e.placeholder=S.player(i); e.setAttribute('aria-label',S.playerAria(i)); });
@@ -931,7 +1033,7 @@ function applyLang(code){
   $('#speechNote').textContent = SR ? S.speechOk+S.micHint : S.speechNo;
   document.querySelectorAll('#langs .opt').forEach(b=>b.classList.toggle('sel', b.dataset.lang===LANG));
   WG.setLang(LANG); updateGo();
-  if(LANG!=='he' && !WG.hasDict(LANG)) ensureDict(LANG).then(ok=>{ if(ok) WG.setLang(LANG); if(LANG===code){ updateGo(); if(!ok){ $('#go').textContent=S.dictFail; } } });
+  if(LANG!=='he' && !WG.hasDict(LANG)) ensureDict(LANG).then(ok=>{ if(ok) WG.setLang(LANG); if(LANG===code){ updateGo(); if(!ok && MODE!=='learn'){ $('#go').textContent=S.dictFail; } } });
 }
 function setPlayers(n){
   NPLAYERS = [2,3,4].includes(+n) ? +n : 2;
@@ -1285,9 +1387,10 @@ function playIntro(){
     try{ releaseIntro('error'); }catch(__){}
   }
 }
-$('#go').onclick=()=>{ playIntro(); startGame(); };
+$('#go').onclick=()=>{ playIntro(); if(MODE==='learn') startLearn(); else startGame(); };
 function renderMyWords(){
   const box=$('#wordsov'); if(!box) return;
+  if(MODE==='learn'){ renderLearnWords(); return; }
   $('#wordsTitle').textContent=S.myWords;
   $('#wordsNote').textContent=S.myWordsNote;
   $('#wordsEmpty').textContent=S.myWordsEmpty;
@@ -1305,12 +1408,14 @@ function renderMyWords(){
     ul.appendChild(li);
   });
 }
-function openMyWords(){ pendingDelete=null; renderMyWords(); $('#wordsov').classList.remove('hidden'); const c=$('#wordsClose'); if(c) c.focus(); }
-function closeMyWords(){ pendingDelete=null; $('#wordsov').classList.add('hidden'); }
+function openMyWords(){ pendingDelete=null; if(MODE==='learn' && !$('#learn').classList.contains('hidden') && typeof stopLearnRec==='function') stopLearnRec(); renderMyWords(); $('#wordsov').classList.remove('hidden'); const c=$('#wordsClose'); if(c) c.focus(); }
+function closeMyWords(opts){ pendingDelete=null; if(typeof pendingLearnDelete!=='undefined') pendingLearnDelete=null; $('#wordsov').classList.add('hidden');
+  if(!(opts&&opts.silent) && MODE==='learn' && !$('#learn').classList.contains('hidden') && typeof resumeLearnMic==='function') resumeLearnMic(); }
 $('#myWordsBtn').onclick=openMyWords;
 $('#wordsClose').onclick=closeMyWords;
 $('#wordsov').onclick=e=>{ if(e.target.id==='wordsov') closeMyWords(); };
 $('#wordsList').onclick=e=>{
+  if(MODE==='learn'){ onLearnWordsClick(e); return; }
   const t=e.target.closest('button'); if(!t) return;
   const words=WG.customWords(LANG);
   if(t.classList.contains('mw-no')){ pendingDelete=null; renderMyWords(); return; }
@@ -1337,7 +1442,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.5 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.6 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1357,6 +1462,13 @@ function micToggle(p,how){
 }
 document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
   if(e.key==='Escape' && $('#wordsov') && !$('#wordsov').classList.contains('hidden')){ closeMyWords(); return; }
+  if(!$('#learn').classList.contains('hidden')){
+    if(e.code==='Space'&&!e.repeat&&SR){
+      const t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON'||t.isContentEditable)) return;
+      e.preventDefault(); $('#learnMic').click();
+    }
+    return;
+  }
   if(e.code!=='Space'||e.repeat||!SR||!G||G.over||$('#game').classList.contains('hidden')) return;
   const t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON'||t.isContentEditable)) return;
   e.preventDefault(); micToggle(G.turn,'space');
@@ -1457,6 +1569,568 @@ function stopRec(){
   if(recFor!==null){ const m=$('#mic'+recFor); m&&m.classList.remove('on'); }
   recFor=null; recCtl=null;
 }
+
+/* ======================= LEARN MODE (v3.6) =======================
+   One learner, no timer, no letter deletion, no turns. Play mode never enters this. */
+const LEARN_ORDER=['en','he','pt','nl'];
+const LEARN_NAME={he:'עברית',en:'English',nl:'Nederlands',pt:'Português'};
+const SPEECH_TAG={he:'he-IL',en:'en-US',nl:'nl-NL',pt:'pt-BR'};
+const MM_TAG={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
+const HE_FINALS={'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
+let learnPhase='say', learnPair=null, learnHoldOk=false, learnTyping=false;
+let learnToken=0, learnRec=null, learnSess=0, learnEmpty=0, pendingLearnDelete=null;
+let speechLive=false, speechAfter=null, speechGen=0;
+let learnIndex=null;
+
+function foldLearn(code, raw){
+  if(raw==null) return '';
+  if(code==='he'){
+    let s=String(raw).replace(/[\u0591-\u05C7]/g,'');
+    s=s.replace(/[ךםןףץ]/g, ch=>HE_FINALS[ch]);
+    const parts=s.match(/[\u05D0-\u05EA]+/g);
+    return parts ? parts.slice(0,3).join(' ') : '';
+  }
+  const s=String(raw).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').toLowerCase();
+  const parts=s.match(/[a-z]+/g);
+  return parts ? parts.slice(0,3).join(' ') : '';
+}
+function displayLearn(code, raw){
+  let s=String(raw||'').trim();
+  if(code==='he'){
+    s=s.replace(/[\u0591-\u05C7]/g,'');
+    const m=s.match(/[\u05D0-\u05EA]+(?:\s+[\u05D0-\u05EA]+){0,2}/);
+    return m ? m[0] : '';
+  }
+  const m=s.match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+){0,2}/);
+  return m ? m[0] : '';
+}
+function levAtMost1(a, b){
+  if(a===b) return true;
+  const d=a.length-b.length;
+  if(Math.abs(d)>1) return false;
+  let i=0,j=0,used=0;
+  while(i<a.length && j<b.length){
+    if(a[i]===b[j]){ i++; j++; continue; }
+    if(used) return false;
+    used=1;
+    if(d===0){ i++; j++; }
+    else if(d>0) i++;
+    else j++;
+  }
+  return true;
+}
+function learnMatch(alts, targetText){
+  const t=foldLearn(LEARN_TARGET, targetText);
+  if(!t) return false;
+  const forms=[];
+  const list=Array.isArray(alts)?alts:[alts];
+  for(const a of list){
+    const f=foldLearn(LEARN_TARGET, a);
+    if(f) forms.push(f);
+    if(!t.includes(' ')){
+      const bits = LEARN_TARGET==='he'
+        ? (String(a||'').replace(/[\u0591-\u05C7]/g,'').match(/[\u05D0-\u05EA]+/g)||[])
+        : (String(a||'').match(/[A-Za-zÀ-ÖØ-öø-ÿ]+/g)||[]);
+      for(const b of bits){
+        const fb=foldLearn(LEARN_TARGET, b);
+        if(fb) forms.push(fb);
+      }
+    }
+  }
+  for(const f of forms){
+    if(f===t || f.replace(/ /g,'')===t.replace(/ /g,'')) return true;
+    const tc=t.replace(/ /g,'');
+    const fc=f.replace(/ /g,'');
+    if(tc.length>=5 && !t.includes(' ') && levAtMost1(fc, tc)) return true;
+  }
+  return false;
+}
+function ensureLearnIndex(){
+  if(learnIndex) return learnIndex;
+  const idx={en:new Map(),he:new Map(),pt:new Map(),nl:new Map()};
+  const rows=window.LEARN_DICT||[];
+  for(const row of rows){
+    LEARN_ORDER.forEach((code,i)=>{
+      const key=foldLearn(code, row[i]);
+      if(key && !idx[code].has(key)) idx[code].set(key, row);
+    });
+  }
+  learnIndex=idx;
+  return idx;
+}
+function dictTranslate(src, dst, raw){
+  const key=foldLearn(src, raw);
+  if(!key) return null;
+  const row=ensureLearnIndex()[src] && ensureLearnIndex()[src].get(key);
+  if(!row) return null;
+  const i=LEARN_ORDER.indexOf(dst);
+  return i<0 ? null : (row[i]||null);
+}
+async function remoteTranslate(src, dst, text){
+  const q=String(text||'').trim();
+  if(!q || q.length>80) return null;
+  const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(q)+'&langpair='+encodeURIComponent(MM_TAG[src]+'|'+MM_TAG[dst]);
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(), 8000);
+  try{
+    const res=await fetch(url, {signal:ctrl.signal});
+    if(!res || !res.ok) return null;
+    const data=await res.json();
+    if(!data || (data.responseStatus!=null && Number(data.responseStatus)!==200)) return null;
+    let out=data.responseData && data.responseData.translatedText;
+    if(!out) return null;
+    out=String(out).split(';')[0].trim();
+    if(!out || /MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH/i.test(out)) return null;
+    if(foldLearn(dst, out) && foldLearn(dst, out)===foldLearn(dst, q) && foldLearn(src, out)===foldLearn(src, q)) return null;
+    return out;
+  }catch(_){ return null; }
+  finally{ clearTimeout(timer); }
+}
+function learnStoreKey(){ return 'hilingo_learn_'+LANG+'_'+LEARN_TARGET; }
+function readLearnWords(){
+  try{
+    const raw=localStorage.getItem(learnStoreKey());
+    const arr=raw?JSON.parse(raw):[];
+    return Array.isArray(arr) ? arr.filter(x=>x && x.n && x.t) : [];
+  }catch(_){ return []; }
+}
+function writeLearnWords(arr){
+  try{ localStorage.setItem(learnStoreKey(), JSON.stringify(arr.slice(0,400))); return true; }
+  catch(_){ return false; }
+}
+function saveLearnPair(n, t){
+  const nk=foldLearn(LANG, n), tk=foldLearn(LEARN_TARGET, t);
+  const arr=readLearnWords().filter(x=>!(foldLearn(LANG, x.n)===nk && foldLearn(LEARN_TARGET, x.t)===tk));
+  arr.unshift({n:n, t:t});
+  writeLearnWords(arr);
+}
+function syncTargetButtons(){
+  document.querySelectorAll('#learnTargets .opt').forEach(b=>{
+    const same=b.dataset.lang===LANG;
+    b.disabled=same;
+    b.classList.toggle('sel', b.dataset.lang===LEARN_TARGET && !same);
+  });
+}
+function setMode(mode){
+  MODE=mode==='learn'?'learn':'play';
+  const play=$('#modePlay'), learn=$('#modeLearn');
+  if(play) play.classList.toggle('sel', MODE==='play');
+  if(learn) learn.classList.toggle('sel', MODE==='learn');
+  const players=$('#playersCard'), levels=$('#levelsCard'), pair=$('#pairCard'), native=$('#nativeLbl'), rules=$('#rules');
+  if(players) players.classList.toggle('hidden', MODE==='learn');
+  if(levels) levels.classList.toggle('hidden', MODE==='learn');
+  if(pair) pair.classList.toggle('hidden', MODE!=='learn');
+  if(native) native.classList.toggle('hidden', MODE!=='learn');
+  if(rules) rules.classList.toggle('hidden', MODE==='learn');
+  if(MODE==='learn' && (!LEARN_TARGET || LEARN_TARGET===LANG)) LEARN_TARGET=LANG==='pt'?'he':'pt';
+  syncTargetButtons();
+  const intro=$('#intro'); if(intro) intro.textContent=MODE==='learn'?S.learnIntro:S.intro;
+  updateGo();
+  if($('#wordsov') && !$('#wordsov').classList.contains('hidden')){ pendingDelete=null; pendingLearnDelete=null; renderMyWords(); }
+}
+function paintLearnChrome(){
+  const own=$('#learnOwnName'), other=$('#learnOtherName');
+  if(own) own.textContent=LEARN_NAME[LANG]||LANG;
+  if(other) other.textContent=LEARN_NAME[LEARN_TARGET]||LEARN_TARGET;
+  const mic=$('#learnMic');
+  if(mic){
+    mic.classList.toggle('ptt', !!PTT);
+    mic.title=S.micTitle;
+    const off=mic.querySelector('.ml-off'), on=mic.querySelector('.ml-on');
+    if(off) off.textContent=S.ptt;
+    if(on) on.textContent=S.pttOn;
+  }
+  const send=$('#learnSend'), inp=$('#learnIn'), back=$('#learnBack'), words=$('#learnWordsBtn'), skip=$('#learnSkip'), sp=$('#learnSpeak');
+  if(send) send.textContent=S.send;
+  if(inp) inp.placeholder=S.inputPh;
+  if(back) back.textContent=S.learnBack;
+  if(words) words.textContent=S.myWords;
+  if(skip) skip.textContent=S.learnSkip;
+  if(sp) sp.setAttribute('aria-label', S.learnSpeak);
+}
+function setLearnWord(which, text, cls){
+  const e=which==='own'?$('#learnOwnWord'):$('#learnOtherWord');
+  if(!e) return;
+  e.textContent=text||'\u00a0';
+  e.className='word'+(cls?' '+cls:'');
+}
+function setLearnHeard(t){
+  const e=$('#learnHeard'); if(e) e.textContent=t||'';
+  const m=$('#learnMic');
+  if(m) m.classList.toggle('heard', !!(t&&/שמעתי|Heard|Gehoord|Ouvi|✔/.test(t)));
+}
+function setLearnMsg(text, kind){
+  const e=$('#learnOwnMsg'); if(!e) return;
+  e.textContent=text||'';
+  e.className='msg'+(kind?' '+kind:'');
+}
+function showLearnShell(){
+  stopLearnRec();
+  $('#start').classList.add('hidden');
+  $('#game').classList.add('hidden');
+  $('#endov').classList.add('hidden');
+  $('#learn').classList.remove('hidden');
+  paintLearnChrome();
+  try{ window.scrollTo(0,0); }catch(_){}
+}
+function pickVoice(tag){
+  let voices=[];
+  try{ voices=(window.speechSynthesis&&speechSynthesis.getVoices())||[]; }catch(_){ voices=[]; }
+  const want=String(tag||'').toLowerCase().replace('_','-');
+  let v=voices.find(x=>(x.lang||'').toLowerCase().replace('_','-')===want);
+  if(v) return v;
+  if(want.startsWith('pt')){
+    v=voices.find(x=>/^pt[-_]br/i.test(x.lang||''));
+    if(v) return v;
+  }
+  const pre=want.slice(0,2);
+  return voices.find(x=>(x.lang||'').toLowerCase().replace('_','-').startsWith(pre))||null;
+}
+function speakLearn(text, langCode){
+  const gen=++speechGen;
+  speechAfter=null;
+  if(!window.speechSynthesis || !text){ speechLive=false; return; }
+  speechLive=true;
+  try{ speechSynthesis.cancel(); }catch(_){}
+  let u;
+  try{
+    u=new SpeechSynthesisUtterance(text);
+    u.lang=SPEECH_TAG[langCode]||'en-US';
+    const voice=pickVoice(u.lang);
+    if(voice) u.voice=voice;
+  }catch(_){
+    try{ u=new SpeechSynthesisUtterance(text); u.lang=SPEECH_TAG[langCode]||'en-US'; }
+    catch(__){ speechLive=false; return; }
+  }
+  let settled=false;
+  const finish=()=>{
+    if(settled || gen!==speechGen) return;
+    settled=true;
+    clearTimeout(timer);
+    speechLive=false;
+    const extra=speechAfter; speechAfter=null;
+    if(extra){ try{ extra(); }catch(_){} }
+  };
+  u.onend=finish; u.onerror=finish;
+  const timer=setTimeout(finish, Math.min(9000, 1400+String(text).length*140));
+  try{ speechSynthesis.speak(u); }
+  catch(_){ finish(); }
+}
+function stopLearnRec(){
+  learnSess++;
+  if(learnRec){ const r=learnRec; learnRec=null; try{ r.abort(); }catch(e){} }
+  const m=$('#learnMic'); if(m) m.classList.remove('on');
+}
+function learnAlts(e){
+  const alts=[];
+  const results=e&&e.results;
+  if(!results) return alts;
+  for(let i=0;i<results.length;i++){
+    const res=results[i];
+    const n=res&&res.length||0;
+    for(let j=0;j<n;j++){
+      const t=res[j]&&res[j].transcript;
+      if(t&&t.trim()&&alts.indexOf(t.trim())<0) alts.push(t.trim());
+    }
+  }
+  return alts;
+}
+function startLearnRec(langCode){
+  if($('#learn').classList.contains('hidden')) return;
+  if(introHold&&!introHold.done){ introHold.pending=()=>startLearnRec(langCode); return; }
+  if(speechLive){ speechAfter=()=>startLearnRec(langCode); return; }
+  if(!SR){ setLearnHeard(S.srNA); return; }
+  if(learnTyping) return;
+  stopLearnRec();
+  const sess=++learnSess;
+  let r;
+  try{ r=new SR(); }catch(err){ setLearnHeard(S.srNA); return; }
+  r.lang=SPEECH_TAG[langCode]||'en-US';
+  r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
+  learnRec=r;
+  const mic=$('#learnMic'); if(mic) mic.classList.add('on');
+  setLearnHeard(S.listening);
+  let lastAlts=null, done=false, stableT=null;
+  const live=()=>sess===learnSess && !done && !$('#learn').classList.contains('hidden');
+  function finalize(alts){
+    if(!live()) return;
+    done=true; clearTimeout(stableT);
+    stopLearnRec();
+    if(!alts||!alts.length){
+      setLearnHeard($('#autoMic').checked?S.listening:(PTT?S.tapAgain:S.notHeard));
+      scheduleLearnRestart(langCode);
+      return;
+    }
+    learnEmpty=0;
+    if(langCode===LEARN_TARGET && learnPhase==='repeat') acceptRepeat(alts);
+    else acceptNative(alts[0]);
+  }
+  r.onresult=ev=>{
+    if(!live()) return;
+    let finalSeen=false;
+    for(let i=0;i<ev.results.length;i++){ if(ev.results[i].isFinal) finalSeen=true; }
+    const alts=learnAlts(ev);
+    if(!alts.length) return;
+    lastAlts=alts;
+    if(learnHoldOk && langCode===LANG){
+      learnHoldOk=false;
+      setLearnWord('other','');
+      const om=$('#learnOtherMsg'); if(om) om.textContent='';
+    }
+    setLearnWord('own', alts[0], 'interim');
+    setLearnHeard(S.heard+alts[0]+' …');
+    if(finalSeen){ finalize(alts); return; }
+    clearTimeout(stableT);
+    stableT=setTimeout(()=>{ if(lastAlts) finalize(lastAlts); }, STABLE_MS);
+  };
+  r.onerror=ev=>{
+    if(sess!==learnSess) return;
+    if(!ev || ev.error==='aborted') return;
+    if(ev.error==='no-speech'){ setLearnHeard($('#autoMic').checked?S.listening:S.noSpeech); return; }
+    const help=S.errs&&S.errs[ev.error];
+    setLearnHeard(help||(S.micErr+(ev.error||'')));
+  };
+  r.onend=()=>{
+    if(sess!==learnSess) return;
+    clearTimeout(stableT);
+    if(!done && lastAlts){ finalize(lastAlts); return; }
+    done=true; learnRec=null;
+    const m=$('#learnMic'); if(m) m.classList.remove('on');
+    if(learnPhase==='say'||learnPhase==='repeat') scheduleLearnRestart(langCode);
+  };
+  try{ r.start(); }
+  catch(err){ learnRec=null; if(mic) mic.classList.remove('on'); setLearnHeard(S.cantStart); }
+}
+function scheduleLearnRestart(langCode){
+  if(!$('#autoMic').checked || learnTyping || learnEmpty>=3) return;
+  if(learnPhase!=='say' && learnPhase!=='repeat') return;
+  learnEmpty++;
+  const token=learnToken;
+  setTimeout(()=>{
+    if(token!==learnToken || learnTyping || learnRec || $('#learn').classList.contains('hidden')) return;
+    if(learnPhase!=='say' && learnPhase!=='repeat') return;
+    startLearnRec(langCode);
+  }, 350);
+}
+function resumeLearnMic(){
+  if($('#learn').classList.contains('hidden')) return;
+  if(!$('#autoMic').checked){ setLearnHeard(S.tapToTalk); return; }
+  const lang=learnPhase==='repeat'?LEARN_TARGET:LANG;
+  startLearnRec(lang);
+}
+function beginSay(){
+  learnPhase='say';
+  learnPair=null;
+  learnTyping=false;
+  learnEmpty=0;
+  learnHoldOk=false;
+  setLearnWord('own','');
+  setLearnWord('other','');
+  const om=$('#learnOtherMsg'); if(om) om.textContent='';
+  setLearnMsg(S.learnSay,'');
+  const st=$('#learnStatus'); if(st) st.textContent=S.learnSay;
+  const skip=$('#learnSkip'), sp=$('#learnSpeak');
+  if(skip) skip.classList.add('hidden');
+  if(sp) sp.classList.add('hidden');
+  const inp=$('#learnIn'); if(inp){ inp.value=''; inp.placeholder=S.inputPh; }
+  if($('#autoMic').checked) startLearnRec(LANG);
+  else setLearnHeard(S.tapToTalk);
+}
+function beginRepeat(pair, speak){
+  learnToken++;
+  learnPair={n:pair.n, t:pair.t};
+  learnPhase='repeat';
+  learnTyping=false;
+  learnEmpty=0;
+  learnHoldOk=false;
+  stopLearnRec();
+  setLearnWord('own', pair.n, '');
+  setLearnWord('other', pair.t, '');
+  setLearnMsg(S.learnRepeat,'');
+  const om=$('#learnOtherMsg'); if(om) om.textContent='';
+  const st=$('#learnStatus'); if(st) st.textContent=S.learnRepeat;
+  const skip=$('#learnSkip'), sp=$('#learnSpeak');
+  if(skip) skip.classList.remove('hidden');
+  if(sp) sp.classList.remove('hidden');
+  const inp=$('#learnIn'); if(inp) inp.value='';
+  const open=()=>{ if(learnPhase==='repeat'){ if($('#autoMic').checked) startLearnRec(LEARN_TARGET); else setLearnHeard(S.tapToTalk); } };
+  if(speak){ speakLearn(pair.t, LEARN_TARGET); open(); }
+  else open();
+}
+async function acceptNative(raw){
+  const token=++learnToken;
+  const word=displayLearn(LANG, raw);
+  if(!word){
+    if($('#autoMic').checked && !learnTyping) startLearnRec(LANG);
+    return;
+  }
+  stopLearnRec();
+  learnPhase='wait';
+  learnHoldOk=false;
+  setLearnWord('own', word, '');
+  setLearnWord('other', '…', '');
+  setLearnHeard(S.heard+word);
+  setLearnMsg('','');
+  let tr=dictTranslate(LANG, LEARN_TARGET, word);
+  if(!tr) tr=await remoteTranslate(LANG, LEARN_TARGET, word);
+  if(token!==learnToken || $('#learn').classList.contains('hidden')) return;
+  if(!tr){
+    setLearnWord('other','');
+    setLearnMsg(S.learnNoTr,'err');
+    const st=$('#learnStatus'); if(st) st.textContent=S.learnNoTr;
+    learnPhase='say';
+    if($('#autoMic').checked) startLearnRec(LANG);
+    else setLearnHeard(S.tapToTalk);
+    return;
+  }
+  beginRepeat({n:word, t:tr}, true);
+}
+function acceptRepeat(alts){
+  if(!learnPair || learnPhase!=='repeat') return;
+  const heard=displayLearn(LEARN_TARGET, (alts&&alts[0])||'') || String((alts&&alts[0])||'').trim();
+  if(learnMatch(alts, learnPair.t)){
+    stopLearnRec();
+    const pair=learnPair;
+    saveLearnPair(pair.n, pair.t);
+    learnPhase='say';
+    learnPair=null;
+    learnHoldOk=true;
+    learnTyping=false;
+    learnEmpty=0;
+    setLearnWord('other', '✅', 'bigok');
+    const om=$('#learnOtherMsg'); if(om) om.textContent=pair.t;
+    setLearnWord('own', pair.n, 'ok');
+    setLearnMsg(S.learnOk+' '+S.learnAgain, 'good');
+    const st=$('#learnStatus'); if(st) st.textContent='✅';
+    const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
+    const sp=$('#learnSpeak'); if(sp) sp.classList.add('hidden');
+    if($('#autoMic').checked) startLearnRec(LANG);
+    else setLearnHeard(S.tapToTalk);
+    return;
+  }
+  setLearnWord('own', heard||'\u00a0', 'bad');
+  setLearnMsg(S.learnWrong, 'err');
+  const skip=$('#learnSkip'), sp=$('#learnSpeak');
+  if(skip) skip.classList.remove('hidden');
+  if(sp) sp.classList.remove('hidden');
+  learnTyping=false;
+  if($('#autoMic').checked) startLearnRec(LEARN_TARGET);
+  else setLearnHeard(S.tapAgain);
+  // The new mic says "listening"; keep what was heard in front of that.
+  setLearnHeard(S.heard+(heard||String((alts&&alts[0])||'').trim()));
+}
+function submitLearnTyped(){
+  const inp=$('#learnIn'); if(!inp) return;
+  const raw=inp.value; inp.value='';
+  learnTyping=false;
+  if(learnPhase==='repeat') acceptRepeat([raw]);
+  else acceptNative(raw);
+}
+function skipLearn(){
+  learnToken++;
+  stopLearnRec();
+  speechGen++;
+  speechLive=false;
+  speechAfter=null;
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  beginSay();
+}
+function replayLearn(){
+  if(learnPhase!=='repeat' || !learnPair) return;
+  stopLearnRec();
+  speakLearn(learnPair.t, LEARN_TARGET);
+  startLearnRec(LEARN_TARGET);
+}
+function startLearn(){
+  learnToken++;
+  showLearnShell();
+  beginSay();
+}
+function leaveLearn(){
+  learnToken++;
+  stopLearnRec();
+  speechGen++;
+  speechLive=false;
+  speechAfter=null;
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  $('#learn').classList.add('hidden');
+  $('#start').classList.remove('hidden');
+}
+function renderLearnWords(){
+  $('#wordsTitle').textContent=S.myWords;
+  $('#wordsNote').textContent=S.learnWordsNote;
+  $('#wordsEmpty').textContent=S.learnWordsEmpty;
+  $('#wordsClose').textContent=S.myWordsClose;
+  const words=readLearnWords();
+  const ul=$('#wordsList'); ul.innerHTML='';
+  $('#wordsEmpty').classList.toggle('hidden', words.length>0);
+  words.forEach((w,i)=>{
+    const li=document.createElement('li');
+    if(pendingLearnDelete===i){
+      li.innerHTML=`<span class="mw-word" dir="auto">${esc(w.n)} · ${esc(w.t)}</span><span class="mw-ask">${esc(S.myWordsAsk)}</span><button type="button" class="mw-yes" data-i="${i}">${esc(S.myWordsYes)}</button><button type="button" class="mw-no">${esc(S.myWordsNo)}</button>`;
+    } else {
+      li.innerHTML=`<button type="button" class="mw-pair" data-i="${i}"><span class="mw-native" dir="auto">${esc(w.n)}</span><span class="mw-eq">·</span><span class="mw-target" dir="auto">${esc(w.t)}</span></button><button type="button" class="mw-x" data-i="${i}" aria-label="${esc(S.myWordsDeleteAria)}">✕</button>`;
+    }
+    ul.appendChild(li);
+  });
+}
+function onLearnWordsClick(e){
+  const t=e.target.closest('button'); if(!t) return;
+  const words=readLearnWords();
+  if(t.classList.contains('mw-no')){ pendingLearnDelete=null; renderLearnWords(); return; }
+  const i=+t.dataset.i;
+  const w=words[i]; if(!w) return;
+  if(t.classList.contains('mw-x')){ pendingLearnDelete=i; renderLearnWords(); return; }
+  if(t.classList.contains('mw-yes')){
+    const arr=readLearnWords();
+    arr.splice(i,1);
+    writeLearnWords(arr);
+    pendingLearnDelete=null;
+    renderLearnWords();
+    return;
+  }
+  if(t.classList.contains('mw-pair')){
+    pendingLearnDelete=null;
+    const showing=!$('#learn').classList.contains('hidden');
+    closeMyWords({silent:true});
+    if(!showing){
+      playIntro();
+      showLearnShell();
+      const go=()=>beginRepeat(w, true);
+      if(introHold&&!introHold.done) introHold.pending=go;
+      else go();
+    } else beginRepeat(w, true);
+  }
+}
+$('#modePlay').onclick=()=>setMode('play');
+$('#modeLearn').onclick=()=>setMode('learn');
+document.querySelectorAll('#learnTargets .opt').forEach(b=>b.onclick=()=>{
+  if(b.disabled||b.dataset.lang===LANG) return;
+  LEARN_TARGET=b.dataset.lang;
+  syncTargetButtons();
+  if($('#wordsov') && !$('#wordsov').classList.contains('hidden')){ pendingLearnDelete=null; renderMyWords(); }
+});
+$('#learnBack').onclick=leaveLearn;
+$('#learnWordsBtn').onclick=openMyWords;
+$('#learnSend').onclick=submitLearnTyped;
+$('#learnSkip').onclick=skipLearn;
+$('#learnSpeak').onclick=replayLearn;
+$('#learnMic').onclick=()=>{
+  if(!SR) return;
+  learnTyping=false;
+  if(learnRec){ stopLearnRec(); setLearnHeard(S.micOff); return; }
+  const lang=learnPhase==='repeat'?LEARN_TARGET:LANG;
+  startLearnRec(lang);
+};
+$('#learnIn').addEventListener('input', ()=>{
+  if(!$('#learnIn').value) return;
+  if(!learnTyping){ learnTyping=true; if(learnRec) stopLearnRec(); setLearnHeard(S.typing); }
+});
+$('#learnIn').addEventListener('keydown', e=>{
+  if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); submitLearnTyped(); }
+});
+syncTargetButtons();
+
 </script>
 </body>
 </html>

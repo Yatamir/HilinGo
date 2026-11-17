@@ -1,5 +1,5 @@
 /**
- * HilinGo v3.9 — WebKit, iPhone 14 Pro, standalone display-mode.
+ * HilinGo v4.0 — WebKit, iPhone 14 Pro, standalone display-mode.
  * Confirms the white outline mic and the blue waveform actually paint.
  *   npx playwright install webkit && node tests_learn_webkit.mjs
  */
@@ -92,6 +92,10 @@ try {
   const standalone = await page.evaluate(() => matchMedia('(display-mode: standalone)').matches && navigator.standalone === true);
   if (!standalone) bad('standalone media query did not match');
   else ok('standalone display-mode');
+  const ptLabel = (await page.locator('#langs [data-lang="pt"]').innerText()).trim();
+  if (ptLabel !== 'Português' || /🇵🇹|🇧🇷/.test(ptLabel)) bad('pt label ' + ptLabel);
+  else ok('Portuguese button has no flags');
+  await page.screenshot({ path: path.join(SHOTS, 'lang-webkit-iphone.png') });
   await page.click('#modeLearn');
   await page.click('#go');
   await page.evaluate(() => window.__fireIntro('ended'));
@@ -126,6 +130,48 @@ try {
   if (listen.hidden || listen.w < 24 || listen.h < 24 || listen.fill !== '#4060E0') bad('waveform ' + JSON.stringify(listen));
   else ok('blue waveform paints while listening');
   await page.screenshot({ path: path.join(SHOTS, 'learn-webkit-listening-iphone.png') });
+  for (let i = 0; i < 5; i++) await page.click('#verLblLearn');
+  await page.waitForFunction(() => !document.getElementById('learnDbg').classList.contains('hidden'));
+  const copy = await page.evaluate(() => {
+    const rects = [...document.querySelectorAll('#dbgCopy .ico-copy rect')];
+    const bar = document.querySelector('.dbgbar').getBoundingClientRect();
+    const box = document.querySelector('#learnDbg').getBoundingClientRect();
+    return { stroke: rects.map(r => r.getAttribute('stroke')).join(','), barTop: bar.top, boxTop: box.top };
+  });
+  if (copy.stroke !== '#fff,#fff' || copy.barTop > copy.boxTop + 2) bad('debug copy icon ' + JSON.stringify(copy));
+  else ok('white copy icon is pinned at the top of the log');
+  await page.screenshot({ path: path.join(SHOTS, 'learn-webkit-debug-iphone.png') });
+
+  const play = await context.newPage();
+  play.on('pageerror', e => errors.push(String(e)));
+  await play.goto(`http://127.0.0.1:${port}/index.html?ptt=1`, { waitUntil: 'domcontentloaded' });
+  await play.evaluate(() => { document.getElementById('autoMic').checked = false; });
+  await play.click('#go');
+  await play.evaluate(() => window.__fireIntro('ended'));
+  await play.waitForTimeout(400);
+  const playIdle = await play.evaluate(() => {
+    const mic = document.querySelector('#mic0 .ico-mic');
+    const b = mic.getBoundingClientRect();
+    return {
+      w: b.width, h: b.height,
+      stroke: mic.querySelector('rect').getAttribute('stroke'),
+      on: document.getElementById('mic0').classList.contains('on'),
+      wave: getComputedStyle(document.querySelector('#half0 .play-wave')).display,
+    };
+  });
+  if (playIdle.on || playIdle.wave !== 'none' || playIdle.w < 20 || playIdle.stroke !== '#fff') bad('play idle mic ' + JSON.stringify(playIdle));
+  else ok('Play outline mic is white and the waveform is hidden until listening');
+  await play.screenshot({ path: path.join(SHOTS, 'play-webkit-idle-iphone.png') });
+  await play.click('#mic0');
+  await play.waitForFunction(() => document.getElementById('mic0').classList.contains('on'));
+  const playListen = await play.evaluate(() => {
+    const wave = document.querySelector('#half0 .play-wave');
+    const b = wave.getBoundingClientRect();
+    return { w: b.width, h: b.height, display: getComputedStyle(wave).display, fill: wave.querySelector('circle').getAttribute('fill') };
+  });
+  if (playListen.display === 'none' || playListen.w < 24 || playListen.fill !== '#4060E0') bad('play waveform ' + JSON.stringify(playListen));
+  else ok('Play shows the blue waveform while listening');
+  await play.screenshot({ path: path.join(SHOTS, 'play-webkit-listening-iphone.png') });
   if (errors.length) bad(errors.join(';'));
 } catch (err) {
   bad('webkit ' + (err && err.message || err));

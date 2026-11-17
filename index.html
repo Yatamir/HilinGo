@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.0">
+<meta name="hilingo-version" content="4.1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
@@ -442,6 +442,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .lpanel{flex:1;display:flex;flex-direction:column;padding:14px;gap:8px;min-height:0;min-width:0;border-radius:24px;background:linear-gradient(180deg,#fff 0%,var(--pl,#F6F2FF) 100%);box-shadow:0 10px 28px rgba(50,30,120,.08)}
 .lpanel.p1{--pl:var(--p1l)} .lpanel.p2{--pl:var(--p2l)}
 #learn .word{min-height:120px;font-size:clamp(40px,6vw,84px);line-height:1.15;word-break:break-word}
+.learn-wordrow{position:relative}
+#learnClear{position:absolute;z-index:2;top:8px;inset-inline-start:8px;border:2px solid #7C5CFF;background:#fff;color:#2A2152}
 #learn .word.bigok{font-size:clamp(72px,12vw,140px);min-height:140px;color:var(--green)}
 #learn .inputs input{font-size:18px}
 .speakbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;width:auto;padding:0 14px;border-radius:24px;background:var(--c,var(--p2));color:#fff;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--p2)) 70%, #000)}
@@ -548,7 +550,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.0</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.1</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -570,13 +572,13 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.0</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.1</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
     <div class="lpanel p1 active" id="learnOwn">
-      <div class="hhead"><span class="pname" id="learnOwnName"></span><button type="button" class="smallbtn" id="learnClear">נקה</button></div>
-      <div class="word" id="learnOwnWord" dir="auto">&nbsp;</div>
+      <div class="hhead"><span class="pname" id="learnOwnName"></span></div>
+      <div class="learn-wordrow"><div class="word" id="learnOwnWord" dir="auto">&nbsp;</div><button type="button" class="smallbtn hidden" id="learnClear">נקה</button></div>
       <div class="msg" id="learnOwnMsg"></div>
       <div class="hrow"><span id="learnListenMark" class="listen-mark hidden" aria-hidden="true"><svg class="ico-listen" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><div class="heard" id="learnHeard"></div></div>
       <div class="inputs">
@@ -845,7 +847,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.0';
+window.WG = WG; window.HILINGO_VERSION='4.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1488,7 +1490,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.0 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1814,6 +1816,13 @@ function setLearnWord(which, text, cls){
   if(!e) return;
   e.textContent=text||'\u00a0';
   e.className='word'+(cls?' '+cls:'');
+  if(which==='own') syncLearnClear();
+}
+function syncLearnClear(){
+  const btn=$('#learnClear'); if(!btn) return;
+  const word=($('#learnOwnWord')&&$('#learnOwnWord').textContent||'').replace(/\u00a0/g,'').trim();
+  const result=learnState==='SPEAK_TARGET'||learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='OK';
+  btn.classList.toggle('hidden', !(word||result));
 }
 function setLearnHeard(t){
   const e=$('#learnHeard'); if(e) e.textContent=t||'';
@@ -1874,6 +1883,7 @@ function setState(next){
   const showRepeat=next==='IDLE_TARGET'||next==='RETRY';
   const rep=$('#learnRepeatMic'); if(rep) rep.classList.toggle('hidden', !showRepeat);
   const said=$('#learnSaid'); if(said) said.classList.toggle('hidden', !showRepeat);
+  syncLearnClear();
   learnLog('-> '+next);
 }
 function learnListenText(code){

@@ -1,5 +1,5 @@
 /**
- * HilinGo v3.6 — Learn mode.
+ * HilinGo v3.7 — Learn mode, including speech unlock and the target-language mic.
  *   npm install playwright-core
  *   node tests_learn.mjs
  * Speech recognition, speechSynthesis and the intro clip are mocked.
@@ -49,6 +49,8 @@ await context.addInitScript(() => {
   window.__srLangs = [];
   window.__srs = [];
   window.__utts = [];
+  window.__ev = [];
+  window.__resumes = 0;
   window.__fetches = [];
   window.__fetchMode = 'ok';
   window.__fetchText = 'palavra';
@@ -68,20 +70,24 @@ await context.addInitScript(() => {
     ((el && el._ls && el._ls[type]) || []).slice().forEach(fn => fn());
   };
   class FakeSR {
-    start() { window.__srStarts++; window.__srLangs.push(this.lang); window.__srs.push(this); if (this.onstart) this.onstart(); }
-    stop() {}
-    abort() {}
+    start() { window.__srStarts++; window.__srLangs.push(this.lang); window.__srs.push(this); window.__ev.push('start:' + this.lang); if (this.onstart) this.onstart(); }
+    stop() { window.__ev.push('stop'); }
+    abort() { window.__ev.push('abort'); if (this.onend) this.onend(); }
   }
   window.SpeechRecognition = FakeSR;
   window.webkitSpeechRecognition = FakeSR;
   window.SpeechSynthesisUtterance = class {
-    constructor(text){ this.text = text; this.lang = ''; this.voice = null; this.onend = null; this.onerror = null; }
+    constructor(text){ this.text = text; this.lang = ''; this.voice = null; this.volume = 1; this.rate = 1; this.onend = null; this.onerror = null; }
   };
   window.__emit = (text, extra) => {
     const sr = window.__srs[window.__srs.length - 1];
     if (!sr || !sr.onresult) throw new Error('no recognizer');
-    const alts = [text].concat(extra || []);
-    const res = { isFinal: true, length: alts.length };
+    let alts, isFinal = true;
+    if (extra && !Array.isArray(extra)) {
+      alts = extra.alts || [text];
+      isFinal = extra.final !== false;
+    } else alts = [text].concat(extra || []);
+    const res = { isFinal, length: alts.length };
     alts.forEach((t, i) => { res[i] = { transcript: t }; });
     sr.onresult({ results: [res], resultIndex: 0 });
   };
@@ -95,8 +101,13 @@ await context.addInitScript(() => {
         { lang: 'en-US', name: 'English' },
       ];
     },
-    cancel() {},
-    speak(u) { window.__utts.push({ text: u.text, lang: u.lang, voice: u.voice && u.voice.lang }); window.__lastUtt = u; },
+    cancel() { window.__ev.push('cancel'); },
+    resume() { window.__resumes++; window.__ev.push('resume'); },
+    speak(u) {
+      window.__utts.push({ text: u.text, lang: u.lang, voice: u.voice && u.voice.lang, volume: u.volume });
+      window.__ev.push('speak:' + u.lang + ':' + u.text);
+      window.__lastUtt = u;
+    },
   };
   try {
     Object.defineProperty(window, 'speechSynthesis', { configurable: true, writable: true, value: synth });
@@ -178,6 +189,9 @@ try {
     }));
     if (s.plays !== 1 || s.sr !== 0 || !s.learn || !s.game) bad('learn start ' + JSON.stringify(s));
     else ok('intro is playing and the learn mic is waiting');
+    const unlock = await page.evaluate(() => ({ u: window.__utts[0], resumes: window.__resumes }));
+    if (!unlock.u || unlock.u.volume !== 0 || unlock.resumes < 1) bad('speech not unlocked on the learn tap ' + JSON.stringify(unlock));
+    else ok('Let\'s learn tap unlocks speechSynthesis (silent utterance + resume)');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForFunction(() => window.__srStarts >= 1);
     s = await page.evaluate(() => ({ lang: window.__srLangs[window.__srLangs.length - 1], sr: window.__srStarts }));
@@ -199,6 +213,12 @@ try {
     } else if (s.sr !== 1) bad('mic reopened during speech ' + s.sr);
     else if (s.fetches !== fetchesBefore) bad('dictionary hit called MyMemory');
     else ok('כלב → cachorro spoken with pt-BR, mic still closed');
+    const order = await page.evaluate(() => window.__ev.join(' | '));
+    const speakAt = order.lastIndexOf('speak:pt-BR:cachorro');
+    const startPt = order.indexOf('start:pt-BR');
+    const abortAt = order.lastIndexOf('abort', speakAt);
+    if (speakAt < 0 || abortAt < 0 || abortAt > speakAt || (startPt >= 0 && startPt < speakAt)) bad('speak/mic order ' + order);
+    else ok('recognizer aborted before the target word is spoken');
     await shot(page, 'learn-translation-phone');
 
     await page.evaluate(() => window.__endSpeech());
@@ -206,6 +226,10 @@ try {
     s = await page.evaluate(() => window.__srLangs[window.__srLangs.length - 1]);
     if (s !== 'pt-BR') bad('repeat mic ' + s);
     else ok('mic switched to pt-BR after the speech');
+    const listen = await page.locator('#learnStatus').innerText();
+    if (!listen.includes('Português')) bad('listening status ' + listen);
+    else ok('status says listening in Português');
+    await shot(page, 'learn-listening-phone');
 
     await page.evaluate(() => window.__emit('gato'));
     await page.waitForFunction(() => document.getElementById('learnOwnWord').textContent.includes('gato'));
@@ -219,6 +243,15 @@ try {
     }));
     if (!s.own.includes('gato') || !s.heard.includes('gato') || s.other !== 'cachorro' || !s.skip || !s.speak || s.check) bad('mismatch ' + JSON.stringify(s));
     else ok('mismatch shows what was heard, 🔊 and skip');
+    {
+      const before = await page.evaluate(() => ({ sr: window.__srStarts, n: window.__utts.length }));
+      await page.click('#learnSpeak');
+      const mid = await page.evaluate(() => ({ sr: window.__srStarts, utt: window.__utts[window.__utts.length - 1], n: window.__utts.length }));
+      if (mid.sr !== before.sr || !mid.utt || mid.utt.text !== 'cachorro' || mid.utt.lang !== 'pt-BR' || mid.n <= before.n) bad('🔊 tap ' + JSON.stringify(mid));
+      else ok('🔊 speaks from the tap while the mic stays closed');
+      await page.evaluate(() => window.__endSpeech());
+      await page.waitForFunction(n => window.__srStarts > n && window.__srLangs.at(-1) === 'pt-BR', before.sr);
+    }
 
     await page.evaluate(() => window.__emit('cachorru'));
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('✅'));
@@ -298,7 +331,7 @@ try {
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
     const fit = await page.evaluate(() => {
       const vw = innerWidth, vh = innerHeight;
-      const boxes = ['learnOwn', 'learnOther', 'learnMic', 'learnIn', 'learnSend', 'learnOtherWord'].map(id => {
+      const boxes = ['learnOwn', 'learnOther', 'learnMic', 'learnIn', 'learnSend', 'learnOtherWord', 'learnSpeak'].map(id => {
         const r = document.getElementById(id).getBoundingClientRect();
         return { id, top: r.top, bottom: r.bottom, left: r.left, right: r.right, w: r.width, h: r.height };
       });
@@ -312,6 +345,7 @@ try {
     if (name === 'ipad-land') await shot(page, 'learn-translation-ipad-land');
     await page.evaluate(() => { window.__endSpeech(); });
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'pt-BR');
+    if (name === 'ipad') await shot(page, 'learn-listening-ipad');
     await page.evaluate(() => window.__emit('cachorro'));
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('✅'));
     if (name === 'ipad') {
@@ -420,6 +454,37 @@ try {
     const v = await page.evaluate(() => ({ t: document.getElementById('learnOtherWord').textContent, lang: window.__utts.at(-1).lang }));
     if (v.t !== 'hond' || v.lang !== 'nl-NL') bad('en→nl ' + JSON.stringify(v));
     else ok('en dog → nl hond');
+    await page.evaluate(() => window.__endSpeech());
+    await page.waitForFunction(() => window.__srLangs.at(-1) === 'nl-NL');
+    const status = await page.locator('#learnStatus').innerText();
+    if (!status.includes('Nederlands')) bad('nl listening status ' + status);
+    else ok('status says listening in Nederlands');
+    await page.evaluate(() => window.__emit('de hond'));
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('✅'));
+    ok('article "de hond" matches hond');
+    await page.close();
+  }
+
+  // Interim result (not final) still counts, and a missing voice does not block speech.
+  {
+    const page = await context.newPage();
+    const errors = await open(page, { width: 800, height: 700 });
+    await page.evaluate(() => { window.speechSynthesis.getVoices = () => []; });
+    await page.click('#modeLearn');
+    await page.click('#go');
+    await page.evaluate(() => window.__fireIntro('ended'));
+    await page.waitForFunction(() => window.__srLangs.at(-1) === 'he-IL');
+    await page.evaluate(() => window.__emit('כלב'));
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
+    const spoken = await page.evaluate(() => window.__utts.at(-1));
+    if (!spoken || spoken.lang !== 'pt-BR' || spoken.voice) bad('no-voice fallback ' + JSON.stringify(spoken));
+    else ok('no exact voice: utterance.lang is pt-BR and speak still runs');
+    await page.evaluate(() => window.__endSpeech());
+    await page.waitForFunction(() => window.__srLangs.at(-1) === 'pt-BR');
+    await page.evaluate(() => window.__emit('cachorro', { final: false }));
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('✅'));
+    if (errors.length) bad('interim errors ' + errors.join(';'));
+    else ok('interim (not final) "cachorro" is accepted');
     await page.close();
   }
 } finally {

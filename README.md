@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.9)
+# HilinGo – word-chain game (v4.0)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,14 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.0 – Learn words ship as audio files, and Play’s mic is unchanged
+- Google’s translate TTS URL returns `audio/mpeg` only when the request has no Referer. With `Referer: https://yatamir.github.io/` it returns a 404 HTML page, which an `<audio>` element reports as `NotSupportedError` code 4. StreamElements’ speech URL now answers 401 without an API key. Dictionary words are therefore stored as 24kbps mono MP3s under `audio/tts/<lang>/<id>.mp3`, generated where that Google URL still returns audio. A word that is not in the dictionary still tries the same URL with `referrerpolicy=no-referrer` (and a page referrer policy of `no-referrer`). `speechSynthesis` is only the last fallback, and nothing calls it when the page loads, so Play’s recognizer is not sharing the speech engine.
+- Play’s `startRec` is the v3.5 function. Learn opens a recognizer the same way: a new instance, `continuous` false, interim results, 5 alternatives, `start()` inside the tap. A silent clip is no longer played on the microphone tap. If iOS reports `kAFAssistantErrorDomain error 7` (dictation language not installed), Learn does not try `pt-PT`. It shows once how to add that keyboard, and נקה / Skip / אמרתי (“I said it”) stay available so the round can be confirmed.
+- Play’s speak button uses the same white outline microphone. While that recognizer is running, the blue waveform circle is shown beside what was heard.
+- The Portuguese language button is the word Português, with no flag emoji.
+- The debug log (five taps on v4.0) has a white copy icon, Copy all, and Clear log pinned at the top. Copy uses the clipboard and falls back to `execCommand` for the home-screen app. Test pt-BR mic starts Portuguese recognition only, and the log says `path: cold` when speech was never started on that load. After any spoken word, the target mic first cancels speech, removes the audio element, and waits 450ms. The log says `mic path: after-release` and `tts path: local-mp3`, `audio-url`, or `speechSynthesis`.
+- Test: `node tests_learn.mjs`, `node tests_intro.mjs`, `node tests_tablet.mjs`, `node tests_learn_webkit.mjs`.
 
 ## v3.9 – Learn mode speaks through an audio file, and the mic matches Play
 - On an iPhone home-screen app the target word still made no sound. `speechSynthesis` reported an end after about a second and never played audio (silent switch on or off, and again from a direct tap on 🔊). The repeat step never appeared, because iOS does not auto-listen and the only microphone was on the native panel. Hebrew results sometimes arrived with a hidden right-to-left mark (`U+200F`), and after the first `speechSynthesis` call every target-language recognizer aborted about 30ms after `start()`.

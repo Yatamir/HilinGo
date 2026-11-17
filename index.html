@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.3">
+<meta name="hilingo-version" content="3.4">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -23,14 +23,17 @@
   --bg:#F3EEFF;--txt:#2A2152;--muted:#6B6490;--bad:#FF5B6E;--white:#fff;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:"Rubik","Varela Round","Assistant","Arial Hebrew","Segoe UI",Arial,sans-serif;color:var(--txt);background-color:var(--bg);
+html,body{margin:0;height:100%;font-family:"Rubik","Varela Round","Assistant","Arial Hebrew","Segoe UI",Arial,sans-serif;color:var(--txt);background-color:var(--bg)}
+/* Fixed backdrop without background-attachment:fixed. Safari flickers that attachment
+   through composited layers (tiles, the pulsing mic) as a purple flash. */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-color:var(--bg);
   background-image:
     radial-gradient(1100px 640px at 8% -12%, rgba(124,92,255,.42), transparent 55%),
     radial-gradient(900px 520px at 108% 0%, rgba(76,124,255,.38), transparent 52%),
     radial-gradient(820px 520px at 88% 112%, rgba(255,229,102,.46), transparent 55%),
     radial-gradient(620px 420px at -8% 108%, rgba(20,212,200,.22), transparent 50%),
-    linear-gradient(180deg,#F6F2FF 0%,#EEF4FF 48%,#FFF8E8 100%);
-  background-attachment:fixed}
+    linear-gradient(180deg,#F6F2FF 0%,#EEF4FF 48%,#FFF8E8 100%)}
+#start,#game{position:relative;z-index:1}
 button{font-family:inherit;cursor:pointer;border:none}
 .hidden{display:none!important}
 
@@ -99,19 +102,26 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 }
 
 /* game */
-#game{display:flex;flex-direction:column;height:100%;height:100dvh;overflow:hidden}
+#game{display:flex;flex-direction:column;height:100%;height:100dvh;max-height:100dvh;overflow:hidden;
+  padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom)}
+/* svh keeps the board inside the visible area when iPad Safari's tab bar is open
+   (dvh on that browser can stay as tall as the screen behind the chrome). */
+@supports (height:100svh){
+  #game{height:100svh;max-height:100dvh}
+}
 #topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,50,180,.08);border-bottom:1px solid rgba(255,255,255,.8)}
 #status{font-size:clamp(16px,2.4vw,24px);font-weight:700;text-align:center;flex:1}
 #status .need{display:inline-block;min-width:1.6em;padding:0 8px;border-radius:10px;background-color:var(--yellow);font-size:1.3em;box-shadow:0 2px 0 #E0A800}
 .smallbtn{padding:8px 14px;border-radius:14px;background:#fff;font-size:15px;font-weight:700;color:var(--txt);box-shadow:0 3px 0 #E6E0F8}
 .smallbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #E6E0F8}
 #timerbar{height:8px;background:rgba(255,255,255,.55)}
-#timerfill{height:100%;width:100%;background:var(--p1);transition:width .1s linear;border-radius:0 8px 8px 0;box-shadow:0 0 12px rgba(124,92,255,.35)}
-#halves{flex:1;display:flex;min-height:0;padding:8px;gap:8px}
-.half{flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;transition:background .3s,opacity .3s,box-shadow .3s,transform .3s,filter .3s;min-height:0;position:relative;border-radius:24px;background:linear-gradient(180deg,#fff 0%,var(--pl) 100%);box-shadow:0 10px 28px rgba(50,30,120,.08)}
+#timerfill{height:100%;width:100%;background:var(--p1);transition:width .1s linear;border-radius:0 8px 8px 0}
+#halves{flex:1;display:flex;min-height:0;min-width:0;padding:8px;gap:8px}
+.half{flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;transition:background .3s,opacity .3s,box-shadow .3s,filter .3s;min-height:0;min-width:0;position:relative;border-radius:24px;background:linear-gradient(180deg,#fff 0%,var(--pl) 100%);box-shadow:0 10px 28px rgba(50,30,120,.08)}
 .half.p1{--pl:var(--p1l)} .half.p2{--pl:var(--p2l)} .half.p3{--pl:var(--p3l)} .half.p4{--pl:var(--p4l)}
-.half:not(.active){opacity:.62;filter:saturate(.8);transform:scale(.985)}
-.half.active{box-shadow:0 0 0 4px var(--c),0 0 28px rgba(0,0,0,.06),0 12px 36px color-mix(in srgb, var(--c) 35%, transparent);transform:scale(1);z-index:1}
+.half:not(.active){opacity:.62;filter:saturate(.8)}
+.half.active{box-shadow:0 0 0 4px var(--c),0 0 28px rgba(0,0,0,.06),0 12px 36px color-mix(in srgb, var(--c) 35%, transparent);z-index:1}
 .p1{--c:var(--p1)} .p2{--c:var(--p2)} .p3{--c:var(--p3)} .p4{--c:var(--p4)}
 #halves.n3{display:grid;grid-template-columns:repeat(3,1fr)}
 #halves.n4{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
@@ -128,11 +138,12 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .pname{font-size:22px;font-weight:800;color:var(--c)}
 .count{font-size:14px;font-weight:700;background:#fff;border-radius:999px;padding:4px 10px;color:var(--muted);box-shadow:0 2px 0 rgba(80,50,160,.08)}
 /* circular countdown ring; number stays in #pt so tests and logic are unchanged */
-.ptimer{--t:1;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--c);min-width:54px;text-align:center;position:relative;background:conic-gradient(var(--c) calc(var(--t)*360deg), #EDE8F8 0);box-shadow:0 4px 10px rgba(80,50,160,.12);flex-shrink:0}
-.ptimer::before{content:"";position:absolute;inset:5px;background:#fff;border-radius:50%;z-index:-1}
-.ptimer{isolation:isolate}
+/* Ring is a masked ::before. A z-index:-1 disc under the number escapes in Safari
+   (parent opacity/filter) and flashes purple behind the tiles while --t updates. */
+.ptimer{--t:1;--ring:var(--c);--track:#EDE8F8;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--c);min-width:54px;text-align:center;position:relative;background:#fff;box-shadow:0 4px 10px rgba(80,50,160,.12);flex-shrink:0}
+.ptimer::before{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(var(--ring) calc(var(--t)*360deg), var(--track) 0);-webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 6.5px), #000 calc(100% - 5px));mask:radial-gradient(farthest-side, transparent calc(100% - 6.5px), #000 calc(100% - 5px));pointer-events:none}
 .ptimer:empty{visibility:hidden}
-.ptimer.low{color:var(--bad);background:conic-gradient(var(--bad) calc(var(--t)*360deg), #FDE8EA 0);animation:pulse .5s infinite alternate}
+.ptimer.low{--ring:var(--bad);--track:#FDE8EA;color:var(--bad);animation:pulse .5s infinite alternate}
 @keyframes pulse{to{transform:scale(1.12)}}
 .word{min-height:64px;display:flex;align-items:center;justify-content:center;font-size:clamp(30px,5vw,52px);font-weight:800;background:#fff;border-radius:18px;padding:4px 10px;text-align:center;box-shadow:inset 0 0 0 2px rgba(80,50,160,.06)}
 .word.ok{color:var(--green);animation:pop .4s} .word.bad{color:var(--bad);animation:shake .4s} .word.interim{color:#8A84A8}
@@ -159,7 +170,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .tile.back{animation:backin .8s}
 @keyframes backin{0%{transform:scale(.6);background-color:#3DD68C;color:#fff}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 .half.active .pname::after{content:var(--yourturn," · תורך!");font-size:16px}
-.tiles{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-content:center;min-height:0}
+.tiles{flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-content:center;min-height:0;min-width:0}
 /* 3D tiles — .need/.need.gone MUST keep a solid background-color and a non-none box-shadow (tests) */
 .tile{aspect-ratio:1;max-height:72px;width:100%;justify-self:center;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,3.4vw,36px);font-weight:800;background-color:#fff;background-image:linear-gradient(180deg,#ffffff,#F4F0FF);color:var(--c);border-radius:14px;box-shadow:0 1px 0 #fff inset,0 4px 0 rgba(80,50,160,.16),0 8px 14px rgba(80,50,160,.10);transition:transform .45s,box-shadow .45s,background-color .45s,color .45s;position:relative}
 .tile.need{background-color:#FFE566;background-image:linear-gradient(180deg,#FFF3A0,#FFE566);transform:scale(1.08);box-shadow:0 0 0 3px #FFD000,0 6px 16px rgba(255,196,0,.45)}
@@ -177,7 +188,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .note:empty{display:none}
 .tile.boom{animation:boom .7s}
 @keyframes boom{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.4) rotate(-12deg);background-color:#FF5B6E;background-image:none;color:#fff;box-shadow:0 0 0 8px rgba(255,91,110,.28)}55%{transform:scale(1.08) rotate(8deg)}100%{transform:scale(.8) rotate(0)}}
-.inputs{display:flex;gap:6px}
+.inputs{display:flex;gap:6px;flex-shrink:0;min-width:0;position:relative;z-index:2}
+.hhead,.word,.hrow,.msg,.note{flex-shrink:0;min-width:0}
 .inputs input{flex:1;min-width:0;font-size:22px;padding:10px;border-radius:14px;border:2px solid #E6E0F8;font-family:inherit;text-align:center;background:#fff}
 .inputs input:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent)}
 
@@ -343,6 +355,68 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .send,#halves.n3 .send,#halves.n4 .send{padding:0 10px}
 }
 @media (max-width:360px){ #halves .tile{font-size:16px} .smallbtn{padding:5px 7px;font-size:12px} #status{font-size:14px} }
+
+/* ===== v3.4 tablet / desktop: every board fits the viewport. Tiles scale down
+   (square, capped at 72px) so the last row stays above the mic/input/send row
+   and a second board is never clipped off the side. Phones keep the rules above
+   (this query is the complement of the phone breakpoint). ===== */
+@media (min-width:721px) and (min-height:521px){
+  #halves,#halves.n3,#halves.n4{min-width:0;min-height:0}
+  #halves .half,#halves.n3 .half,#halves.n4 .half{min-width:0;min-height:0;container-type:inline-size;container-name:board}
+  #halves .tiles,#halves.n3 .tiles,#halves.n4 .tiles{
+    --cols:6; --rows:4; --gap:clamp(3px,.6vmin,6px); --max:72px;
+    container-type:size; /* cqw/cqh are read by the tiles, not by this box */
+    flex:1 1 auto;min-width:0;min-height:0;width:100%;
+    display:grid;
+    grid-template-columns:repeat(var(--cols), minmax(0, max-content));
+    grid-template-rows:repeat(var(--rows), minmax(0, max-content));
+    gap:var(--gap);
+    align-content:center;
+    justify-content:center;
+    overflow:visible;
+    padding:7px; /* room for the .need scale and ring, still inside the card */
+  }
+  /* 6 columns: Hebrew 22 letters = 4 rows, A–Z = 5. 3- and 4-player counts are set below. */
+  #halves:not(.n3):not(.n4) .tiles:has(> .tile:nth-child(23)){--rows:5}
+  #halves.n3 .tiles{--cols:7;--rows:4;--max:64px}
+  #halves.n4 .tiles{--cols:9;--rows:3;--max:56px}
+  /* Square that fits the tile box: width, height, and the 72px cap. max-* keeps a
+     rounding error inside the cell so a column can't spill out of the card. */
+  #halves .tile,#halves.n3 .tile,#halves.n4 .tile{
+    --side:min(var(--max),
+      calc((100cqw - (var(--cols) - 1) * var(--gap)) / var(--cols)),
+      calc((100cqh - (var(--rows) - 1) * var(--gap)) / var(--rows)));
+    width:var(--side);height:var(--side);max-width:100%;max-height:100%;
+    min-width:0;min-height:0;aspect-ratio:1;justify-self:center;align-self:center;
+    font-size:clamp(12px, calc(var(--side) * .48), 36px);
+  }
+  #halves .inputs,#halves.n3 .inputs,#halves.n4 .inputs{flex-shrink:0;min-width:0;align-items:stretch}
+  #halves .mic.ptt,#halves.n3 .mic.ptt,#halves.n4 .mic.ptt{min-width:0;max-width:46%;flex-shrink:1}
+  #halves .mic.ptt .ml,#halves.n3 .mic.ptt .ml,#halves.n4 .mic.ptt .ml{overflow:hidden;text-overflow:ellipsis;min-width:0}
+  #halves .send,#halves.n3 .send,#halves.n4 .send{flex-shrink:0}
+  /* Narrow board (iPad portrait): the long mic label was eating the text box. The heard row still says "listening". */
+  @container board (max-width:460px){
+    .mic.ptt{max-width:none;padding:0 12px;flex-shrink:0}
+    .mic.ptt .ml,.mic.ptt.on .ml-on{display:none!important}
+  }
+  .pname{font-size:clamp(15px,2vw,22px)}
+}
+/* Short tablet landscape (iPad + Safari tab bar): drop empty chrome so five rows still fit. */
+@media (min-width:721px) and (min-height:521px) and (max-height:860px){
+  #topbar{padding:6px 10px}
+  #status{font-size:clamp(15px,2vw,20px)}
+  #history{min-height:22px;padding:3px 12px}
+  #halves,#halves.n3,#halves.n4{padding:6px;gap:6px}
+  #halves .half,#halves.n3 .half,#halves.n4 .half{padding:8px;gap:4px}
+  #halves .word,#halves.n3 .word,#halves.n4 .word{min-height:40px;font-size:clamp(22px,3.4vw,40px);border-radius:14px}
+  #halves .msg:empty{display:none}
+  #halves .hrow{min-height:0}
+  #halves .heard:empty{min-height:0;padding:0}
+  #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:44px;height:44px;min-width:44px;font-size:16px}
+  #halves .mic,#halves.n3 .mic,#halves.n4 .mic{width:48px;height:48px;font-size:22px}
+  #halves .mic.ptt,#halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto;height:48px;min-width:0;padding:0 12px;font-size:18px}
+  #halves .inputs input{font-size:16px;padding:8px}
+}
 /* inactive tiles stay grey on phones too — the waiting-player tile rule would otherwise give them a 3D shadow */
 #halves .half .tile.inactive,
 #halves .half.active .tile.inactive,
@@ -662,7 +736,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.3';
+window.WG = WG; window.HILINGO_VERSION='3.4';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1214,7 +1288,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.3 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.4 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

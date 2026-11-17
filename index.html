@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.0">
+<meta name="hilingo-version" content="3.1">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -338,10 +338,14 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .send,#halves.n3 .send,#halves.n4 .send{padding:0 10px}
 }
 @media (max-width:360px){ #halves .tile{font-size:16px} .smallbtn{padding:5px 7px;font-size:12px} #status{font-size:14px} }
+/* v3.1: non-blocking "saved on this device" pill. Never takes taps, focus, or layout space. */
+#saveToast{position:fixed;z-index:7;left:50%;top:72px;transform:translateX(-50%);max-width:calc(100vw - 28px);padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#F4FFF9,#E5FFF3);color:#067A48;font-weight:800;font-size:13px;line-height:1.2;text-align:center;white-space:nowrap;border:2px solid #3DD68C;box-shadow:0 6px 16px rgba(42,33,82,.12);pointer-events:none;opacity:0;transition:opacity .2s ease}
+#saveToast.show{opacity:1}
 </style>
 </head>
 <body>
 <div id="errbar" class="hidden" title="לחצו להסתרה"></div>
+<div id="saveToast" role="status" aria-live="polite"></div>
 <script>
 // show any JS error on screen (so problems are visible without dev tools)
 (function(){ function show(m){ var e=document.getElementById('errbar'); if(!e) return; e.classList.remove('hidden'); e.textContent=(e.textContent?e.textContent+'\n':'')+'⚠️ שגיאה: '+m; e.onclick=function(){e.classList.add('hidden');e.textContent='';}; }
@@ -599,7 +603,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.0';
+window.WG = WG; window.HILINGO_VERSION='3.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -612,6 +616,7 @@ const STR = {
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
   override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש',
+  savedToast:'המילה נשמרה רק במכשיר הזה',
   myWords:'המילים שלי', myWordsNote:'נשמרות רק במכשיר הזה, לשפה הנוכחית.', myWordsEmpty:'עוד לא הוספתם מילים.', myWordsAsk:'למחוק?', myWordsYes:'כן', myWordsNo:'לא', myWordsClose:'סגור', myWordsDeleteAria:'מחיקת המילה',
   micOff:'המיקרופון כבוי', left:n=>`נשארו ${n} אותיות`,
   noteGone:l=>`האות ${l} כבר נמחקה אצלך – אמור מילה ב־${l}, לא יימחק כלום`,
@@ -646,6 +651,7 @@ const STR = {
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
   micHint:" If the microphone doesn't work, tap 🎤 in the game.",
   override:"It's a real word – accept anyway", micTitle:'Speak', inputPh:'Type a word', send:'Send', endBtn:'End game', pause:'Pause', resume:'Resume', again:'New game',
+  savedToast:'Word saved on this device only',
   myWords:'My words', myWordsNote:'Saved on this device only, for the current language.', myWordsEmpty:"You haven't added any words yet.", myWordsAsk:'Delete?', myWordsYes:'Yes', myWordsNo:'No', myWordsClose:'Close', myWordsDeleteAria:'Delete word',
   micOff:'Mic off', left:n=>`${n} letters left`,
   noteGone:l=>`${l} is already crossed off – say a word starting with ${l}, nothing will be removed`,
@@ -680,6 +686,7 @@ const STR = {
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
   micHint:' Werkt de microfoon niet? Tik dan in het spel op 🎤.',
   override:'Het is een echt woord – toch goedkeuren', micTitle:'Spreek', inputPh:'Typ een woord', send:'Stuur', endBtn:'Spel stoppen', pause:'Pauze', resume:'Verder', again:'Nieuw spel',
+  savedToast:'Woord alleen op dit apparaat opgeslagen',
   myWords:'Mijn woorden', myWordsNote:'Alleen op dit apparaat bewaard, voor de huidige taal.', myWordsEmpty:'Nog geen woorden toegevoegd.', myWordsAsk:'Verwijderen?', myWordsYes:'Ja', myWordsNo:'Nee', myWordsClose:'Sluiten', myWordsDeleteAria:'Woord verwijderen',
   micOff:'Microfoon uit', left:n=>`nog ${n} letters`,
   noteGone:l=>`De ${l} is al geschrapt – zeg een woord met ${l}, er wordt niets geschrapt`,
@@ -714,6 +721,7 @@ const STR = {
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
   micHint:' Se o microfone não funcionar, toque em 🎤 no jogo.',
   override:'É uma palavra de verdade – aceitar mesmo assim', micTitle:'Fale', inputPh:'Digite uma palavra', send:'Enviar', endBtn:'Encerrar jogo', pause:'Pausar', resume:'Continuar', again:'Novo jogo',
+  savedToast:'Palavra salva apenas neste dispositivo',
   myWords:'Minhas palavras', myWordsNote:'Salvas só neste aparelho, para o idioma atual.', myWordsEmpty:'Nenhuma palavra adicionada ainda.', myWordsAsk:'Apagar?', myWordsYes:'Sim', myWordsNo:'Não', myWordsClose:'Fechar', myWordsDeleteAria:'Apagar palavra',
   micOff:'Microfone desligado', left:n=>`restam ${n} letras`,
   noteGone:l=>`A letra ${l} já foi apagada – diga uma palavra com ${l}, nada será apagado`,
@@ -955,7 +963,8 @@ function submit(p,raw,force=false,src='typed'){
     focusInput(p);
     return false;
   }
-  if(force) WG.addCustomWord(r.word);
+  let savedHere=false;
+  if(force){ WG.addCustomWord(r.word); savedHere=savedOnDevice(r.word); }
   stopRec();
   showWord(p, r.word, 'ok'); sndOk();
   const f0=WG.firstLetter(r.word);
@@ -966,8 +975,51 @@ function submit(p,raw,force=false,src='typed'){
   if(r.restored) tileBack(p, r.restored);
   others(p).forEach(q=>{ setMsg(q,''); showWord(q,''); setHeard(q,''); });
   render(); afterTurnChange();
+  if(savedHere) showSavedToast();
   return true;
 }
+// True only when this accept is actually in localStorage (private mode keeps the word in memory and must not toast).
+function savedOnDevice(word){
+  try{
+    const raw=localStorage.getItem('hilingo_custom_words_'+LANG);
+    if(!raw) return false;
+    const arr=JSON.parse(raw);
+    return Array.isArray(arr) && arr.indexOf(word)>=0;
+  }catch(_){ return false; }
+}
+let saveToastTimer=null;
+function placeSaveToast(){
+  const el=$('#saveToast'); if(!el) return;
+  // Centered in the gap under the word chain and above the first letter board.
+  const hist=$('#history'), bar=$('#topbar');
+  const h=el.offsetHeight||26;
+  let top=hist?Math.round(hist.getBoundingClientRect().bottom+4):8;
+  const tiles=[...document.querySelectorAll('#halves .tiles')].filter(t=>t.getClientRects().length);
+  if(tiles.length){
+    const tileTop=Math.min(...tiles.map(t=>t.getBoundingClientRect().top));
+    const maxTop=Math.round(tileTop-4-h);
+    if(top>maxTop) top=maxTop;
+  }
+  if(bar){ const min=Math.round(bar.getBoundingClientRect().bottom+2); if(top<min) top=min; }
+  if(hist){ const min=Math.round(hist.getBoundingClientRect().bottom+2); if(top<min) top=min; }
+  el.style.top=top+'px';
+  el.style.left='50%';
+}
+function showSavedToast(){
+  const el=$('#saveToast'); if(!el||!S) return;
+  el.textContent=S.savedToast;
+  el.dir=document.documentElement.dir||'ltr';
+  el.classList.remove('show'); void el.offsetWidth;
+  placeSaveToast();
+  el.classList.add('show');
+  clearTimeout(saveToastTimer);
+  saveToastTimer=setTimeout(()=>{ el.classList.remove('show'); },2000);
+  requestAnimationFrame(placeSaveToast);
+}
+$('#saveToast').addEventListener('transitionend',e=>{
+  if(e.propertyName!=='opacity') return;
+  const el=$('#saveToast'); if(el && !el.classList.contains('show')) el.textContent='';
+});
 function afterTurnChange(){
   clearOthers(G.over?-1:G.turn); syncHintUI();
   if(G.over){ endScreen(); return; }
@@ -1088,7 +1140,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.0 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

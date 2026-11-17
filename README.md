@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.0)
+# HilinGo – word-chain game (v3.1)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -49,3 +49,7 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - On load and on language switch those words are merged into that language's dictionary, so later games accept them like built-in words (validation, chaining, used-word tracking). Hints still come from the built-in hint list.
 - Start screen → "המילים שלי" / "My words" / "Mijn woorden" / "Minhas palavras" lists the saved words for the current language. ✕ asks a short confirm, then removes the word. Hebrew stays RTL.
 - If localStorage is unavailable (private mode), the word still counts until the page is closed and nothing throws. Nothing is sent to a server or shared with anyone else.
+
+## v3.1 – toast after a word is saved on this device
+- Right after the existing "real word" button saves a word to localStorage, a small pill fades in, stays about 2 seconds, and fades out by itself: "המילה נשמרה רק במכשיר הזה" / "Word saved on this device only" / "Woord alleen op dit apparaat opgeslagen" / "Palavra salva apenas neste dispositivo".
+- The pill does not take taps or focus, does not pause the game, and does not stop the microphone. If storage fails, there is no toast.

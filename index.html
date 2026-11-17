@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.8">
+<meta name="hilingo-version" content="3.9">
+<meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=3.9" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -445,7 +446,6 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .speakbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;width:auto;padding:0 14px;border-radius:24px;background:var(--c,var(--p2));color:#fff;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--p2)) 70%, #000)}
 .speakbtn .sp-ico{font-size:22px;line-height:1}
 .speakbtn:active{transform:translateY(2px)}
-.learn-actions{display:flex;justify-content:center;flex-shrink:0}
 #learnSkip{padding:10px 22px;font-size:16px}
 .mw-pair{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:transparent;font:inherit;font-weight:800;font-size:18px;text-align:start;color:inherit;padding:4px 2px}
 .mw-native,.mw-target{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -469,11 +469,14 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #learn .word.bigok{font-size:64px;min-height:72px}
 }
 .verlbl{background:transparent;color:var(--muted);font-size:12px;font-weight:800;padding:2px 8px;opacity:.75}
-.ico-mic{width:22px;height:22px;display:block;flex-shrink:0}
-.ico-mic rect,.ico-mic path{fill:none;stroke:#1a1a1a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#learnMic.on .ico-mic rect,#learnMic.on .ico-mic path{stroke:#fff}
-.ico-listen{width:28px;height:28px;display:block;flex-shrink:0}
-#learnSpeak .ico-listen{width:44px;height:44px}
+.ico-mic{width:24px;height:24px;min-width:24px;min-height:24px;display:block;flex:0 0 24px;overflow:visible}
+.ico-mic,.ico-mic rect,.ico-mic path{fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#learnMic,#learnRepeatMic{-webkit-appearance:none;appearance:none;background:#7C5CFF;color:#fff;overflow:visible}
+#learnMic.on,#learnRepeatMic.on{background:#7C5CFF;color:#fff;animation:none;box-shadow:0 0 0 3px #4060E0}
+#learnRepeatMic{gap:8px;font-weight:800;font-size:16px}
+.ico-listen{width:32px;height:32px;min-width:32px;min-height:32px;display:block;flex-shrink:0}
+#learnSpeak .ico-listen{width:44px;height:44px;min-width:44px;min-height:44px}
+.learn-actions{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
 .ico-listen .bar{transform-box:fill-box;transform-origin:center;animation:eqbar .9s ease-in-out infinite}
 .ico-listen .b2{animation-delay:.15s}
 .ico-listen .b3{animation-delay:.3s}
@@ -534,7 +537,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v3.8</button>
+  <button type="button" class="verlbl" id="verLblStart">v3.9</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -556,26 +559,26 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v3.8</button>
+    <button type="button" class="verlbl" id="verLblLearn">v3.9</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
     <div class="lpanel p1 active" id="learnOwn">
-      <div class="hhead"><span class="pname" id="learnOwnName"></span></div>
+      <div class="hhead"><span class="pname" id="learnOwnName"></span><button type="button" class="smallbtn" id="learnClear">נקה</button></div>
       <div class="word" id="learnOwnWord" dir="auto">&nbsp;</div>
       <div class="msg" id="learnOwnMsg"></div>
-      <div class="hrow"><span id="learnListenMark" class="listen-mark hidden" aria-hidden="true"><svg class="ico-listen" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><div class="heard" id="learnHeard"></div></div>
+      <div class="hrow"><span id="learnListenMark" class="listen-mark hidden" aria-hidden="true"><svg class="ico-listen" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><div class="heard" id="learnHeard"></div></div>
       <div class="inputs">
-        <button type="button" class="mic" id="learnMic" aria-label="microphone"><svg class="ico-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg><span class="ml ml-off"></span><span class="ml ml-on"></span></button>
+        <button type="button" class="mic" id="learnMic" aria-label="microphone"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="ml ml-off"></span><span class="ml ml-on"></span></button>
         <input id="learnIn" autocomplete="off" enterkeyhint="send" dir="auto">
         <button type="button" class="send" id="learnSend"></button>
       </div>
     </div>
     <div class="lpanel p2" id="learnOther">
-      <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak"><span class="sp-ico">🔊</span><span class="sp-listen" aria-hidden="true"><svg class="ico-listen" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><span id="learnSpeakLbl"></span></button></div>
+      <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak"><span class="sp-ico">🔊</span><span class="sp-listen" aria-hidden="true"><svg class="ico-listen" xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><span id="learnSpeakLbl"></span></button></div>
       <div class="word" id="learnOtherWord" dir="auto">&nbsp;</div>
       <div class="msg" id="learnOtherMsg"></div>
-      <div class="learn-actions"><button type="button" class="smallbtn hidden" id="learnSkip"></button></div>
+      <div class="learn-actions"><button type="button" class="mic ptt hidden" id="learnRepeatMic"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span id="learnRepeatLbl"></span></button><button type="button" class="smallbtn hidden" id="learnSkip"></button></div>
     </div>
   </div>
 </section>
@@ -593,9 +596,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js"></script>
-<script src="learn_dict.js"></script>
+<script src="words.js?v=3.9" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=3.9"></script>
+<script src="learn_dict.js?v=3.9"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -831,7 +834,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.8';
+window.WG = WG; window.HILINGO_VERSION='3.9';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -841,7 +844,7 @@ const STR = {
   players:'מספר שחקנים:', lvl:{45:'קל · 45 שניות',30:'בינוני · 30 שניות',15:'קשה · 15 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', sound:'צלילים', go:'יאללה, מתחילים!',
   modePlay:'משחק', modeLearn:'למידה', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
   learnIntro:'אמרו מילה בשפה שלכם. היא תופיע בשפה השנייה, ואז תחזרו עליה.',
-  learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnBack:'חזרה',
+  learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnClear:'נקה', learnBack:'חזרה',
   learnNoTr:'לא הצלחתי לתרגם, נסו מילה אחרת', learnOk:'יפה!', learnAgain:'אמרו מילה חדשה',
   learnWrong:'לא אותו דבר — נסו שוב', learnSpeak:'השמיעו שוב',
   learnListen:name=>'מקשיב: '+name+'…', learnSpeaking:'משמיע…',
@@ -883,7 +886,7 @@ const STR = {
   players:'Players:', lvl:{45:'Easy · 45 sec',30:'Medium · 30 sec',15:'Hard · 15 sec'}, autoMic:'Turn the mic on automatically every turn', sound:'Sounds', go:"Let's play!",
   modePlay:'Play', modeLearn:'Learn', learnGo:"Let's learn!", nativeLbl:'I speak', targetLbl:'I want to learn',
   learnIntro:'Say a word in your language. It appears in the other language, then you say it back.',
-  learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnBack:'Back',
+  learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnClear:'Clear', learnBack:'Back',
   learnNoTr:"Couldn't translate, try another word", learnOk:'Nice!', learnAgain:'Say a new word',
   learnWrong:'Not quite — try again', learnSpeak:'Hear again',
   learnListen:name=>'Listening in '+name+'…', learnSpeaking:'Speaking…',
@@ -925,7 +928,7 @@ const STR = {
   players:'Spelers:', lvl:{45:'Makkelijk · 45 sec',30:'Gemiddeld · 30 sec',15:'Moeilijk · 15 sec'}, autoMic:'Microfoon elke beurt automatisch aan', sound:'Geluid', go:'Spelen!',
   modePlay:'Spelen', modeLearn:'Leren', learnGo:'Laten we leren!', nativeLbl:'Ik spreek', targetLbl:'Ik wil leren',
   learnIntro:'Zeg een woord in jouw taal. Het verschijnt in de andere taal, en dan zeg je het na.',
-  learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnBack:'Terug',
+  learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnClear:'Wissen', learnBack:'Terug',
   learnNoTr:'Vertalen lukt niet, probeer een ander woord', learnOk:'Mooi!', learnAgain:'Zeg een nieuw woord',
   learnWrong:'Niet hetzelfde — probeer opnieuw', learnSpeak:'Nog eens horen',
   learnListen:name=>'Luistert in '+name+'…', learnSpeaking:'Spreekt…',
@@ -967,7 +970,7 @@ const STR = {
   players:'Jogadores:', lvl:{45:'Fácil · 45 segundos',30:'Médio · 30 segundos',15:'Difícil · 15 segundos'}, autoMic:'Ligar o microfone automaticamente a cada turno', sound:'Sons', go:'Vamos jogar!',
   modePlay:'Jogar', modeLearn:'Aprender', learnGo:'Vamos aprender!', nativeLbl:'Eu falo', targetLbl:'Quero aprender',
   learnIntro:'Diga uma palavra no seu idioma. Ela aparece no outro idioma e você repete.',
-  learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnBack:'Voltar',
+  learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnClear:'Limpar', learnBack:'Voltar',
   learnNoTr:'Não consegui traduzir, tente outra palavra', learnOk:'Legal!', learnAgain:'Diga uma palavra nova',
   learnWrong:'Não foi essa — tente de novo', learnSpeak:'Ouvir de novo',
   learnListen:name=>'Ouvindo em '+name+'…', learnSpeaking:'Falando…',
@@ -1030,7 +1033,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=3.9';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1371,7 +1374,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3');
+  introAudio=new Audio('audio/hilingo.mp3?v=3.9');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -1468,7 +1471,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.8 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.9 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1605,8 +1608,12 @@ const MM_TAG={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
 const HE_FINALS={'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
 let learnPair=null, learnTyping=false, pendingLearnDelete=null, learnIndex=null;
 
+function stripInvis(s){
+  return String(s==null?'':s).replace(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g,'');
+}
 function foldLearn(code, raw){
   if(raw==null) return '';
+  raw=stripInvis(raw);
   if(code==='he'){
     let s=String(raw).replace(/[\u0591-\u05C7]/g,'');
     s=s.replace(/[ךםןףץ]/g, ch=>HE_FINALS[ch]);
@@ -1618,7 +1625,7 @@ function foldLearn(code, raw){
   return parts ? parts.slice(0,3).join(' ') : '';
 }
 function displayLearn(code, raw){
-  let s=String(raw||'').trim();
+  let s=stripInvis(raw).trim();
   if(code==='he'){
     s=s.replace(/[\u0591-\u05C7]/g,'');
     const m=s.match(/[\u05D0-\u05EA]+(?:\s+[\u05D0-\u05EA]+){0,2}/);
@@ -1779,6 +1786,8 @@ function paintLearnChrome(){
   if(back) back.textContent=S.learnBack;
   if(words) words.textContent=S.myWords;
   if(skip) skip.textContent=S.learnSkip;
+  const clr=$('#learnClear'); if(clr) clr.textContent=S.learnClear||'✕';
+  const rl=$('#learnRepeatLbl'); if(rl) rl.textContent=S.learnRepeat||'';
   if(sp) sp.setAttribute('aria-label', S.learnSpeak);
   const sl=$('#learnSpeakLbl'); if(sl) sl.textContent=S.learnSpeak;
 }
@@ -1807,13 +1816,20 @@ function showLearnShell(){
   paintLearnChrome();
   try{ window.scrollTo(0,0); }catch(_){}
 }
-/* v3.8 Learn audio: exactly one owner at a time — intro clip, speechSynthesis, or SpeechRecognition.
+/* v3.9 Learn audio: exactly one owner at a time — intro clip, target-word audio, or SpeechRecognition.
    No auto-restart loop. iOS (and ?ios=1) is push-to-talk: one tap, one session. */
 const LEARN_STATES=['INTRO','IDLE_NATIVE','LISTEN_NATIVE','SPEAK_TARGET','IDLE_TARGET','LISTEN_TARGET','OK','RETRY'];
 let learnState='INTRO', learnOwner='none', learnGen=0, learnAfterIntro=null;
-let learnRec=null, sharedSR=null, srRunning=false, learnSession=0, learnListenTimer=0;
+let learnRec=null, srRunning=false, learnSession=0, learnListenTimer=0;
 let learnPtFallback=false, learnSpeakText='', learnSpeakLang='', learnStream=null;
 let speechGen=0, learnDbgLines=[], verTaps=0, learnDbgOn=false;
+let learnTtsAudio=null, ttsEndedAt=0;
+try{
+  if(window.speechSynthesis) speechSynthesis.addEventListener('voiceschanged', ()=>{
+    let n=0; try{ n=(speechSynthesis.getVoices()||[]).length; }catch(_){}
+    learnLog('voices '+n);
+  });
+}catch(_){}
 function isLearnIOS(){
   if(/[?&]ios=1/.test(location.search)) return true;
   const ua=navigator.userAgent||'';
@@ -1832,7 +1848,7 @@ function learnHandsFree(){
 function learnLog(msg){
   const line=((performance.now()/1000).toFixed(2))+' '+learnState+' '+msg;
   learnDbgLines.push(line);
-  if(learnDbgLines.length>80) learnDbgLines.shift();
+  if(learnDbgLines.length>160) learnDbgLines.shift();
   const box=$('#learnDbg');
   if(box && learnDbgOn) box.textContent=learnDbgLines.join('\n');
 }
@@ -1843,6 +1859,7 @@ function setState(next){
   const listening=next==='LISTEN_NATIVE'||next==='LISTEN_TARGET';
   const mark=$('#learnListenMark'); if(mark) mark.classList.toggle('hidden', !listening);
   const sp=$('#learnSpeak'); if(sp) sp.classList.toggle('listening', next==='LISTEN_TARGET');
+  const rep=$('#learnRepeatMic'); if(rep) rep.classList.toggle('hidden', next!=='IDLE_TARGET' && next!=='RETRY');
   learnLog('-> '+next);
 }
 function learnListenText(code){
@@ -1896,18 +1913,11 @@ function exactVoice(tag){
   const want=String(tag||'').toLowerCase().replace('_','-');
   return voices.find(v=>(v.lang||'').toLowerCase().replace('_','-')===want)||null;
 }
-function allocSR(){
-  const ios=isLearnIOS();
-  if(ios && sharedSR) return sharedSR;
-  try{
-    const r=new SR();
-    if(ios) sharedSR=r;
-    return r;
-  }catch(err){
-    learnLog('new SR failed '+(err&&err.name||err));
-    if(sharedSR) return sharedSR;
-    return null;
-  }
+function learnAbort(r, why){
+  let at='';
+  try{ at=(new Error()).stack.split('\n').slice(2,4).map(s=>s.trim()).join(' | '); }catch(_){}
+  learnLog('abort '+(why||'')+(at?' @ '+at:''));
+  try{ r.abort(); }catch(e){ learnLog('abort threw '+(e&&e.message||e)); }
 }
 function stopSession(why){
   clearTimeout(learnListenTimer);
@@ -1918,7 +1928,6 @@ function stopSession(why){
   micOff();
   if(learnOwner==='mic') setOwner('none');
   if(!r || !running){ learnLog('stop '+(why||'')+' idle'); return Promise.resolve(); }
-  learnLog('abort '+(why||''));
   return new Promise(resolve=>{
     let done=false;
     const finish=()=>{ if(done) return; done=true; resolve(); };
@@ -1926,26 +1935,38 @@ function stopSession(why){
       r.onresult=null;
       r.onerror=()=>{};
       r.onend=()=>{ learnLog('rec onend'); finish(); };
-      r.abort();
+      learnAbort(r, why||'stop');
     }catch(_){ finish(); }
     setTimeout(finish, 500);
   });
 }
-function wireSession(r, side, tag){
+function wireSession(r, side, tag, isRetry){
   const sess=++learnSession;
   const code=side==='target'?LEARN_TARGET:LANG;
-  let lastAlts=null, closed=false;
+  let lastAlts=null, closed=false, stableT=0, quickRetry=false;
+  const startedAt=performance.now();
   const live=()=>sess===learnSession && srRunning && !closed;
-  learnListenTimer=setTimeout(()=>{ if(!live()) return; learnLog('8s timeout'); try{ r.abort(); }catch(_){} endSession(false); }, 8000);
+  const armTimeout=()=>{
+    clearTimeout(learnListenTimer);
+    learnListenTimer=setTimeout(()=>{
+      if(!live()) return;
+      if(lastAlts){ learnLog('10s with interim, take it'); take(lastAlts); return; }
+      learnLog('10s timeout');
+      try{ r.stop(); }catch(_){ endSession(false); return; }
+      setTimeout(()=>{ if(live()) endSession(false); }, 400);
+    }, 10000);
+  };
+  armTimeout();
   function endSession(hadText){
-    if(!live() && closed) return;
+    if(closed) return;
     closed=true;
     clearTimeout(learnListenTimer);
+    clearTimeout(stableT);
     srRunning=false;
     if(learnOwner==='mic') setOwner('none');
     micOff();
     learnSession++;
-    if(hadText) return;
+    if(hadText || quickRetry) return;
     if(side==='target' && LEARN_TARGET==='pt' && tag==='pt-BR' && !learnPtFallback){
       learnPtFallback=true;
       learnLog('pt-BR empty -> pt-PT');
@@ -1959,16 +1980,18 @@ function wireSession(r, side, tag){
     if(!live()) return;
     closed=true;
     clearTimeout(learnListenTimer);
+    clearTimeout(stableT);
     srRunning=false;
     if(learnOwner==='mic') setOwner('none');
     micOff();
     learnSession++;
-    try{ r.abort(); }catch(_){}
+    learnAbort(r, 'result');
     const raw=(alts&&alts[0])||'';
     learnLog('result "'+raw+'"');
     if(side==='target') acceptRepeat(alts);
     else acceptNative(raw);
   }
+  // Same settings as Play's startRec. A fresh instance is created in beginListen.
   r.continuous=false;
   r.interimResults=true;
   r.maxAlternatives=5;
@@ -1979,20 +2002,44 @@ function wireSession(r, side, tag){
     const alts=learnAlts(ev);
     if(!alts.length) return;
     lastAlts=alts;
+    armTimeout();
     setLearnWord('own', alts[0], 'interim');
     setLearnHeard(S.heard+alts[0]);
+    clearTimeout(stableT);
     if(side==='target' && learnPair && learnMatch(alts, learnPair.t)){ take(alts); return; }
     if(finalSeen){
       if(side==='target') take(alts);
       else if(displayLearn(LANG, alts[0])) take(alts);
       return;
     }
+    stableT=setTimeout(()=>{
+      if(!live()||!lastAlts) return;
+      learnLog('stable interim');
+      if(side==='target') take(lastAlts);
+      else if(displayLearn(LANG, lastAlts[0])) take(lastAlts);
+    }, STABLE_MS);
   };
   r.onerror=ev=>{
     if(!live()) return;
     const err=ev&&ev.error||'';
-    learnLog('error '+err);
-    if(err==='aborted') return;
+    const msg=ev&&ev.message||'';
+    learnLog('error '+err+(msg?' "'+msg+'"':''));
+    if(err==='aborted'){
+      const dt=performance.now()-startedAt;
+      if(dt<500 && !isRetry){
+        quickRetry=true;
+        learnLog('aborted '+Math.round(dt)+'ms after start, retry once');
+        closed=true;
+        clearTimeout(learnListenTimer);
+        clearTimeout(stableT);
+        srRunning=false;
+        if(learnOwner==='mic') setOwner('none');
+        micOff();
+        learnSession++;
+        setTimeout(()=>beginListen(side, tag, true), 400);
+      }
+      return;
+    }
     if(err==='no-speech'){ endSession(false); return; }
     const help=S.errs&&S.errs[err];
     if(help) setLearnHeard(help);
@@ -2003,61 +2050,56 @@ function wireSession(r, side, tag){
   r.onend=()=>{
     learnLog('end');
     if(!live()) return;
-    if(lastAlts){ if(side==='target') take(lastAlts); else if(displayLearn(LANG, lastAlts[0])) take(lastAlts); else endSession(false); return; }
+    if(quickRetry) return;
+    if(lastAlts){
+      if(side==='target') take(lastAlts);
+      else if(displayLearn(LANG, lastAlts[0])) take(lastAlts);
+      else endSession(false);
+      return;
+    }
     endSession(false);
   };
 }
-function beginListen(side, tag){
+function beginListen(side, tag, isRetry){
   if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); return; }
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('refuse mic in '+learnState); return; }
   if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); return; }
+  const sinceTts=ttsEndedAt ? performance.now()-ttsEndedAt : 1000;
+  if(sinceTts<300){
+    const wait=Math.ceil(300-sinceTts);
+    learnLog('wait '+wait+'ms after tts');
+    setTimeout(()=>beginListen(side, tag, isRetry), wait);
+    return;
+  }
   const code=side==='target'?LEARN_TARGET:LANG;
   const langTag=tag || (code==='pt'?'pt-BR':(SPEECH_TAG[code]||'en-US'));
   const startFresh=()=>{
-    const r=allocSR();
-    if(!r){ if(side==='target') enterIdleTarget(false); else enterIdleNative(false); return; }
+    // Play's startRec: brand-new SpeechRecognition, configured, start() in this turn.
+    let r;
+    try{ r=new SR(); }
+    catch(err){ learnLog('new SR failed '+(err&&err.message||err)); if(side==='target') enterIdleTarget(false); else enterIdleNative(false); return; }
     learnRec=r;
-    try{ r.lang=langTag; }catch(err){ learnLog('set lang '+err); }
-    wireSession(r, side, langTag);
-    const go=()=>{
-      try{
-        r.start();
-        srRunning=true;
-        setOwner('mic');
-        setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE');
-        paintListening(code);
-        learnLog('start '+langTag);
-      }catch(err){
-        const name=(err&&(err.name||err.message))||'';
-        learnLog('start threw '+name);
-        srRunning=false;
-        if(/InvalidState/i.test(name)){
-          let recovered=false;
-          const retry=()=>{
-            if(recovered) return; recovered=true;
-            try{
-              r.lang=langTag;
-              wireSession(r, side, langTag);
-              r.start();
-              srRunning=true; setOwner('mic'); setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE'); paintListening(code); learnLog('start retry '+langTag);
-            }catch(e2){ learnLog('retry failed'); srRunning=false; if(side==='target') enterIdleTarget(false); else enterIdleNative(false); }
-          };
-          try{ r.onend=retry; r.abort(); }catch(_){ retry(); }
-          setTimeout(retry, 500);
-          return;
-        }
-        if(side==='target') enterIdleTarget(false); else enterIdleNative(false);
+    try{ r.lang=langTag; r.interimResults=true; r.maxAlternatives=5; r.continuous=false; }
+    catch(err){ learnLog('config '+(err&&err.message||err)); }
+    wireSession(r, side, langTag, !!isRetry);
+    try{
+      r.start();
+      srRunning=true;
+      setOwner('mic');
+      setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE');
+      paintListening(code);
+      learnLog('start '+langTag);
+    }catch(err){
+      const name=(err&&(err.name||err.message))||'';
+      learnLog('start threw '+name);
+      srRunning=false;
+      if(/InvalidState/i.test(name) && !isRetry){
+        learnLog('InvalidStateError retry fresh');
+        setTimeout(()=>beginListen(side, tag, true), 400);
+        return;
       }
-    };
-    if(srRunning){
-      learnLog('wait previous onend');
-      let went=false;
-      const run=()=>{ if(went) return; went=true; srRunning=false; go(); };
-      try{ r.onend=run; r.abort(); }catch(_){ run(); }
-      setTimeout(run, 500);
-      return;
+      if(side==='target') enterIdleTarget(false); else enterIdleNative(false);
     }
-    go();
   };
   if(srRunning && learnRec){
     stopSession('switch').then(()=>startFresh());
@@ -2126,39 +2168,132 @@ function armIntro(){
   }, 0);
   learnLog('intro armed '+Math.round(ms)+'ms');
 }
+const TTS_TL={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
+function ttsUrl(text, langCode){
+  const tl=TTS_TL[langCode]||'en';
+  return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl='+encodeURIComponent(tl)+'&q='+encodeURIComponent(text);
+}
+function ensureTtsAudio(){
+  if(!learnTtsAudio){
+    learnTtsAudio=new Audio();
+    try{ learnTtsAudio.playsInline=true; learnTtsAudio.setAttribute('playsinline',''); }catch(_){}
+    learnTtsAudio.preload='auto';
+    try{ learnTtsAudio.referrerPolicy='no-referrer'; }catch(_){}
+  }
+  return learnTtsAudio;
+}
+function primeLearnAudio(){
+  const a=ensureTtsAudio();
+  if(a.__primed) return;
+  a.__primed=true;
+  try{
+    const silent='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+    if(a.src && !String(a.src).startsWith('data:')) return;
+    a.src=silent;
+    const p=a.play();
+    const mark=()=>{ try{ if(String(a.src).indexOf('data:audio/wav')>=0) a.pause(); }catch(_){} };
+    if(p&&p.then) p.then(mark,()=>{});
+    else mark();
+  }catch(_){}
+}
+function stopTtsAudio(){
+  speechGen++;
+  if(!learnTtsAudio) return;
+  try{ learnTtsAudio.onended=null; learnTtsAudio.onerror=null; learnTtsAudio.pause(); }catch(_){}
+}
+function playTtsUrl(url){
+  return new Promise(resolve=>{
+    const a=ensureTtsAudio();
+    let done=false;
+    const fin=(ok, why)=>{
+      if(done) return; done=true;
+      clearTimeout(timer);
+      a.onended=null; a.onerror=null;
+      if(!ok){
+        let detail=why||'';
+        try{ if(a.error) detail+=' code '+a.error.code; }catch(_){}
+        learnLog('audio error '+detail);
+      }
+      resolve({ok, why:why||''});
+    };
+    a.onended=()=>fin(true,'ended');
+    a.onerror=()=>fin(false,'element-error');
+    try{ a.src=url; }catch(e){ fin(false,'src'); return; }
+    let p;
+    try{ p=a.play(); }catch(e){ fin(false,(e&&e.name)||'play'); return; }
+    if(p&&p.then) p.then(()=>{}, err=>fin(false,(err&&(err.name||err.message))||'rejected'));
+    const timer=setTimeout(()=>{ try{ a.pause(); }catch(_){} fin(false,'timeout'); }, 6000);
+  });
+}
+function speakSynth(text, langCode){
+  return new Promise(resolve=>{
+    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ learnLog('no speechSynthesis'); resolve(false); return; }
+    const tag=langCode==='pt'?'pt-BR':(SPEECH_TAG[langCode]||'en-US');
+    const run=()=>{
+      let voices=[];
+      try{ voices=speechSynthesis.getVoices()||[]; }catch(_){}
+      learnLog('voices '+voices.length);
+      const voice=exactVoice(tag);
+      learnLog('voice '+(voice?(voice.name+' '+voice.lang):'none'));
+      let u;
+      try{
+        u=new SpeechSynthesisUtterance(text);
+        u.lang=tag;
+        if(voice){ try{ u.voice=voice; }catch(_){} }
+      }catch(_){ resolve(false); return; }
+      const t0=performance.now();
+      let settled=false;
+      const finish=(why)=>{
+        if(settled) return; settled=true;
+        clearTimeout(timer);
+        const dt=performance.now()-t0;
+        learnLog('synth '+why+' '+Math.round(dt)+'ms');
+        resolve(why==='end' && dt>=200);
+      };
+      u.onend=()=>finish('end');
+      u.onerror=ev=>{ learnLog('synth error '+(ev&&ev.error||'')); finish('error'); };
+      const timer=setTimeout(()=>finish('timeout'), Math.min(5000, 1400+String(text).length*70));
+      try{ speechSynthesis.resume(); }catch(_){}
+      try{ speechSynthesis.speak(u); }catch(_){ finish('throw'); }
+    };
+    try{ speechSynthesis.cancel(); }catch(_){}
+    setTimeout(run, 130);
+  });
+}
 function speakTarget(text, langCode, after){
   const gen=++speechGen;
   showSpeaker(text, langCode);
   setState('SPEAK_TARGET');
-  setOwner('tts');
-  setLearnStatus(S.learnSpeaking||'🔊');
+  setOwner('audio');
+  setLearnStatus(S.learnSpeaking||'');
   micOff();
-  let settled=false;
-  const finish=(why)=>{
-    if(settled || gen!==speechGen) return;
-    settled=true;
-    clearTimeout(timer);
-    learnLog('tts '+why);
-    if(learnOwner==='tts') setOwner('none');
+  releaseMicTracks();
+  const url=ttsUrl(text, langCode);
+  learnLog('try audio-url');
+  const done=(path)=>{
+    if(gen!==speechGen) return;
+    ttsEndedAt=performance.now();
+    learnLog('tts path: '+path);
+    if(learnOwner==='audio'||learnOwner==='tts') setOwner('none');
     showSpeaker(text, langCode);
     if(after) try{ after(); }catch(_){}
   };
-  releaseMicTracks();
-  try{ speechSynthesis.cancel(); }catch(_){}
-  try{ speechSynthesis.resume(); }catch(_){}
-  const tag=langCode==='pt'?'pt-BR':(SPEECH_TAG[langCode]||'en-US');
-  let u;
-  try{
-    u=new SpeechSynthesisUtterance(text);
-    u.lang=tag;
-    const voice=exactVoice(tag);
-    if(voice){ try{ u.voice=voice; }catch(_){ } }
-  }catch(_){ finish('no-utterance'); return; }
-  u.onend=()=>finish('end');
-  u.onerror=()=>finish('error');
-  const timer=setTimeout(()=>finish('timeout'), Math.min(5000, 1400+String(text).length*70));
-  try{ speechSynthesis.speak(u); }
-  catch(_){ finish('throw'); }
+  playTtsUrl(url).then(res=>{
+    if(gen!==speechGen) return;
+    if(res.ok){ done('audio-url'); return; }
+    if(/NotAllowed|not-allowed/i.test(res.why||'')){
+      learnLog('audio blocked until tap');
+      done('none');
+      return;
+    }
+    learnLog('audio-url failed, try speechSynthesis');
+    setOwner('tts');
+    speakSynth(text, langCode).then(ok2=>{
+      if(gen!==speechGen) return;
+      if(!ok2) learnLog('speechSynthesis failed');
+      done(ok2?'speechSynthesis':'none');
+    });
+  });
 }
 function learnAlts(e){
   const alts=[];
@@ -2168,8 +2303,8 @@ function learnAlts(e){
     const res=results[i];
     const n=res&&res.length||0;
     for(let j=0;j<n;j++){
-      const t=res[j]&&res[j].transcript;
-      if(t&&String(t).trim()&&alts.indexOf(String(t).trim())<0) alts.push(String(t).trim());
+      const t=stripInvis(res[j]&&res[j].transcript).trim();
+      if(t&&alts.indexOf(t)<0) alts.push(t);
     }
   }
   return alts;
@@ -2200,9 +2335,9 @@ function beginRepeat(pair, speak){
   const inp=$('#learnIn'); if(inp) inp.value='';
   showSpeaker(pair.t, LEARN_TARGET);
   if(speak===false){ enterIdleTarget(true); return; }
-  stopSession('before-tts').then(()=>{
-    speakTarget(pair.t, LEARN_TARGET, ()=>enterIdleTarget(true));
-  });
+  const say=()=>speakTarget(pair.t, LEARN_TARGET, ()=>enterIdleTarget(true));
+  if(!srRunning){ say(); return; }
+  stopSession('before-tts').then(say);
 }
 async function acceptNative(raw){
   const token=++learnGen;
@@ -2255,67 +2390,138 @@ function acceptRepeat(alts){
 }
 function submitLearnTyped(){
   const inp=$('#learnIn'); if(!inp) return;
-  const raw=inp.value; inp.value='';
+  const raw=stripInvis(inp.value).trim(); inp.value='';
   learnTyping=false;
-  const targetSide=learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='SPEAK_TARGET';
-  if(targetSide && learnPair) acceptRepeat([raw]);
-  else acceptNative(raw);
+  if(!raw) return;
+  // While the target mic is open, the typed word is the repeat. Everywhere else
+  // (including IDLE_TARGET and RETRY) it is a new native word.
+  if(learnState==='LISTEN_TARGET' && learnPair){ acceptRepeat([raw]); return; }
+  acceptNative(raw);
 }
 function skipLearn(){
   learnGen++;
-  speechGen++;
+  stopTtsAudio();
   stopSession('skip');
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
   if(learnOwner==='tts'||learnOwner==='audio') setOwner('none');
   beginSay();
+}
+function logLearnEnv(){
+  let standalone='no';
+  try{
+    if(navigator.standalone) standalone='yes';
+    else if(window.matchMedia && matchMedia('(display-mode: standalone)').matches) standalone='yes';
+  }catch(_){}
+  learnLog('ua '+navigator.userAgent);
+  learnLog('standalone '+standalone);
+  let n=0;
+  try{ n=(speechSynthesis.getVoices()||[]).length; }catch(_){}
+  learnLog('voices '+n);
 }
 function replayLearn(){
   const text=learnSpeakText||(learnPair&&learnPair.t)||'';
   const lang=learnSpeakLang||LEARN_TARGET;
   if(!text) return;
-  showSpeaker(text, lang);
-  const say=()=>{
-    releaseMicTracks();
-    const backTarget=learnState==='OK'||learnState==='IDLE_NATIVE'||learnState==='LISTEN_NATIVE';
-    speakTarget(text, lang, ()=>{
-      showSpeaker(text, lang);
-      if(backTarget) enterIdleNative(learnHandsFree());
-      else enterIdleTarget(learnHandsFree());
-    });
-  };
-  if(!srRunning || !learnRec){ say(); return; }
-  let said=false;
-  const go=()=>{ if(said) return; said=true; srRunning=false; if(learnOwner==='mic') setOwner('none'); micOff(); say(); };
-  try{
-    learnRec.onresult=null;
-    learnRec.onerror=()=>{};
-    learnRec.onend=go;
-    learnRec.abort();
-  }catch(_){ go(); }
-  setTimeout(go, 500);
+  const backTarget=learnState==='OK'||learnState==='IDLE_NATIVE'||learnState==='LISTEN_NATIVE';
+  if(srRunning && learnRec){
+    learnAbort(learnRec, 'replay');
+    srRunning=false;
+    learnSession++;
+    if(learnOwner==='mic') setOwner('none');
+    micOff();
+  }
+  releaseMicTracks();
+  speakTarget(text, lang, ()=>{
+    showSpeaker(text, lang);
+    if(backTarget) enterIdleNative(learnHandsFree());
+    else enterIdleTarget(learnHandsFree());
+  });
 }
 function startLearn(){
   learnGen++;
   learnAfterIntro=null;
   showLearnShell();
+  logLearnEnv();
   armIntro();
 }
 function leaveLearn(){
   learnGen++;
-  speechGen++;
+  stopTtsAudio();
   stopSession('leave');
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
   setOwner('none');
   $('#learn').classList.add('hidden');
   $('#start').classList.remove('hidden');
 }
+function dropNativeRound(){
+  learnPair=null;
+  learnPtFallback=false;
+  learnSpeakText='';
+  hideSpeaker();
+  setLearnWord('other','');
+  const om=$('#learnOtherMsg'); if(om){ om.textContent=''; om.className='msg'; }
+  setLearnMsg(S.learnSay,'');
+  const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
+}
 function learnMicTap(){
   if(!SR) return;
+  primeLearnAudio();
   learnTyping=false;
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); return; }
-  if(srRunning){ stopSession('tap').then(()=>{ if(learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='IDLE_TARGET') enterIdleTarget(false); else enterIdleNative(false); }); return; }
-  if(learnState==='IDLE_TARGET'||learnState==='RETRY'||learnState==='LISTEN_TARGET'||(learnPair&&learnState!=='IDLE_NATIVE'&&learnState!=='OK'&&learnState!=='LISTEN_NATIVE')) beginListen('target');
-  else beginListen('native');
+  if(srRunning && learnState==='LISTEN_NATIVE'){
+    stopSession('tap').then(()=>enterIdleNative(false));
+    return;
+  }
+  if(srRunning && learnRec){
+    learnAbort(learnRec, 'tap');
+    srRunning=false;
+    learnSession++;
+    if(learnOwner==='mic') setOwner('none');
+    micOff();
+  }
+  if(learnState==='IDLE_TARGET'||learnState==='RETRY'||learnState==='OK'||learnState==='LISTEN_TARGET') dropNativeRound();
+  beginListen('native');
+}
+function learnRepeatTap(){
+  if(!SR) return;
+  primeLearnAudio();
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); return; }
+  if(srRunning && learnState==='LISTEN_TARGET'){
+    stopSession('tap').then(()=>enterIdleTarget(false));
+    return;
+  }
+  if(srRunning && learnRec){
+    learnAbort(learnRec, 'repeat');
+    srRunning=false;
+    learnSession++;
+    if(learnOwner==='mic') setOwner('none');
+    micOff();
+  }
+  beginListen('target');
+}
+function clearLearnRound(){
+  learnGen++;
+  learnLog('clear');
+  stopTtsAudio();
+  if(srRunning && learnRec) learnAbort(learnRec, 'clear');
+  srRunning=false;
+  learnSession++;
+  clearTimeout(learnListenTimer);
+  micOff();
+  if(learnOwner!=='none') setOwner('none');
+  learnPair=null;
+  learnPtFallback=false;
+  learnTyping=false;
+  learnSpeakText='';
+  learnSpeakLang='';
+  hideSpeaker();
+  setLearnWord('own','');
+  setLearnWord('other','');
+  const om=$('#learnOtherMsg'); if(om){ om.textContent=''; om.className='msg'; }
+  setLearnMsg('','');
+  setLearnHeard('');
+  const inp=$('#learnIn'); if(inp) inp.value='';
+  const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
+  if(introHold && !introHold.done){ try{ releaseIntro('clear'); }catch(_){} }
+  enterIdleNative(false);
 }
 function onLearnWordsClick(e){
   const t=e.target.closest('button'); if(!t) return;
@@ -2346,7 +2552,7 @@ function onLearnWordsClick(e){
 }
 document.querySelectorAll('.verlbl').forEach(b=>b.addEventListener('click', ()=>{
   verTaps++;
-  if(verTaps>=5){ verTaps=0; learnDbgOn=!learnDbgOn; const box=$('#learnDbg'); if(box){ box.classList.toggle('hidden', !learnDbgOn); box.textContent=learnDbgLines.join('\n'); } }
+  if(verTaps>=5){ verTaps=0; learnDbgOn=!learnDbgOn; if(learnDbgOn) logLearnEnv(); const box=$('#learnDbg'); if(box){ box.classList.toggle('hidden', !learnDbgOn); box.textContent=learnDbgLines.join('\n'); } }
 }));
 
 function renderLearnWords(){
@@ -2381,6 +2587,8 @@ $('#learnSend').onclick=submitLearnTyped;
 $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
 $('#learnMic').onclick=()=>learnMicTap();
+$('#learnRepeatMic').onclick=()=>learnRepeatTap();
+$('#learnClear').onclick=()=>clearLearnRound();
 $('#learnIn').addEventListener('input', ()=>{
   if(!$('#learnIn').value) return;
   if(!learnTyping){ learnTyping=true; if(learnRec) stopLearnRec(); setLearnHeard(S.typing); }

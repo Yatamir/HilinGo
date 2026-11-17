@@ -1,4 +1,4 @@
-/* HilinGo v3.2 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. */
+/* HilinGo v3.3 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. Portuguese hints follow the required letter (K/W/Y are never required, so those clues are not offered). */
 window.HILINGO_HINTS={"he":[
 ["אריה","מלך החיות, יש לו רעמה גדולה ושואג חזק"],
 ["אבטיח","פרי ענק, ירוק מבחוץ ואדום ומתוק מבפנים"],

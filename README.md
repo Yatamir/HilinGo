@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.2)
+# HilinGo – word-chain game (v3.3)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,3 +60,10 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.3 – Portuguese: K, W, Y off the board, and a fallback chain letter
+- Portuguese only. Hebrew, English and Dutch still chain on the last letter, and K, W, Y stay normal tiles there.
+- K, W and Y are drawn grey (not with the red strike of a deleted letter). They are never removed, never the required letter, and they do not count toward emptying the board.
+- Default chain is unchanged: the next word starts with the last letter. If that letter is already deleted on the **next** player's board (the next seat, `(turn + 1) % players`) and the word contains one of B, C, D, F, G, H, J, N, P, Q, T, V, X, the required letter is the one of those closest to the end (accents folded the same way as `latin()`). No such letter → the last letter stays required. If that special letter is also already deleted, it is still required.
+- The status bar and the yellow tile show the required letter. In the word chain, that letter is highlighted in the word that set it. Hints and the voice picker follow the same letter. A timeout still passes that letter on; it is not recomputed for the player after.
+- Examples: `tempo` with O already deleted for the next player → **P**. `amor` with R already deleted → **R** (no special letter).

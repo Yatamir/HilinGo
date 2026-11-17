@@ -19,9 +19,9 @@
 <style>
 :root{
   --p1:#6B2CFF;--p1l:#E4D4FF;
-  --p2:#1E88FF;--p2l:#D6EBFF;
-  --p3:#FF7A1A;--p3l:#FFE0C2;
-  --p4:#FF2D87;--p4l:#FFD0E6;
+  --p2:#FF2D87;--p2l:#FFD0E6;
+  --p3:#1E88FF;--p3l:#D6EBFF;
+  --p4:#FF7A1A;--p4l:#FFE0C2;
   --blue:#1E88FF;--yellow:#FFE566;--yellow2:#FFC61A;--ok:#1E88FF;
   --bg:#F4EEFF;--txt:#2A2152;--muted:#6B6490;--bad:#FF5B6E;--white:#fff;
 }
@@ -69,9 +69,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 .names{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .names input{font-size:17px;padding:11px 14px;border-radius:14px;border:2px solid #E6E0F8;width:160px;text-align:center;font-family:inherit;background:#fff;box-shadow:inset 0 0 0 0 var(--c,var(--p1))}
 .names input:nth-child(1){border-color:#D4C8FF;box-shadow:inset 4px 0 0 var(--p1)}
-.names input:nth-child(2){border-color:#B9D9FF;box-shadow:inset 4px 0 0 var(--p2)}
-.names input:nth-child(3){border-color:#FFC48A;box-shadow:inset 4px 0 0 var(--p3)}
-.names input:nth-child(4){border-color:#FF9EC9;box-shadow:inset 4px 0 0 var(--p4)}
+.names input:nth-child(2){border-color:#FF9EC9;box-shadow:inset 4px 0 0 var(--p2)}
+.names input:nth-child(3){border-color:#B9D9FF;box-shadow:inset 4px 0 0 var(--p3)}
+.names input:nth-child(4){border-color:#FFC48A;box-shadow:inset 4px 0 0 var(--p4)}
 .names input:focus{outline:none;border-color:var(--p1)}
 .big{font-size:26px;padding:16px 52px;border-radius:22px;background:linear-gradient(90deg,#6B2CFF,#1E88FF);color:#fff;font-weight:800;box-shadow:0 6px 0 #4A2DB0,0 12px 28px rgba(107,44,255,.35);letter-spacing:.02em}
 .big:hover{filter:brightness(1.05)}
@@ -440,7 +440,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #saveToast.show{opacity:1}
 /* v3.6 learn mode. Panels are .lpanel, never .half, so the game board checks stay on the two player grids. */
 .opt:disabled{opacity:.38;cursor:default;transform:none}
-#pairCard .opt.sel{border-color:var(--p2);background:linear-gradient(180deg,#E8F3FF,#D6EBFF);color:#1565C0;box-shadow:0 3px 0 #8EBEFF}
+#pairCard .opt.sel{border-color:var(--blue);background:linear-gradient(180deg,#E8F3FF,#D6EBFF);color:#1565C0;box-shadow:0 3px 0 #8EBEFF}
 #learn{display:flex;flex-direction:column;height:100%;height:100dvh;max-height:100dvh;overflow:hidden;
   padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
   padding-bottom:env(safe-area-inset-bottom)}
@@ -449,13 +449,13 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #learnStatus{font-size:clamp(16px,2.4vw,22px);font-weight:800;text-align:center;flex:1;min-width:0}
 #learnHalves{flex:1;display:flex;min-height:0;min-width:0;padding:8px;gap:8px}
 .lpanel{flex:1;display:flex;flex-direction:column;padding:14px;gap:8px;min-height:0;min-width:0;border-radius:24px;background:linear-gradient(180deg,#fff 0%,var(--pl,#F6F2FF) 100%);box-shadow:0 10px 28px rgba(50,30,120,.08)}
-.lpanel.p1{--pl:var(--p1l)} .lpanel.p2{--pl:var(--p2l)}
+.lpanel.p1{--pl:var(--p1l)} .lpanel.p2{--pl:#D6EBFF;--c:var(--blue)}
 #learn .word{min-height:120px;font-size:clamp(40px,6vw,84px);line-height:1.15;word-break:break-word}
 .learn-wordrow{position:relative}
 #learnClear{position:absolute;z-index:2;top:8px;inset-inline-start:8px;border:2px solid #7C5CFF;background:#fff;color:#2A2152}
 #learn .word.bigok{font-size:clamp(72px,12vw,140px);min-height:140px;color:var(--ok)}
 #learn .inputs input{font-size:18px}
-.speakbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;width:auto;padding:0 14px;border-radius:24px;background:var(--c,var(--p2));color:#fff;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--p2)) 70%, #000)}
+.speakbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;width:auto;padding:0 14px;border-radius:24px;background:var(--c,var(--blue));color:#fff;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--blue)) 70%, #000)}
 .speakbtn .sp-ico{font-size:22px;line-height:1}
 .speakbtn:active{transform:translateY(2px)}
 #learnSkip{padding:10px 22px;font-size:16px}

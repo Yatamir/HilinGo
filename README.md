@@ -62,7 +62,7 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
 
 ## v4.4 – Vivid palette, no green or teal
-- Player 2 is vivid blue. Player 1 is a stronger purple, player 3 vivid orange, player 4 vivid pink. Compact keys and win cards use those colors. The same palette is on the home screen and in Learn. Greens and teals are gone.
+- Player 1 is a stronger purple, player 2 vivid pink, player 3 strong blue, and player 4 vivid orange. Compact keys, win cards, and the name fields use those colors. Shared accents (the timer ring, selected buttons, and the Learn target panel) stay blue. Greens and teals are gone.
 
 ## v4.3 – Fixed keyboards, a smaller clock, records only for a real win
 - The solo choice is the button `1`, same as 2, 3 and 4.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.7">
+<meta name="hilingo-version" content="3.8">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -468,6 +468,22 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #learn .word{min-height:56px;font-size:clamp(28px,5vw,44px)}
  #learn .word.bigok{font-size:64px;min-height:72px}
 }
+.verlbl{background:transparent;color:var(--muted);font-size:12px;font-weight:800;padding:2px 8px;opacity:.75}
+.ico-mic{width:22px;height:22px;display:block;flex-shrink:0}
+.ico-mic rect,.ico-mic path{fill:none;stroke:#1a1a1a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#learnMic.on .ico-mic rect,#learnMic.on .ico-mic path{stroke:#fff}
+.ico-listen{width:28px;height:28px;display:block;flex-shrink:0}
+#learnSpeak .ico-listen{width:44px;height:44px}
+.ico-listen .bar{transform-box:fill-box;transform-origin:center;animation:eqbar .9s ease-in-out infinite}
+.ico-listen .b2{animation-delay:.15s}
+.ico-listen .b3{animation-delay:.3s}
+@keyframes eqbar{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.45)}}
+.listen-mark{display:inline-flex;align-items:center;flex-shrink:0}
+#learnSpeak .sp-listen{display:none;align-items:center;justify-content:center}
+#learnSpeak.listening{background:transparent;box-shadow:none;padding:0;min-width:44px}
+#learnSpeak.listening .sp-ico,#learnSpeak.listening #learnSpeakLbl{display:none}
+#learnSpeak.listening .sp-listen{display:flex}
+#learnDbg{position:fixed;z-index:30;left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));max-height:42vh;overflow:auto;background:#1c1638;color:#f6f2ff;font:11px/1.4 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;padding:8px 10px;border-radius:12px;white-space:pre-wrap;box-shadow:0 12px 40px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -518,6 +534,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
+  <button type="button" class="verlbl" id="verLblStart">v3.8</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -539,6 +556,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
+    <button type="button" class="verlbl" id="verLblLearn">v3.8</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -546,21 +564,22 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="hhead"><span class="pname" id="learnOwnName"></span></div>
       <div class="word" id="learnOwnWord" dir="auto">&nbsp;</div>
       <div class="msg" id="learnOwnMsg"></div>
-      <div class="hrow"><div class="heard" id="learnHeard"></div></div>
+      <div class="hrow"><span id="learnListenMark" class="listen-mark hidden" aria-hidden="true"><svg class="ico-listen" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><div class="heard" id="learnHeard"></div></div>
       <div class="inputs">
-        <button type="button" class="mic" id="learnMic">🎤<span class="ml ml-off"></span><span class="ml ml-on"></span></button>
+        <button type="button" class="mic" id="learnMic" aria-label="microphone"><svg class="ico-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg><span class="ml ml-off"></span><span class="ml ml-on"></span></button>
         <input id="learnIn" autocomplete="off" enterkeyhint="send" dir="auto">
         <button type="button" class="send" id="learnSend"></button>
       </div>
     </div>
     <div class="lpanel p2" id="learnOther">
-      <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak"><span class="sp-ico">🔊</span><span id="learnSpeakLbl"></span></button></div>
+      <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak"><span class="sp-ico">🔊</span><span class="sp-listen" aria-hidden="true"><svg class="ico-listen" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><span id="learnSpeakLbl"></span></button></div>
       <div class="word" id="learnOtherWord" dir="auto">&nbsp;</div>
       <div class="msg" id="learnOtherMsg"></div>
       <div class="learn-actions"><button type="button" class="smallbtn hidden" id="learnSkip"></button></div>
     </div>
   </div>
 </section>
+<div id="learnDbg" class="hidden" dir="ltr"></div>
 
 <div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
@@ -812,7 +831,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.7';
+window.WG = WG; window.HILINGO_VERSION='3.8';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -825,7 +844,7 @@ const STR = {
   learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnBack:'חזרה',
   learnNoTr:'לא הצלחתי לתרגם, נסו מילה אחרת', learnOk:'יפה!', learnAgain:'אמרו מילה חדשה',
   learnWrong:'לא אותו דבר — נסו שוב', learnSpeak:'השמיעו שוב',
-  learnListen:name=>'🎤 מקשיב: '+name+'…', learnSpeaking:'🔊 משמיע…',
+  learnListen:name=>'מקשיב: '+name+'…', learnSpeaking:'משמיע…',
   learnWordsNote:'נשמרות רק במכשיר הזה, לזוג השפות הזה.', learnWordsEmpty:'עוד אין מילים.',
   loading:'טוען מילון…', dictFail:'המילון לא נטען',
   rules:'חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק. · 💡 רמז: עד 3 רמזים בתור, רק למילים שעוד לא נאמרו; מי שנעזר ברמז לא מוחק אות באותו תור, ואחרי שני תורות ברצף עם רמז האות האחרונה שנמחקה לו חוזרת ללוח.',
@@ -867,7 +886,7 @@ const STR = {
   learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnBack:'Back',
   learnNoTr:"Couldn't translate, try another word", learnOk:'Nice!', learnAgain:'Say a new word',
   learnWrong:'Not quite — try again', learnSpeak:'Hear again',
-  learnListen:name=>'🎤 Listening in '+name+'…', learnSpeaking:'🔊 Speaking…',
+  learnListen:name=>'Listening in '+name+'…', learnSpeaking:'Speaking…',
   learnWordsNote:'Saved on this device only, for this language pair.', learnWordsEmpty:'No words yet.',
   loading:'Loading dictionary…', dictFail:'Dictionary failed to load',
   rules:"Rules: case and accents don't matter · no repeating a word · time's up? the same letter passes to the next player · if everyone misses the same letter in a row, the next player picks any letter · 6 misses in a row (2 players) or two full rounds of misses (3–4 players) end the game; fewest letters left wins. · 💡 Hint: up to 3 per turn, only for words not used yet; a turn with a hint crosses off no letter, and hints in two turns in a row bring your last crossed-off letter back.",
@@ -909,7 +928,7 @@ const STR = {
   learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnBack:'Terug',
   learnNoTr:'Vertalen lukt niet, probeer een ander woord', learnOk:'Mooi!', learnAgain:'Zeg een nieuw woord',
   learnWrong:'Niet hetzelfde — probeer opnieuw', learnSpeak:'Nog eens horen',
-  learnListen:name=>'🎤 Luistert in '+name+'…', learnSpeaking:'🔊 Spreekt…',
+  learnListen:name=>'Luistert in '+name+'…', learnSpeaking:'Spreekt…',
   learnWordsNote:'Alleen op dit apparaat bewaard, voor dit talenpaar.', learnWordsEmpty:'Nog geen woorden.',
   loading:'Woordenboek laden…', dictFail:'Woordenboek niet geladen',
   rules:'Regels: hoofdletters en accenten tellen niet (é = e) · IJ telt als I + J · een woord mag maar één keer · tijd om? dezelfde letter gaat naar de volgende speler · mist iedereen dezelfde letter na elkaar, dan kiest de volgende een vrije letter · 6 missers op rij (2 spelers) of twee volle rondes missers (3–4 spelers) beëindigen het spel; wie de minste letters over heeft, wint. · 💡 Hint: max. 3 per beurt, alleen voor woorden die nog niet gezegd zijn; met een hint wordt die beurt geen letter geschrapt, en twee beurten op rij een hint zet je laatst geschrapte letter terug.',
@@ -951,7 +970,7 @@ const STR = {
   learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnBack:'Voltar',
   learnNoTr:'Não consegui traduzir, tente outra palavra', learnOk:'Legal!', learnAgain:'Diga uma palavra nova',
   learnWrong:'Não foi essa — tente de novo', learnSpeak:'Ouvir de novo',
-  learnListen:name=>'🎤 Ouvindo em '+name+'…', learnSpeaking:'🔊 Falando…',
+  learnListen:name=>'Ouvindo em '+name+'…', learnSpeaking:'Falando…',
   learnWordsNote:'Salvas só neste aparelho, para este par de idiomas.', learnWordsEmpty:'Nenhuma palavra ainda.',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
   rules:'Regras: maiúsculas e acentos não contam (á = a, ç = c) · uma palavra só pode ser usada uma vez · acabou o tempo? a mesma letra passa para o próximo jogador · se todos errarem a mesma letra seguidas vezes, o próximo escolhe uma letra livre · 6 erros seguidos (2 jogadores) ou duas rodadas completas de erros (3–4 jogadores) encerram o jogo; quem tiver menos letras, vence. · 💡 Dica: até 3 por turno, só para palavras ainda não usadas; no turno com dica nenhuma letra é apagada, e dicas em dois turnos seguidos devolvem a última letra apagada. · K, W e Y ficam acinzentadas: não saem, não contam para vencer e nunca são pedidas. Se a última letra já foi apagada no tabuleiro do próximo e a palavra contém B, C, D, F, G, H, J, N, P, Q, T, V ou X, a letra pedida é a mais perto do fim (mesmo que essa também já tenha sido apagada); sem nenhuma dessas, continua a última letra.',
@@ -1394,7 +1413,7 @@ function playIntro(){
     try{ releaseIntro('error'); }catch(__){}
   }
 }
-$('#go').onclick=()=>{ playIntro(); if(MODE==='learn'){ unlockSpeech(); startLearn(); } else startGame(); };
+$('#go').onclick=()=>{ playIntro(); if(MODE==='learn') startLearn(); else startGame(); };
 function renderMyWords(){
   const box=$('#wordsov'); if(!box) return;
   if(MODE==='learn'){ renderLearnWords(); return; }
@@ -1449,7 +1468,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.7 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.8 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1584,11 +1603,7 @@ const LEARN_NAME={he:'עברית',en:'English',nl:'Nederlands',pt:'Português'};
 const SPEECH_TAG={he:'he-IL',en:'en-US',nl:'nl-NL',pt:'pt-BR'};
 const MM_TAG={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
 const HE_FINALS={'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
-let learnPhase='say', learnPair=null, learnHoldOk=false, learnTyping=false;
-let learnToken=0, learnRec=null, learnSess=0, learnEmpty=0, pendingLearnDelete=null;
-let speechLive=false, speechAfter=null, speechGen=0, speechUnlocked=false, speechResumeT=null;
-let learnRecEnding=false, learnSpeakText='', learnSpeakLang='';
-let learnIndex=null;
+let learnPair=null, learnTyping=false, pendingLearnDelete=null, learnIndex=null;
 
 function foldLearn(code, raw){
   if(raw==null) return '';
@@ -1752,7 +1767,7 @@ function paintLearnChrome(){
   if(other) other.textContent=LEARN_NAME[LEARN_TARGET]||LEARN_TARGET;
   const mic=$('#learnMic');
   if(mic){
-    mic.classList.toggle('ptt', !!PTT);
+    mic.classList.toggle('ptt', !!(PTT || (typeof learnHandsFree==='function' && !learnHandsFree())));
     mic.title=S.micTitle;
     const off=mic.querySelector('.ml-off'), on=mic.querySelector('.ml-on');
     if(off) off.textContent=S.ptt;
@@ -1792,112 +1807,358 @@ function showLearnShell(){
   paintLearnChrome();
   try{ window.scrollTo(0,0); }catch(_){}
 }
+/* v3.8 Learn audio: exactly one owner at a time — intro clip, speechSynthesis, or SpeechRecognition.
+   No auto-restart loop. iOS (and ?ios=1) is push-to-talk: one tap, one session. */
+const LEARN_STATES=['INTRO','IDLE_NATIVE','LISTEN_NATIVE','SPEAK_TARGET','IDLE_TARGET','LISTEN_TARGET','OK','RETRY'];
+let learnState='INTRO', learnOwner='none', learnGen=0, learnAfterIntro=null;
+let learnRec=null, sharedSR=null, srRunning=false, learnSession=0, learnListenTimer=0;
+let learnPtFallback=false, learnSpeakText='', learnSpeakLang='', learnStream=null;
+let speechGen=0, learnDbgLines=[], verTaps=0, learnDbgOn=false;
+function isLearnIOS(){
+  if(/[?&]ios=1/.test(location.search)) return true;
+  const ua=navigator.userAgent||'';
+  if(/iPad|iPhone|iPod/.test(ua)) return true;
+  if(navigator.platform==='MacIntel' && navigator.maxTouchPoints>1) return true;
+  try{ if(navigator.standalone) return true; }catch(_){}
+  return false;
+}
+function learnHandsFree(){
+  // Push-to-talk on iOS and when ?ios=1 or ?ptt=1. ?ptt=0 keeps one automatic session for desktop tests — never a restart loop.
+  if(/[?&]ios=1/.test(location.search) || /[?&]ptt=1/.test(location.search)) return false;
+  if(/[?&]ptt=0/.test(location.search)) return !!($('#autoMic') && $('#autoMic').checked);
+  if(isLearnIOS()) return false;
+  return !!($('#autoMic') && $('#autoMic').checked);
+}
+function learnLog(msg){
+  const line=((performance.now()/1000).toFixed(2))+' '+learnState+' '+msg;
+  learnDbgLines.push(line);
+  if(learnDbgLines.length>80) learnDbgLines.shift();
+  const box=$('#learnDbg');
+  if(box && learnDbgOn) box.textContent=learnDbgLines.join('\n');
+}
+function setOwner(owner){ if(learnOwner!==owner){ learnOwner=owner; learnLog('owner '+owner); } }
+function setState(next){
+  learnState=next;
+  const root=$('#learn'); if(root) root.dataset.state=next;
+  const listening=next==='LISTEN_NATIVE'||next==='LISTEN_TARGET';
+  const mark=$('#learnListenMark'); if(mark) mark.classList.toggle('hidden', !listening);
+  const sp=$('#learnSpeak'); if(sp) sp.classList.toggle('listening', next==='LISTEN_TARGET');
+  learnLog('-> '+next);
+}
 function learnListenText(code){
-  const name=LEARN_NAME[code]||code||'';
+  const name=(code==='pt'&&learnPtFallback)?'Português (PT)':(LEARN_NAME[code]||code||'');
   return (S.learnListen?S.learnListen(name):S.listening);
 }
 function setLearnStatus(text){ const st=$('#learnStatus'); if(st) st.textContent=text||''; }
 function showSpeaker(text, lang){
-  learnSpeakText=text||'';
-  learnSpeakLang=lang||LEARN_TARGET;
+  if(text){ learnSpeakText=text; learnSpeakLang=lang||learnSpeakLang||LEARN_TARGET; }
   const sp=$('#learnSpeak');
-  if(sp) sp.classList.toggle('hidden', !learnSpeakText);
+  if(!sp) return;
+  sp.classList.remove('hidden');
+  sp.disabled=false;
+  sp.removeAttribute('disabled');
+  if(!learnSpeakText) sp.classList.add('hidden');
 }
-// iOS only plays speechSynthesis after speak() has run inside a user gesture.
-// The Let's learn tap (and 🔊) call this synchronously. Later speaks can then be heard.
-function unlockSpeech(){
-  if(!window.speechSynthesis || speechUnlocked) {
-    try{ if(window.speechSynthesis) speechSynthesis.resume(); }catch(_){}
-    return;
-  }
-  speechUnlocked=true;
-  try{ speechSynthesis.resume(); }catch(_){}
+function hideSpeaker(){ const sp=$('#learnSpeak'); if(sp) sp.classList.add('hidden'); }
+function micOff(){ const m=$('#learnMic'); if(m) m.classList.remove('on'); }
+function releaseMicTracks(){
+  // This page never calls getUserMedia (same as Play). SpeechRecognition does not hand us its stream.
   try{
-    const u=new SpeechSynthesisUtterance(' ');
-    u.volume=0; u.rate=2; u.lang=SPEECH_TAG[LANG]||'en-US';
-    speechSynthesis.speak(u);
+    if(learnStream && learnStream.getTracks){
+      learnStream.getTracks().forEach(t=>{ try{ t.stop(); }catch(_){} });
+      learnLog('stopped getUserMedia tracks');
+    }
   }catch(_){}
+  learnStream=null;
+}
+function paintIdleNative(){
+  micOff();
+  setLearnStatus(S.learnSay||'');
+  setLearnHeard(S.ptt||'');
+  const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
+}
+function paintIdleTarget(){
+  micOff();
+  setLearnStatus(S.learnRepeat||'');
+  setLearnHeard(S.ptt||'');
+  const skip=$('#learnSkip'); if(skip) skip.classList.remove('hidden');
+  showSpeaker(learnSpeakText, learnSpeakLang);
+}
+function paintListening(code){
+  const line=learnListenText(code);
+  const m=$('#learnMic'); if(m) m.classList.add('on');
+  setLearnStatus(line);
+  setLearnHeard(line);
 }
 function exactVoice(tag){
-  // Voices load asynchronously (often empty until onvoiceschanged). Never block on them:
-  // an exact BCP-47 match is optional. Otherwise the utterance uses .lang only.
   let voices=[];
   try{ voices=speechSynthesis.getVoices()||[]; }catch(_){ voices=[]; }
   const want=String(tag||'').toLowerCase().replace('_','-');
   return voices.find(v=>(v.lang||'').toLowerCase().replace('_','-')===want)||null;
 }
-function armSpeechResume(){
-  clearInterval(speechResumeT);
-  // Chrome pauses the speech queue and then never fires onend. Nudge it while we speak.
-  speechResumeT=setInterval(()=>{
-    try{
-      if(!speechLive){ clearInterval(speechResumeT); return; }
-      speechSynthesis.resume();
-    }catch(_){ clearInterval(speechResumeT); }
-  }, 1000);
-}
-// Abort the current recognizer and ignore its onend so it cannot restart under the speaker.
-function haltLearnRec(){
-  learnSess++;
-  const r=learnRec;
-  learnRec=null;
-  const m=$('#learnMic'); if(m) m.classList.remove('on');
-  if(!r){ learnRecEnding=false; return; }
-  learnRecEnding=true;
+function allocSR(){
+  const ios=isLearnIOS();
+  if(ios && sharedSR) return sharedSR;
   try{
-    r.onresult=null;
-    r.onerror=()=>{};
-    r.onend=()=>{ learnRecEnding=false; };
-    r.abort();
-  }catch(_){ learnRecEnding=false; }
-  setTimeout(()=>{ learnRecEnding=false; }, 400);
+    const r=new SR();
+    if(ios) sharedSR=r;
+    return r;
+  }catch(err){
+    learnLog('new SR failed '+(err&&err.name||err));
+    if(sharedSR) return sharedSR;
+    return null;
+  }
 }
-function whenMicFree(fn){
-  if(!learnRecEnding){ fn(); return; }
-  const t0=Date.now();
-  (function tick(){
-    if(!learnRecEnding || Date.now()-t0>450){ learnRecEnding=false; fn(); return; }
-    setTimeout(tick, 40);
-  })();
+function stopSession(why){
+  clearTimeout(learnListenTimer);
+  const r=learnRec;
+  const running=srRunning;
+  srRunning=false;
+  learnSession++;
+  micOff();
+  if(learnOwner==='mic') setOwner('none');
+  if(!r || !running){ learnLog('stop '+(why||'')+' idle'); return Promise.resolve(); }
+  learnLog('abort '+(why||''));
+  return new Promise(resolve=>{
+    let done=false;
+    const finish=()=>{ if(done) return; done=true; resolve(); };
+    try{
+      r.onresult=null;
+      r.onerror=()=>{};
+      r.onend=()=>{ learnLog('rec onend'); finish(); };
+      r.abort();
+    }catch(_){ finish(); }
+    setTimeout(finish, 500);
+  });
 }
-function speakLearn(text, langCode){
+function wireSession(r, side, tag){
+  const sess=++learnSession;
+  const code=side==='target'?LEARN_TARGET:LANG;
+  let lastAlts=null, closed=false;
+  const live=()=>sess===learnSession && srRunning && !closed;
+  learnListenTimer=setTimeout(()=>{ if(!live()) return; learnLog('8s timeout'); try{ r.abort(); }catch(_){} endSession(false); }, 8000);
+  function endSession(hadText){
+    if(!live() && closed) return;
+    closed=true;
+    clearTimeout(learnListenTimer);
+    srRunning=false;
+    if(learnOwner==='mic') setOwner('none');
+    micOff();
+    learnSession++;
+    if(hadText) return;
+    if(side==='target' && LEARN_TARGET==='pt' && tag==='pt-BR' && !learnPtFallback){
+      learnPtFallback=true;
+      learnLog('pt-BR empty -> pt-PT');
+      beginListen('target','pt-PT');
+      return;
+    }
+    if(side==='target') enterIdleTarget(false);
+    else enterIdleNative(false);
+  }
+  function take(alts){
+    if(!live()) return;
+    closed=true;
+    clearTimeout(learnListenTimer);
+    srRunning=false;
+    if(learnOwner==='mic') setOwner('none');
+    micOff();
+    learnSession++;
+    try{ r.abort(); }catch(_){}
+    const raw=(alts&&alts[0])||'';
+    learnLog('result "'+raw+'"');
+    if(side==='target') acceptRepeat(alts);
+    else acceptNative(raw);
+  }
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=5;
+  r.onresult=ev=>{
+    if(!live()) return;
+    let finalSeen=false;
+    for(let i=0;i<ev.results.length;i++){ if(ev.results[i].isFinal) finalSeen=true; }
+    const alts=learnAlts(ev);
+    if(!alts.length) return;
+    lastAlts=alts;
+    setLearnWord('own', alts[0], 'interim');
+    setLearnHeard(S.heard+alts[0]);
+    if(side==='target' && learnPair && learnMatch(alts, learnPair.t)){ take(alts); return; }
+    if(finalSeen){
+      if(side==='target') take(alts);
+      else if(displayLearn(LANG, alts[0])) take(alts);
+      return;
+    }
+  };
+  r.onerror=ev=>{
+    if(!live()) return;
+    const err=ev&&ev.error||'';
+    learnLog('error '+err);
+    if(err==='aborted') return;
+    if(err==='no-speech'){ endSession(false); return; }
+    const help=S.errs&&S.errs[err];
+    if(help) setLearnHeard(help);
+    if(['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(err)){
+      endSession(false); return;
+    }
+  };
+  r.onend=()=>{
+    learnLog('end');
+    if(!live()) return;
+    if(lastAlts){ if(side==='target') take(lastAlts); else if(displayLearn(LANG, lastAlts[0])) take(lastAlts); else endSession(false); return; }
+    endSession(false);
+  };
+}
+function beginListen(side, tag){
+  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('refuse mic in '+learnState); return; }
+  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); return; }
+  const code=side==='target'?LEARN_TARGET:LANG;
+  const langTag=tag || (code==='pt'?'pt-BR':(SPEECH_TAG[code]||'en-US'));
+  const startFresh=()=>{
+    const r=allocSR();
+    if(!r){ if(side==='target') enterIdleTarget(false); else enterIdleNative(false); return; }
+    learnRec=r;
+    try{ r.lang=langTag; }catch(err){ learnLog('set lang '+err); }
+    wireSession(r, side, langTag);
+    const go=()=>{
+      try{
+        r.start();
+        srRunning=true;
+        setOwner('mic');
+        setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE');
+        paintListening(code);
+        learnLog('start '+langTag);
+      }catch(err){
+        const name=(err&&(err.name||err.message))||'';
+        learnLog('start threw '+name);
+        srRunning=false;
+        if(/InvalidState/i.test(name)){
+          let recovered=false;
+          const retry=()=>{
+            if(recovered) return; recovered=true;
+            try{
+              r.lang=langTag;
+              wireSession(r, side, langTag);
+              r.start();
+              srRunning=true; setOwner('mic'); setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE'); paintListening(code); learnLog('start retry '+langTag);
+            }catch(e2){ learnLog('retry failed'); srRunning=false; if(side==='target') enterIdleTarget(false); else enterIdleNative(false); }
+          };
+          try{ r.onend=retry; r.abort(); }catch(_){ retry(); }
+          setTimeout(retry, 500);
+          return;
+        }
+        if(side==='target') enterIdleTarget(false); else enterIdleNative(false);
+      }
+    };
+    if(srRunning){
+      learnLog('wait previous onend');
+      let went=false;
+      const run=()=>{ if(went) return; went=true; srRunning=false; go(); };
+      try{ r.onend=run; r.abort(); }catch(_){ run(); }
+      setTimeout(run, 500);
+      return;
+    }
+    go();
+  };
+  if(srRunning && learnRec){
+    stopSession('switch').then(()=>startFresh());
+    return;
+  }
+  startFresh();
+}
+function enterIdleNative(allowAuto){
+  setState('IDLE_NATIVE');
+  setOwner('none');
+  paintIdleNative();
+  if(allowAuto && learnHandsFree()) beginListen('native');
+}
+function enterIdleTarget(allowAuto){
+  setState('IDLE_TARGET');
+  setOwner('none');
+  paintIdleTarget();
+  if(allowAuto && learnHandsFree()) beginListen('target');
+}
+function enterRetry(raw){
+  setState('RETRY');
+  setOwner('none');
+  micOff();
+  const heard=raw||'';
+  setLearnWord('own', heard||'\u00a0', 'bad');
+  setLearnMsg(S.learnWrong, 'err');
+  setLearnStatus(S.heard+heard);
+  setLearnHeard(S.heard+heard);
+  const skip=$('#learnSkip'); if(skip) skip.classList.remove('hidden');
+  showSpeaker(learnSpeakText|| (learnPair&&learnPair.t), LEARN_TARGET);
+}
+function armIntro(){
+  learnGen++;
+  const gen=learnGen;
+  setState('INTRO');
+  setOwner('audio');
+  micOff();
+  hideSpeaker();
+  setLearnStatus(S.learnSay||'');
+  setLearnHeard('');
+  const audio=introAudio;
+  let left=false;
+  const leave=(why)=>{
+    if(left || gen!==learnGen || learnState!=='INTRO') return;
+    left=true;
+    clearTimeout(timer);
+    if(audio){ try{ audio.removeEventListener('ended', onEnd); }catch(_){} }
+    learnLog('intro '+why);
+    if(learnOwner==='audio') setOwner('none');
+    const next=learnAfterIntro; learnAfterIntro=null;
+    if(next) next();
+    else enterIdleNative(true);
+  };
+  const onEnd=()=>leave('ended');
+  let ms=3200;
+  if(audio){
+    try{ audio.addEventListener('ended', onEnd); }catch(_){}
+    const d=audio.duration;
+    ms=(d && isFinite(d) && d>0.2 ? d*1000 : 2200)+1000;
+  }
+  const timer=setTimeout(()=>leave('timeout'), ms);
+  setTimeout(()=>{
+    if(left || learnState!=='INTRO') return;
+    const blocked=!introHold && audio && audio.paused && !(audio.currentTime>0);
+    if(blocked) leave('blocked');
+  }, 0);
+  learnLog('intro armed '+Math.round(ms)+'ms');
+}
+function speakTarget(text, langCode, after){
   const gen=++speechGen;
-  if(!window.speechSynthesis || !text){ speechLive=false; const extra=speechAfter; speechAfter=null; if(extra) try{ extra(); }catch(_){} return; }
-  // The mic holds the iOS audio session and mutes speechSynthesis. Drop it before speak().
-  haltLearnRec();
-  speechLive=true;
-  setLearnStatus(S.learnSpeaking||'');
+  showSpeaker(text, langCode);
+  setState('SPEAK_TARGET');
+  setOwner('tts');
+  setLearnStatus(S.learnSpeaking||'🔊');
+  micOff();
+  let settled=false;
+  const finish=(why)=>{
+    if(settled || gen!==speechGen) return;
+    settled=true;
+    clearTimeout(timer);
+    learnLog('tts '+why);
+    if(learnOwner==='tts') setOwner('none');
+    showSpeaker(text, langCode);
+    if(after) try{ after(); }catch(_){}
+  };
+  releaseMicTracks();
   try{ speechSynthesis.cancel(); }catch(_){}
   try{ speechSynthesis.resume(); }catch(_){}
-  const tag=SPEECH_TAG[langCode]||'en-US';
+  const tag=langCode==='pt'?'pt-BR':(SPEECH_TAG[langCode]||'en-US');
   let u;
   try{
     u=new SpeechSynthesisUtterance(text);
     u.lang=tag;
     const voice=exactVoice(tag);
-    if(voice){ try{ u.voice=voice; }catch(_){ u.voice=null; } }
-  }catch(_){
-    speechLive=false;
-    const extra=speechAfter; speechAfter=null;
-    if(extra) try{ extra(); }catch(__){}
-    return;
-  }
-  let settled=false;
-  const finish=()=>{
-    if(settled || gen!==speechGen) return;
-    settled=true;
-    clearTimeout(timer);
-    clearInterval(speechResumeT);
-    speechLive=false;
-    const extra=speechAfter; speechAfter=null;
-    if(extra){ try{ extra(); }catch(_){} }
-  };
-  u.onend=finish;
-  u.onerror=finish;
-  const timer=setTimeout(finish, Math.min(8000, 1600+String(text).length*120));
-  armSpeechResume();
+    if(voice){ try{ u.voice=voice; }catch(_){ } }
+  }catch(_){ finish('no-utterance'); return; }
+  u.onend=()=>finish('end');
+  u.onerror=()=>finish('error');
+  const timer=setTimeout(()=>finish('timeout'), Math.min(5000, 1400+String(text).length*70));
   try{ speechSynthesis.speak(u); }
-  catch(_){ finish(); }
+  catch(_){ finish('throw'); }
 }
 function learnAlts(e){
   const alts=[];
@@ -1913,292 +2174,148 @@ function learnAlts(e){
   }
   return alts;
 }
-function stopLearnRec(){ haltLearnRec(); }
-// Fresh SpeechRecognition each time, same flags as Play (continuous false, interim, 5 alternatives).
-// A language change waits until the previous instance has ended, then starts the new lang.
-function startLearnRec(langCode, how){
-  if($('#learn').classList.contains('hidden')) return;
-  if(introHold&&!introHold.done){ introHold.pending=()=>startLearnRec(langCode, how); return; }
-  if(speechLive){ speechAfter=()=>startLearnRec(langCode, 'after-speech'); return; }
-  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); return; }
-  if(learnTyping && how!=='click' && how!=='space') return;
-  const tag=SPEECH_TAG[langCode]||'en-US';
-  const switching=!!(learnRecEnding && learnRec===null);
-  if(switching && how!=='click' && how!=='space'){
-    const token=learnToken;
-    whenMicFree(()=>{ if(token!==learnToken || speechLive || $('#learn').classList.contains('hidden')) return; startLearnRec(langCode, 'after-speech'); });
-    return;
-  }
-  haltLearnRec();
-  // Play's tap path starts the new instance in the same turn. Do that here too once the old one is aborted.
-  if(how==='click'||how==='space') learnRecEnding=false;
-  const sess=++learnSess;
-  let r;
-  try{ r=new SR(); }catch(err){ setLearnHeard(S.srNA); return; }
-  r.lang=tag;
-  r.interimResults=true;
-  r.maxAlternatives=5;
-  r.continuous=false;
-  learnRec=r;
-  const mic=$('#learnMic'); if(mic) mic.classList.add('on');
-  const listenLine=learnListenText(langCode);
-  setLearnHeard(listenLine);
-  setLearnStatus(listenLine);
-  let lastAlts=null, done=false, stableT=null, deafT=null, sawSound=false;
-  const live=()=>sess===learnSess && !done && !$('#learn').classList.contains('hidden');
-  function finalize(alts){
-    if(!live()) return;
-    done=true; clearTimeout(stableT); clearTimeout(deafT);
-    haltLearnRec();
-    if(!alts||!alts.length){
-      setLearnHeard($('#autoMic').checked?learnListenText(langCode):(PTT?S.tapAgain:S.notHeard));
-      scheduleLearnRestart(langCode);
-      return;
-    }
-    learnEmpty=0;
-    if(langCode===LEARN_TARGET && learnPhase==='repeat') acceptRepeat(alts);
-    else acceptNative(alts[0]);
-  }
-  r.onaudiostart=()=>{
-    if(sess!==learnSess) return;
-    clearTimeout(deafT);
-    deafT=setTimeout(()=>{
-      if(!live()||sawSound) return;
-      if($('#autoMic').checked){ done=true; haltLearnRec(); scheduleLearnRestart(langCode); }
-    }, 6000);
-  };
-  r.onsoundstart=()=>{ sawSound=true; };
-  r.onspeechstart=()=>{ sawSound=true; };
-  r.onresult=ev=>{
-    if(!live()) return;
-    sawSound=true;
-    let finalSeen=false;
-    for(let i=0;i<ev.results.length;i++){ if(ev.results[i].isFinal) finalSeen=true; }
-    const alts=learnAlts(ev);
-    if(!alts.length) return;
-    lastAlts=alts;
-    if(learnHoldOk && langCode===LANG){
-      learnHoldOk=false;
-      setLearnWord('other','');
-      const om=$('#learnOtherMsg'); if(om) om.textContent='';
-    }
-    setLearnWord('own', alts[0], 'interim');
-    setLearnHeard(S.heard+alts[0]+' …');
-    // Interim text counts: Safari often never marks the target-language result final.
-    if(langCode===LEARN_TARGET && learnPhase==='repeat' && learnPair && learnMatch(alts, learnPair.t)){
-      finalize(alts); return;
-    }
-    if(finalSeen){ finalize(alts); return; }
-    clearTimeout(stableT);
-    stableT=setTimeout(()=>{ if(lastAlts) finalize(lastAlts); }, STABLE_MS);
-  };
-  r.onerror=ev=>{
-    if(sess!==learnSess) return;
-    if(!ev || ev.error==='aborted') return;
-    if(ev.error==='no-speech'){ setLearnHeard($('#autoMic').checked?learnListenText(langCode):S.noSpeech); return; }
-    const help=S.errs&&S.errs[ev.error];
-    setLearnHeard(help||(S.micErr+(ev.error||'')));
-    if(['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(ev.error)){
-      done=true; clearTimeout(deafT); $('#autoMic').checked=false; haltLearnRec();
-    }
-  };
-  r.onend=()=>{
-    if(sess!==learnSess) return;
-    clearTimeout(stableT); clearTimeout(deafT);
-    if(!done && lastAlts){ finalize(lastAlts); return; }
-    done=true;
-    if(learnRec===r) learnRec=null;
-    const m=$('#learnMic'); if(m) m.classList.remove('on');
-    learnRecEnding=false;
-    if(learnPhase==='say'||learnPhase==='repeat') scheduleLearnRestart(langCode);
-  };
-  try{ r.start(); }
-  catch(err){ learnRec=null; if(mic) mic.classList.remove('on'); setLearnHeard(S.cantStart); setLearnStatus(S.cantStart); }
-}
-function scheduleLearnRestart(langCode){
-  // Same rule as Play: auto-mic keeps restarting; manual mode stops after a few empty ends.
-  if(learnTyping) return;
-  if(!$('#autoMic').checked){
-    if(learnEmpty>=2){ setLearnHeard(S.micStopped); return; }
-  }
-  learnEmpty++;
-  const token=learnToken;
-  setTimeout(()=>{
-    if(token!==learnToken || learnTyping || learnRec || speechLive || $('#learn').classList.contains('hidden')) return;
-    if(learnPhase!=='say' && learnPhase!=='repeat') return;
-    startLearnRec(langCode, 'auto');
-  }, 300);
-}
-function resumeLearnMic(){
-  if($('#learn').classList.contains('hidden')) return;
-  if(!$('#autoMic').checked){ setLearnHeard(S.tapToTalk); return; }
-  const lang=learnPhase==='repeat'?LEARN_TARGET:LANG;
-  startLearnRec(lang, 'auto');
-}
+function stopLearnRec(){ stopSession('stop'); }
+function resumeLearnMic(){ /* closing My words must not start another recognizer */ }
 function beginSay(){
-  learnPhase='say';
   learnPair=null;
+  learnPtFallback=false;
   learnTyping=false;
-  learnEmpty=0;
-  learnHoldOk=false;
-  showSpeaker('','');
+  hideSpeaker();
   setLearnWord('own','');
   setLearnWord('other','');
   const om=$('#learnOtherMsg'); if(om) om.textContent='';
   setLearnMsg(S.learnSay,'');
-  setLearnStatus(S.learnSay);
-  const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
   const inp=$('#learnIn'); if(inp){ inp.value=''; inp.placeholder=S.inputPh; }
-  if($('#autoMic').checked) startLearnRec(LANG, 'auto');
-  else { setLearnHeard(S.tapToTalk); setLearnStatus(S.tapToTalk); }
-}
-function queueMicAfterSpeech(langCode){
-  speechAfter=()=>{
-    if($('#learn').classList.contains('hidden')) return;
-    if(!$('#autoMic').checked){ setLearnHeard(S.tapToTalk); setLearnStatus(learnListenText(langCode)); return; }
-    startLearnRec(langCode, 'after-speech');
-  };
+  enterIdleNative(true);
 }
 function beginRepeat(pair, speak){
-  learnToken++;
+  learnGen++;
   learnPair={n:pair.n, t:pair.t};
-  learnPhase='repeat';
+  learnPtFallback=false;
   learnTyping=false;
-  learnEmpty=0;
-  learnHoldOk=false;
   setLearnWord('own', pair.n, '');
   setLearnWord('other', pair.t, '');
   setLearnMsg(S.learnRepeat,'');
   const om=$('#learnOtherMsg'); if(om) om.textContent='';
-  setLearnStatus(S.learnRepeat);
-  const skip=$('#learnSkip'); if(skip) skip.classList.remove('hidden');
-  showSpeaker(pair.t, LEARN_TARGET);
   const inp=$('#learnIn'); if(inp) inp.value='';
-  if(speak){ queueMicAfterSpeech(LEARN_TARGET); speakLearn(pair.t, LEARN_TARGET); }
-  else if($('#autoMic').checked) startLearnRec(LEARN_TARGET, 'auto');
-  else { setLearnHeard(S.tapToTalk); setLearnStatus(learnListenText(LEARN_TARGET)); }
+  showSpeaker(pair.t, LEARN_TARGET);
+  if(speak===false){ enterIdleTarget(true); return; }
+  stopSession('before-tts').then(()=>{
+    speakTarget(pair.t, LEARN_TARGET, ()=>enterIdleTarget(true));
+  });
 }
 async function acceptNative(raw){
-  const token=++learnToken;
+  const token=++learnGen;
   const word=displayLearn(LANG, raw);
-  if(!word){
-    if($('#autoMic').checked && !learnTyping) startLearnRec(LANG);
-    return;
-  }
-  stopLearnRec();
-  learnPhase='wait';
-  learnHoldOk=false;
+  stopSession('native');
+  if(!word){ enterIdleNative(false); return; }
+  setState('SPEAK_TARGET');
+  setOwner('none');
   setLearnWord('own', word, '');
   setLearnWord('other', '…', '');
   setLearnHeard(S.heard+word);
   setLearnMsg('','');
+  setLearnStatus('…');
   let tr=dictTranslate(LANG, LEARN_TARGET, word);
   if(!tr) tr=await remoteTranslate(LANG, LEARN_TARGET, word);
-  if(token!==learnToken || $('#learn').classList.contains('hidden')) return;
+  if(token!==learnGen || $('#learn').classList.contains('hidden')) return;
   if(!tr){
     setLearnWord('other','');
     setLearnMsg(S.learnNoTr,'err');
-    const st=$('#learnStatus'); if(st) st.textContent=S.learnNoTr;
-    learnPhase='say';
-    if($('#autoMic').checked) startLearnRec(LANG);
-    else setLearnHeard(S.tapToTalk);
+    setLearnStatus(S.learnNoTr);
+    enterIdleNative(false);
     return;
   }
   beginRepeat({n:word, t:tr}, true);
 }
 function acceptRepeat(alts){
-  if(!learnPair || learnPhase!=='repeat') return;
-  const heard=displayLearn(LEARN_TARGET, (alts&&alts[0])||'') || String((alts&&alts[0])||'').trim();
+  if(!learnPair) return;
+  const raw=(alts&&alts[0])||'';
+  const heard=displayLearn(LEARN_TARGET, raw)||String(raw).trim();
   if(learnMatch(alts, learnPair.t)){
-    stopLearnRec();
+    stopSession('match');
     const pair=learnPair;
     saveLearnPair(pair.n, pair.t);
-    learnPhase='say';
-    learnPair=null;
-    learnHoldOk=true;
     learnTyping=false;
-    learnEmpty=0;
+    setState('OK');
+    setOwner('none');
     setLearnWord('other', '✅', 'bigok');
     const om=$('#learnOtherMsg'); if(om) om.textContent=pair.t;
     setLearnWord('own', pair.n, 'ok');
     setLearnMsg(S.learnOk+' '+S.learnAgain, 'good');
     setLearnStatus('✅');
+    setLearnHeard('');
     const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
     showSpeaker(pair.t, LEARN_TARGET);
-    if($('#autoMic').checked) startLearnRec(LANG, 'after-speech');
-    else setLearnHeard(S.tapToTalk);
+    micOff();
+    if(learnHandsFree()) beginListen('native');
     return;
   }
-  setLearnWord('own', heard||'\u00a0', 'bad');
-  setLearnMsg(S.learnWrong, 'err');
-  setLearnStatus(S.heard+(heard||String((alts&&alts[0])||'').trim()));
-  const skip=$('#learnSkip'); if(skip) skip.classList.remove('hidden');
-  showSpeaker(learnPair.t, LEARN_TARGET);
-  learnTyping=false;
-  if($('#autoMic').checked) startLearnRec(LEARN_TARGET, 'auto');
-  else setLearnHeard(S.tapAgain);
-  // Restarting the mic writes "listening…"; put what we heard back on screen.
-  setLearnHeard(S.heard+(heard||String((alts&&alts[0])||'').trim()));
+  enterRetry(heard||raw);
 }
 function submitLearnTyped(){
   const inp=$('#learnIn'); if(!inp) return;
   const raw=inp.value; inp.value='';
   learnTyping=false;
-  if(learnPhase==='repeat') acceptRepeat([raw]);
+  const targetSide=learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='SPEAK_TARGET';
+  if(targetSide && learnPair) acceptRepeat([raw]);
   else acceptNative(raw);
 }
 function skipLearn(){
-  learnToken++;
-  stopLearnRec();
+  learnGen++;
   speechGen++;
-  speechLive=false;
-  speechAfter=null;
+  stopSession('skip');
   try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  if(learnOwner==='tts'||learnOwner==='audio') setOwner('none');
   beginSay();
 }
 function replayLearn(){
-  // Must call speak() in this tap. Waiting for the recognizer to end first loses the iOS gesture.
-  const text=learnSpeakText || (learnPair&&learnPair.t) || '';
-  const lang=learnSpeakLang || LEARN_TARGET;
+  const text=learnSpeakText||(learnPair&&learnPair.t)||'';
+  const lang=learnSpeakLang||LEARN_TARGET;
   if(!text) return;
-  unlockSpeech();
-  learnToken++;
-  const back=learnPhase==='repeat'?LEARN_TARGET:LANG;
-  queueMicAfterSpeech(back);
-  speakLearn(text, lang);
+  showSpeaker(text, lang);
+  const say=()=>{
+    releaseMicTracks();
+    const backTarget=learnState==='OK'||learnState==='IDLE_NATIVE'||learnState==='LISTEN_NATIVE';
+    speakTarget(text, lang, ()=>{
+      showSpeaker(text, lang);
+      if(backTarget) enterIdleNative(learnHandsFree());
+      else enterIdleTarget(learnHandsFree());
+    });
+  };
+  if(!srRunning || !learnRec){ say(); return; }
+  let said=false;
+  const go=()=>{ if(said) return; said=true; srRunning=false; if(learnOwner==='mic') setOwner('none'); micOff(); say(); };
+  try{
+    learnRec.onresult=null;
+    learnRec.onerror=()=>{};
+    learnRec.onend=go;
+    learnRec.abort();
+  }catch(_){ go(); }
+  setTimeout(go, 500);
 }
 function startLearn(){
-  learnToken++;
+  learnGen++;
+  learnAfterIntro=null;
   showLearnShell();
-  beginSay();
+  armIntro();
 }
 function leaveLearn(){
-  learnToken++;
-  stopLearnRec();
+  learnGen++;
   speechGen++;
-  speechLive=false;
-  speechAfter=null;
+  stopSession('leave');
   try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  setOwner('none');
   $('#learn').classList.add('hidden');
   $('#start').classList.remove('hidden');
 }
-function renderLearnWords(){
-  $('#wordsTitle').textContent=S.myWords;
-  $('#wordsNote').textContent=S.learnWordsNote;
-  $('#wordsEmpty').textContent=S.learnWordsEmpty;
-  $('#wordsClose').textContent=S.myWordsClose;
-  const words=readLearnWords();
-  const ul=$('#wordsList'); ul.innerHTML='';
-  $('#wordsEmpty').classList.toggle('hidden', words.length>0);
-  words.forEach((w,i)=>{
-    const li=document.createElement('li');
-    if(pendingLearnDelete===i){
-      li.innerHTML=`<span class="mw-word" dir="auto">${esc(w.n)} · ${esc(w.t)}</span><span class="mw-ask">${esc(S.myWordsAsk)}</span><button type="button" class="mw-yes" data-i="${i}">${esc(S.myWordsYes)}</button><button type="button" class="mw-no">${esc(S.myWordsNo)}</button>`;
-    } else {
-      li.innerHTML=`<button type="button" class="mw-pair" data-i="${i}"><span class="mw-native" dir="auto">${esc(w.n)}</span><span class="mw-eq">·</span><span class="mw-target" dir="auto">${esc(w.t)}</span></button><button type="button" class="mw-x" data-i="${i}" aria-label="${esc(S.myWordsDeleteAria)}">✕</button>`;
-    }
-    ul.appendChild(li);
-  });
+function learnMicTap(){
+  if(!SR) return;
+  learnTyping=false;
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); return; }
+  if(srRunning){ stopSession('tap').then(()=>{ if(learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='IDLE_TARGET') enterIdleTarget(false); else enterIdleNative(false); }); return; }
+  if(learnState==='IDLE_TARGET'||learnState==='RETRY'||learnState==='LISTEN_TARGET'||(learnPair&&learnState!=='IDLE_NATIVE'&&learnState!=='OK'&&learnState!=='LISTEN_NATIVE')) beginListen('target');
+  else beginListen('native');
 }
 function onLearnWordsClick(e){
   const t=e.target.closest('button'); if(!t) return;
@@ -2220,14 +2337,35 @@ function onLearnWordsClick(e){
     const showing=!$('#learn').classList.contains('hidden');
     closeMyWords({silent:true});
     if(!showing){
-      unlockSpeech();
       playIntro();
       showLearnShell();
-      const go=()=>beginRepeat(w, true);
-      if(introHold&&!introHold.done) introHold.pending=go;
-      else go();
+      learnAfterIntro=()=>beginRepeat(w, true);
+      armIntro();
     } else beginRepeat(w, true);
   }
+}
+document.querySelectorAll('.verlbl').forEach(b=>b.addEventListener('click', ()=>{
+  verTaps++;
+  if(verTaps>=5){ verTaps=0; learnDbgOn=!learnDbgOn; const box=$('#learnDbg'); if(box){ box.classList.toggle('hidden', !learnDbgOn); box.textContent=learnDbgLines.join('\n'); } }
+}));
+
+function renderLearnWords(){
+  $('#wordsTitle').textContent=S.myWords;
+  $('#wordsNote').textContent=S.learnWordsNote;
+  $('#wordsEmpty').textContent=S.learnWordsEmpty;
+  $('#wordsClose').textContent=S.myWordsClose;
+  const words=readLearnWords();
+  const ul=$('#wordsList'); ul.innerHTML='';
+  $('#wordsEmpty').classList.toggle('hidden', words.length>0);
+  words.forEach((w,i)=>{
+    const li=document.createElement('li');
+    if(pendingLearnDelete===i){
+      li.innerHTML=`<span class="mw-word" dir="auto">${esc(w.n)} · ${esc(w.t)}</span><span class="mw-ask">${esc(S.myWordsAsk)}</span><button type="button" class="mw-yes" data-i="${i}">${esc(S.myWordsYes)}</button><button type="button" class="mw-no">${esc(S.myWordsNo)}</button>`;
+    } else {
+      li.innerHTML=`<button type="button" class="mw-pair" data-i="${i}"><span class="mw-native" dir="auto">${esc(w.n)}</span><span class="mw-eq">·</span><span class="mw-target" dir="auto">${esc(w.t)}</span></button><button type="button" class="mw-x" data-i="${i}" aria-label="${esc(S.myWordsDeleteAria)}">✕</button>`;
+    }
+    ul.appendChild(li);
+  });
 }
 $('#modePlay').onclick=()=>setMode('play');
 $('#modeLearn').onclick=()=>setMode('learn');
@@ -2242,13 +2380,7 @@ $('#learnWordsBtn').onclick=openMyWords;
 $('#learnSend').onclick=submitLearnTyped;
 $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
-$('#learnMic').onclick=()=>{
-  if(!SR) return;
-  learnTyping=false;
-  if(learnRec){ stopLearnRec(); setLearnHeard(S.micOff); return; }
-  const lang=learnPhase==='repeat'?LEARN_TARGET:LANG;
-  startLearnRec(lang, 'click');
-};
+$('#learnMic').onclick=()=>learnMicTap();
 $('#learnIn').addEventListener('input', ()=>{
   if(!$('#learnIn').value) return;
   if(!learnTyping){ learnTyping=true; if(learnRec) stopLearnRec(); setLearnHeard(S.typing); }

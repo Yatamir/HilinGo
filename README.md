@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.7)
+# HilinGo – word-chain game (v3.8)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,16 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.8 – Learn mode: one sound at a time
+- On an iPhone home-screen app the intro was cut off, Hebrew was only sometimes recognized, Portuguese was never recognized, and 🔊 froze and vanished. The mic indicator stayed on because Learn kept restarting recognition while also trying to speak, and the status line said "listening" even after the recognizer had stopped.
+- Learn now has one owner at a time: the intro clip, or the spoken translation, or the microphone. The mic does not start until `audio/hilingo.mp3` fires `ended` (or the clip's duration plus one second). It is the same `play()` from the Let's learn tap that Play uses. Nothing calls `speechSynthesis` during the intro.
+- iOS does not auto-listen. One tap is one recognition session (`continuous` false). It stops on a result, on end, on error, or after 8 seconds, and it does not start itself again. "מקשיב" is shown only while that session is actually running. The same WebKit object is reused; `lang` is set only while it is stopped, and a failed `start()` (`InvalidStateError`) waits for `onend` and tries once.
+- 🔊 aborts recognition, waits up to 500ms for `onend`, cancels any previous speech, then speaks from that tap. The button is put back on `onend`, `onerror`, and a timeout, because iOS often never fires `onend`.
+- Portuguese listens as `pt-BR`. If that session hears nothing, one follow-up uses `pt-PT` and then it stops. What was heard is shown. Matching still ignores accents, nikud, and articles (`de`/`het`/`een`, `the`/`a`, `o`/`a`/`um`) and allows one wrong letter on longer words.
+- The outline microphone is only on the button you tap to speak. While that recognizer is actually running, a blue waveform shows in the status row and, during the repeat, in the 🔊 spot (still tappable). Both disappear when listening stops.
+- Tap the small v3.8 label five times for a debug log of state changes and recognition events.
+- Test: `node tests_learn.mjs`. `tests_tablet.mjs` and `tests_intro.mjs` still cover the game.
 
 ## v3.7 – Learn mode speaks, then listens in the new language
 - On a phone the target word never came out of the speaker, and the repeat mic often stayed on the first language. Play mode was fine: it never switches language and it never uses `speechSynthesis`.

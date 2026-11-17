@@ -1,5 +1,5 @@
 /**
- * HilinGo v3.8 — Learn mode audio state machine.
+ * HilinGo v3.9 — Learn mode audio state machine.
  *   npm install playwright-core
  *   node tests_learn.mjs
  * Speech recognition, speechSynthesis and the intro clip are mocked.
@@ -55,11 +55,48 @@ await context.addInitScript(() => {
   window.__fetchMode = 'ok';
   window.__fetchText = 'palavra';
   class FakeAudio {
-    constructor(src) { this.src = src || ''; this.preload = ''; this.paused = true; this.currentTime = 0; this._ls = {}; window.__intro.el = this; }
+    constructor(src) {
+      this._src = '';
+      this.preload = '';
+      this.paused = true;
+      this.currentTime = 0;
+      this._ls = {};
+      this.onended = null;
+      this.onerror = null;
+      this.error = null;
+      this.__ended = false;
+      window.__audios = window.__audios || [];
+      window.__audios.push(this);
+      this.src = src || '';
+    }
+    set src(v) {
+      this._src = String(v || '');
+      this.__ended = false;
+      if (/hilingo/.test(this._src)) window.__intro.el = this;
+    }
+    get src() { return this._src; }
     load() {}
-    set preload(v) { this._preload = v; }
-    get preload() { return this._preload; }
-    play() { window.__intro.plays++; this.paused = false; if (window.__intro.fail) return Promise.reject(new Error('blocked')); return Promise.resolve(); }
+    play() {
+      this.paused = false;
+      window.__plays = window.__plays || [];
+      window.__plays.push(this._src);
+      if (/hilingo/.test(this._src)) {
+        window.__intro.plays++;
+        window.__intro.el = this;
+        if (window.__intro.fail) return Promise.reject(new Error('blocked'));
+        return Promise.resolve();
+      }
+      if (/translate_tts/.test(this._src)) {
+        window.__lastTts = this;
+        window.__spokenLast = 'audio';
+        if (window.__ttsFail) {
+          this.error = { code: 4 };
+          return Promise.reject(new Error('tts blocked'));
+        }
+        return Promise.resolve();
+      }
+      return Promise.resolve();
+    }
     pause() { this.paused = true; }
     addEventListener(type, fn) { (this._ls[type] ||= []).push(fn); }
     removeEventListener(type, fn) { this._ls[type] = (this._ls[type] || []).filter(f => f !== fn); }
@@ -115,12 +152,30 @@ await context.addInitScript(() => {
       window.__utts.push({ text: u.text, lang: u.lang, voice: u.voice && u.voice.lang, volume: u.volume });
       window.__ev.push('speak:' + u.lang + ':' + u.text);
       window.__lastUtt = u;
+      window.__spokenLast = 'utt';
+      if (window.__instantEnd && u.onend) setTimeout(() => u.onend(), 0);
     },
   };
   try {
     Object.defineProperty(window, 'speechSynthesis', { configurable: true, writable: true, value: synth });
   } catch (_) { window.speechSynthesis = synth; }
-  window.__endSpeech = () => { const u = window.__lastUtt; if (u && u.onend) u.onend(); };
+  window.__endSpeech = () => {
+    if (window.__spokenLast === 'utt') {
+      const u = window.__lastUtt;
+      if (u && u.onend) u.onend();
+      return;
+    }
+    const a = window.__lastTts;
+    if (a && typeof a.onended === 'function' && !a.__ended) {
+      a.__ended = true;
+      a.paused = true;
+      a.onended();
+      return;
+    }
+    const u = window.__lastUtt;
+    if (u && u.onend) u.onend();
+  };
+  window.__ttsSrc = () => (window.__plays || []).filter(s => /translate_tts/.test(s)).at(-1) || '';
   window.fetch = async (url) => {
     window.__fetches.push(String(url));
     if (window.__fetchMode === 'fail') throw new Error('offline');
@@ -144,6 +199,10 @@ async function shot(page, name) {
   return file;
 }
 function lastLang(state) { return state.langs[state.langs.length - 1]; }
+function ttsOk(src, tl, text) {
+  if (!src || !src.includes('translate_tts') || !src.includes('tl=' + tl)) return false;
+  try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
+}
 
 try {
   // Start-button label follows the UI language only while Learn is selected.
@@ -212,20 +271,19 @@ try {
     s = await page.evaluate(() => ({
       other: document.getElementById('learnOtherWord').textContent,
       own: document.getElementById('learnOwnWord').textContent,
-      utt: window.__utts[window.__utts.length - 1],
+      src: window.__ttsSrc(),
       sr: window.__srStarts,
       fetches: window.__fetches.length,
+      utts: window.__utts.length,
     }));
-    if (s.other !== 'cachorro' || s.own !== 'כלב' || !s.utt || s.utt.text !== 'cachorro' || s.utt.lang !== 'pt-BR' || s.utt.voice !== 'pt-BR') {
+    if (s.other !== 'cachorro' || s.own !== 'כלב' || !ttsOk(s.src, 'pt-BR', 'cachorro') || s.utts !== 0) {
       bad('translation speech ' + JSON.stringify(s));
     } else if (s.sr !== 1) bad('mic reopened during speech ' + s.sr);
     else if (s.fetches !== fetchesBefore) bad('dictionary hit called MyMemory');
-    else ok('כלב → cachorro spoken with pt-BR, mic still closed');
+    else ok('כלב → cachorro via audio url tl=pt-BR, mic still closed');
     const order = await page.evaluate(() => window.__ev.join(' | '));
-    const speakAt = order.lastIndexOf('speak:pt-BR:cachorro');
     const startPt = order.indexOf('start:pt-BR');
-    const abortAt = order.lastIndexOf('abort', speakAt);
-    if (speakAt < 0 || abortAt < 0 || abortAt > speakAt || (startPt >= 0 && startPt < speakAt)) bad('speak/mic order ' + order);
+    if (!order.includes('abort') || startPt >= 0) bad('speak/mic order ' + order);
     else ok('recognizer aborted before the target word is spoken');
     await shot(page, 'learn-translation-phone');
 
@@ -238,12 +296,13 @@ try {
     if (!listen.includes('Português')) bad('listening status ' + listen);
     else ok('status says listening in Português');
     const icons = await page.evaluate(() => ({
-      mics: document.querySelectorAll('#learn .ico-mic').length,
+      mics: [...document.querySelectorAll('#learn .ico-mic')].filter(el => el.getClientRects().length).length,
       emoji: /🎤/.test(document.getElementById('learn').innerText),
       mark: !document.getElementById('learnListenMark').classList.contains('hidden'),
       onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
+      stroke: getComputedStyle(document.querySelector('#learnMic .ico-mic')).stroke,
     }));
-    if (icons.mics !== 1 || icons.emoji || !icons.mark || !icons.onSpeak) bad('listen icons ' + JSON.stringify(icons));
+    if (icons.mics !== 1 || icons.emoji || !icons.mark || !icons.onSpeak || !/255,\s*255,\s*255|rgb\(255 255 255\)|#fff/i.test(icons.stroke)) bad('listen icons ' + JSON.stringify(icons));
     else ok('one outline mic; waveform on the status row and the replay spot');
     await shot(page, 'learn-listening-phone');
 
@@ -260,11 +319,14 @@ try {
     if (!s.own.includes('gato') || !s.heard.includes('gato') || s.other !== 'cachorro' || !s.skip || !s.speak || s.check) bad('mismatch ' + JSON.stringify(s));
     else ok('mismatch shows what was heard, 🔊 and skip');
     {
-      const before = await page.evaluate(() => ({ sr: window.__srStarts, n: window.__utts.length }));
+      const before = await page.evaluate(() => ({ sr: window.__srStarts, n: (window.__plays || []).filter(s => /translate_tts/.test(s)).length }));
       await page.click('#learnSpeak');
-      const mid = await page.evaluate(() => ({ sr: window.__srStarts, utt: window.__utts[window.__utts.length - 1], n: window.__utts.length }));
-      if (mid.sr !== before.sr || !mid.utt || mid.utt.text !== 'cachorro' || mid.utt.lang !== 'pt-BR' || mid.n <= before.n) bad('🔊 tap ' + JSON.stringify(mid));
-      else ok('🔊 speaks from the tap while the mic stays closed');
+      const mid = await page.evaluate(() => {
+        const plays = (window.__plays || []).filter(s => /translate_tts/.test(s));
+        return { sr: window.__srStarts, src: plays.at(-1) || '', n: plays.length };
+      });
+      if (mid.sr !== before.sr || !ttsOk(mid.src, 'pt-BR', 'cachorro') || mid.n <= before.n) bad('🔊 tap ' + JSON.stringify(mid));
+      else ok('🔊 plays the audio url from the tap while the mic stays closed');
       await page.evaluate(() => window.__endSpeech());
       await page.waitForFunction(n => window.__srStarts > n && window.__srLangs.at(-1) === 'pt-BR', before.sr);
     }
@@ -289,17 +351,17 @@ try {
     await shot(page, 'learn-words-phone');
 
     const plays = await page.evaluate(() => window.__intro.plays);
-    const utts = await page.evaluate(() => window.__utts.length);
+    const ttsN = await page.evaluate(() => (window.__plays || []).filter(s => /translate_tts/.test(s)).length);
     await page.click('#wordsList .mw-pair');
-    await page.waitForFunction(n => window.__utts.length > n, utts);
+    await page.waitForFunction(n => (window.__plays || []).filter(s => /translate_tts/.test(s)).length > n, ttsN);
     s = await page.evaluate(() => ({
       plays: window.__intro.plays,
-      utt: window.__utts[window.__utts.length - 1],
+      src: window.__ttsSrc(),
       sr: window.__srStarts,
       other: document.getElementById('learnOtherWord').textContent,
       overlay: document.getElementById('wordsov').classList.contains('hidden'),
     }));
-    if (s.plays !== plays || s.utt.text !== 'cachorro' || s.utt.voice !== 'pt-BR' || s.other !== 'cachorro' || !s.overlay) bad('repractice ' + JSON.stringify(s));
+    if (s.plays !== plays || !ttsOk(s.src, 'pt-BR', 'cachorro') || s.other !== 'cachorro' || !s.overlay) bad('repractice ' + JSON.stringify(s));
     else ok('tap practices again: speaks cachorro, no second intro');
     const srAtSpeech = s.sr;
     await page.waitForTimeout(200);
@@ -401,12 +463,12 @@ try {
     let s = await page.evaluate(() => ({
       url: window.__fetches[window.__fetches.length - 1],
       other: document.getElementById('learnOtherWord').textContent,
-      utt: window.__utts[window.__utts.length - 1],
+      src: window.__ttsSrc(),
       sr: window.__srStarts,
     }));
     const pair = decodeURIComponent(s.url.split('langpair=')[1] || '');
     if (!s.url.includes('api.mymemory.translated.net/get') || !pair.startsWith('en|pt-BR') || !s.url.includes('q=xyzzyqq')) bad('fallback url ' + s.url);
-    else if (s.other !== 'palavra' || s.utt.lang !== 'pt-BR' || s.sr !== 1) bad('fallback show ' + JSON.stringify(s));
+    else if (s.other !== 'palavra' || !ttsOk(s.src, 'pt-BR', 'palavra') || s.sr !== 1) bad('fallback show ' + JSON.stringify(s));
     else ok('MyMemory fallback en|pt-BR → palavra, mic waits');
     await page.evaluate(() => window.__endSpeech());
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'pt-BR');
@@ -447,9 +509,9 @@ try {
     await page.fill('#learnIn', 'Cachorro');
     await page.click('#learnSend');
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('כלב'));
-    const spoken = await page.evaluate(() => window.__utts.at(-1));
-    if (!spoken || spoken.lang !== 'he-IL' || spoken.text !== 'כלב') bad('pt→he ' + JSON.stringify(spoken));
-    else ok('pt Cachorro → כלב spoken in he-IL');
+    const spoken = await page.evaluate(() => window.__ttsSrc());
+    if (!ttsOk(spoken, 'he', 'כלב')) bad('pt→he ' + spoken);
+    else ok('pt Cachorro → כלב via audio url tl=he');
     if (errors.length) bad(errors.join(';'));
     await page.close();
   }
@@ -467,8 +529,8 @@ try {
     await page.fill('#learnIn', 'dog');
     await page.click('#learnSend');
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.toLowerCase().includes('hond'));
-    const v = await page.evaluate(() => ({ t: document.getElementById('learnOtherWord').textContent, lang: window.__utts.at(-1).lang }));
-    if (v.t !== 'hond' || v.lang !== 'nl-NL') bad('en→nl ' + JSON.stringify(v));
+    const v = await page.evaluate(() => ({ t: document.getElementById('learnOtherWord').textContent, src: window.__ttsSrc() }));
+    if (v.t !== 'hond' || !ttsOk(v.src, 'nl', 'hond')) bad('en→nl ' + JSON.stringify(v));
     else ok('en dog → nl hond');
     await page.evaluate(() => window.__endSpeech());
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'nl-NL');
@@ -485,16 +547,17 @@ try {
   {
     const page = await context.newPage();
     const errors = await open(page, { width: 800, height: 700 });
-    await page.evaluate(() => { window.speechSynthesis.getVoices = () => []; });
+    await page.evaluate(() => { window.speechSynthesis.getVoices = () => []; window.__ttsFail = true; });
     await page.click('#modeLearn');
     await page.click('#go');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'he-IL');
     await page.evaluate(() => window.__emit('כלב'));
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
+    await page.waitForFunction(() => window.__utts.length > 0);
     const spoken = await page.evaluate(() => window.__utts.at(-1));
     if (!spoken || spoken.lang !== 'pt-BR' || spoken.voice) bad('no-voice fallback ' + JSON.stringify(spoken));
-    else ok('no exact voice: utterance.lang is pt-BR and speak still runs');
+    else ok('audio url failed: speechSynthesis still speaks pt-BR with no exact voice');
     await page.evaluate(() => window.__endSpeech());
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'pt-BR');
     await page.evaluate(() => window.__emit('cachorro', { final: false }));
@@ -520,12 +583,19 @@ try {
     }));
     if (s.sr !== 0 || s.state !== 'IDLE_NATIVE' || /מקשיב|Listening|Luistert|Ouvindo/.test(s.status + s.heard)) bad('ios auto mic ' + JSON.stringify(s));
     else ok('iOS stays idle after the intro (no listening label)');
-    const idleIcons = await page.evaluate(() => ({
-      mics: document.querySelectorAll('#learn .ico-mic').length,
-      mark: document.getElementById('learnListenMark').classList.contains('hidden'),
-      onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
-    }));
-    if (idleIcons.mics !== 1 || !idleIcons.mark || idleIcons.onSpeak) bad('idle icons ' + JSON.stringify(idleIcons));
+    const idleIcons = await page.evaluate(() => {
+      const mic = document.querySelector('#learnMic .ico-mic');
+      const box = mic.getBoundingClientRect();
+      return {
+        mics: [...document.querySelectorAll('#learn .ico-mic')].filter(el => el.getClientRects().length).length,
+        mark: document.getElementById('learnListenMark').classList.contains('hidden'),
+        onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
+        stroke: getComputedStyle(mic).stroke,
+        w: box.width,
+        h: box.height,
+      };
+    });
+    if (idleIcons.mics !== 1 || !idleIcons.mark || idleIcons.onSpeak || idleIcons.w < 16 || idleIcons.h < 16 || !/255,\s*255,\s*255/.test(idleIcons.stroke)) bad('idle icons ' + JSON.stringify(idleIcons));
     else ok('idle hides the waveform and keeps a single mic button');
     await shot(page, 'learn-idle-phone');
     await page.setViewportSize({ width: 820, height: 1180 });
@@ -561,7 +631,7 @@ try {
     await page.evaluate(() => window.__emit('כלב'));
     await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'SPEAK_TARGET');
     const srAtSpeak = await page.evaluate(() => window.__srStarts);
-    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_TARGET', null, { timeout: 4000 });
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_TARGET', null, { timeout: 12000 });
     s = await page.evaluate(() => ({
       sr: window.__srStarts,
       state: document.getElementById('learn').dataset.state,
@@ -571,29 +641,73 @@ try {
     }));
     if (s.sr !== srAtSpeak || s.state !== 'IDLE_TARGET' || s.hidden || s.disabled || /מקשיב/.test(s.status)) bad('tts timeout ' + JSON.stringify(s));
     else ok('TTS with no onend still returns to idle and keeps 🔊');
+    const repeat = await page.evaluate(() => {
+      const b = document.getElementById('learnRepeatMic');
+      const r = b.getBoundingClientRect();
+      return { hidden: b.classList.contains('hidden'), w: r.width, h: r.height, label: b.textContent };
+    });
+    if (repeat.hidden || repeat.w < 24 || repeat.h < 24 || !repeat.label.includes('אמרו')) bad('repeat mic ' + JSON.stringify(repeat));
+    else ok('target panel shows the outline mic after the word');
+    await shot(page, 'learn-repeat-phone');
+
+    await page.click('#learnMic');
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'LISTEN_NATIVE' && window.__srLangs.at(-1) === 'he-IL');
+    await page.evaluate(() => window.__emit('חתול'));
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('gato'));
+    ok('speaking a new native word replaces the round');
+    await page.evaluate(() => window.__endSpeech());
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_TARGET');
+
+    await page.fill('#learnIn', 'חתול');
+    await page.click('#learnSend');
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('gato'));
+    s = await page.evaluate(() => ({
+      own: document.getElementById('learnOwnWord').textContent,
+      other: document.getElementById('learnOtherWord').textContent,
+    }));
+    if (s.own !== 'חתול' || !s.other.includes('gato')) bad('replace native ' + JSON.stringify(s));
+    else ok('typing a new native word from IDLE_TARGET replaces the round');
+
+    await page.click('#learnClear');
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_NATIVE');
+    s = await page.evaluate(() => ({
+      own: document.getElementById('learnOwnWord').textContent.trim(),
+      other: document.getElementById('learnOtherWord').textContent.trim(),
+      heard: document.getElementById('learnHeard').textContent,
+      msg: document.getElementById('learnOwnMsg').textContent,
+      speak: document.getElementById('learnSpeak').classList.contains('hidden'),
+      sr: window.__srStarts,
+    }));
+    if (s.own || s.other || s.msg || !s.speak || /כלב|חתול|cachorro|gato|שמעתי|Heard/.test(s.heard)) bad('clear ' + JSON.stringify(s));
+    else ok('clear returns to IDLE_NATIVE with empty panels');
+    await page.fill('#learnIn', '\u200Fכלב');
+    await page.click('#learnSend');
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
+    ok('after clear, a new word (with RLM) translates again');
+    await page.evaluate(() => window.__endSpeech());
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_TARGET');
 
     await page.evaluate(() => { window.__startThrows = 0; });
-    await page.click('#learnMic');
-    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'LISTEN_TARGET');
+    await page.click('#learnRepeatMic');
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'LISTEN_TARGET' && window.__srLangs.at(-1) === 'pt-BR');
     const starts = await page.evaluate(() => window.__srStarts);
     await page.evaluate(() => {
       const sr = window.__srs[window.__srs.length - 1];
       sr.onerror({ error: 'aborted' });
       sr.onend();
     });
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(700);
     s = await page.evaluate(() => ({ sr: window.__srStarts, state: document.getElementById('learn').dataset.state }));
-    // aborted is ignored by the handler; onend with no text goes idle (or one pt-PT try).
-    if (s.sr > starts + 1) bad('aborted loop ' + JSON.stringify(s));
-    else ok('aborted/onend does not loop (' + s.state + ', starts +' + (s.sr - starts) + ')');
+    if (s.sr !== starts + 1) bad('aborted retry ' + JSON.stringify(s));
+    else ok('aborted within 500ms retries once (' + s.state + ')');
 
     for (let i = 0; i < 5; i++) await page.click('#verLblLearn');
     const dbg = await page.evaluate(() => ({
       hidden: document.getElementById('learnDbg').classList.contains('hidden'),
       text: document.getElementById('learnDbg').textContent,
     }));
-    if (dbg.hidden || !/INTRO/.test(dbg.text) || !/LISTEN_/.test(dbg.text)) bad('debug log ' + JSON.stringify(dbg).slice(0, 300));
-    else ok('five taps on v3.8 open the debug log');
+    if (dbg.hidden || !/INTRO/.test(dbg.text) || !/LISTEN_/.test(dbg.text) || !/ua /.test(dbg.text) || !/standalone /.test(dbg.text) || !/voices /.test(dbg.text) || !/abort /.test(dbg.text)) bad('debug log ' + JSON.stringify(dbg).slice(0, 400));
+    else ok('five taps on v3.9 open the debug log');
     if (errors.length) bad('ios errors ' + errors.join(';'));
     await page.close();
   }

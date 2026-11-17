@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.6)
+# HilinGo – word-chain game (v3.7)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,14 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v3.7 – Learn mode speaks, then listens in the new language
+- On a phone the target word never came out of the speaker, and the repeat mic often stayed on the first language. Play mode was fine: it never switches language and it never uses `speechSynthesis`.
+- iOS/Safari will not play `speechSynthesis` until `speak()` has run inside a tap. The Let's learn button (and a tap on a saved word) now speaks a silent utterance and calls `resume()` in that tap, which unlocks later speech. Chrome's speech queue is nudged with `resume()` while a word is playing so it does not stall.
+- The microphone was holding the audio session, so the translation was silent. Recognition is aborted before `speechSynthesis.cancel()` + `speak()`. The target-language mic starts only after that utterance ends (or a short timeout). 🔊 is a real button on the translation: the tap itself calls `speak()`, then the mic comes back in the language you are learning.
+- Voices often are not loaded yet. A missing exact voice (pt-BR, he-IL, nl-NL, en-US) does not block speech; the utterance still gets that `lang`.
+- The repeat recognizer is a new instance, with the same settings as Play (`continuous` false, interim results, 5 alternatives, full BCP-47 tag). Interim text counts, so a match is not lost when Safari never sends a final result. "de hond" / "the dog" / "o cachorro" match the bare word. One letter off still counts for words of 4+ letters. The status line says which language is listening, and a miss still shows what was heard, with retry and skip.
+- Test: `node tests_learn.mjs`. `tests_tablet.mjs` and `tests_intro.mjs` still cover the game.
 
 ## v3.6 – Learn mode
 - Start screen: Play / Learn. Play is unchanged. In Learn, pick the language you speak and the language you are learning (he, en, nl, pt; any two different ones). The start button becomes "Let's learn!" / "יאללה, לומדים!" / "Laten we leren!" / "Vamos aprender!".

@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.4">
+<meta name="hilingo-version" content="3.5">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preload" href="audio/hilingo.mp3" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -736,7 +737,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.4';
+window.WG = WG; window.HILINGO_VERSION='3.5';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1236,7 +1237,55 @@ function burstConfetti(){
     p.style.cssText=`--x:${Math.random()*100}vw;--dx:${(Math.random()*46-23)}vw;--s:${6+Math.random()*8}px;--c:${colors[i%colors.length]};--rot:${Math.random()*360}deg;--d:${1.4+Math.random()*1.8}s;--delay:${Math.random()*.35}s`;
     box.appendChild(p); }
 }
-$('#go').onclick=startGame;
+// Hili's "HilinGo" (~2.2s). Preloaded, played once per game from the start tap
+// (iOS only allows audio that begins inside the click). The first turn's mic waits
+// for `ended`, or 3s if that never comes, so recognition doesn't hear the clip
+// or fight the audio session. A blocked/failed play is ignored and the game goes on.
+let introAudio=null, introHold=null;
+try{
+  introAudio=new Audio('audio/hilingo.mp3');
+  introAudio.preload='auto';
+  introAudio.load();
+}catch(_){ introAudio=null; }
+function releaseIntro(why){
+  const hold=introHold;
+  if(!hold||hold.done) return;
+  hold.done=true;
+  clearTimeout(hold.timer);
+  if(introAudio){
+    try{ introAudio.removeEventListener('ended', hold.onEnded); }catch(_){}
+    try{ introAudio.removeEventListener('error', hold.onError); }catch(_){}
+    try{ introAudio.pause(); }catch(_){}
+  }
+  const fn=hold.pending; hold.pending=null;
+  if(introHold===hold) introHold=null;
+  try{ diag('intro '+why); }catch(_){}
+  if(fn){ try{ fn(); }catch(_){} }
+}
+function playIntro(){
+  // Never throw: a broken audio element must not stop the click from starting the game.
+  try{
+    if(!introAudio) return;
+    if(introHold&&!introHold.done){ introHold.pending=null; releaseIntro('replace'); }
+    const hold={pending:null, done:false, timer:0, onEnded:null, onError:null};
+    introHold=hold;
+    hold.onEnded=()=>releaseIntro('ended');
+    hold.onError=()=>{ if(introHold===hold) releaseIntro('error'); };
+    try{
+      if(!introAudio.paused || introAudio.currentTime>0){ introAudio.pause(); introAudio.currentTime=0; }
+    }catch(_){}
+    introAudio.addEventListener('ended', hold.onEnded);
+    introAudio.addEventListener('error', hold.onError);
+    hold.timer=setTimeout(()=>{ if(introHold===hold) releaseIntro('timeout'); },3000);
+    let played;
+    try{ played=introAudio.play(); }
+    catch(_){ if(introHold===hold) releaseIntro('error'); return; }
+    if(played&&typeof played.then==='function') played.then(()=>{},()=>{ if(introHold===hold) releaseIntro('blocked'); });
+  }catch(_){
+    try{ releaseIntro('error'); }catch(__){}
+  }
+}
+$('#go').onclick=()=>{ playIntro(); startGame(); };
 function renderMyWords(){
   const box=$('#wordsov'); if(!box) return;
   $('#wordsTitle').textContent=S.myWords;
@@ -1288,7 +1337,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.4 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.5 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1314,6 +1363,11 @@ document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
 });
 function startRec(p,how){
   if(!SR||!G||G.over||paused||p!==G.turn) return;
+  // First turn: don't open the mic while Hili's intro is still playing.
+  if(introHold&&!introHold.done){
+    introHold.pending=()=>{ if(how==='auto'&&typing) return; startRec(p,how); };
+    return;
+  }
   stopRec();
   const sess=++recSession;
   let r;

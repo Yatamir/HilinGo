@@ -1,5 +1,5 @@
 /**
- * HilinGo v3.7 — Learn mode, including speech unlock and the target-language mic.
+ * HilinGo v3.8 — Learn mode audio state machine.
  *   npm install playwright-core
  *   node tests_learn.mjs
  * Speech recognition, speechSynthesis and the intro clip are mocked.
@@ -70,7 +70,15 @@ await context.addInitScript(() => {
     ((el && el._ls && el._ls[type]) || []).slice().forEach(fn => fn());
   };
   class FakeSR {
-    start() { window.__srStarts++; window.__srLangs.push(this.lang); window.__srs.push(this); window.__ev.push('start:' + this.lang); if (this.onstart) this.onstart(); }
+    start() {
+      if (window.__startThrows) {
+        window.__startThrows--;
+        const e = new Error('invalid');
+        e.name = 'InvalidStateError';
+        throw e;
+      }
+      window.__srStarts++; window.__srLangs.push(this.lang); window.__srs.push(this); window.__ev.push('start:' + this.lang); if (this.onstart) this.onstart();
+    }
     stop() { window.__ev.push('stop'); }
     abort() { window.__ev.push('abort'); if (this.onend) this.onend(); }
   }
@@ -123,11 +131,11 @@ await context.addInitScript(() => {
   };
 });
 
-async function open(page, viewport) {
+async function open(page, viewport, extra) {
   const errors = [];
   page.on('pageerror', err => errors.push(String(err)));
   if (viewport) await page.setViewportSize(viewport);
-  await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0${extra || ''}`, { waitUntil: 'domcontentloaded' });
   return errors;
 }
 async function shot(page, name) {
@@ -189,9 +197,9 @@ try {
     }));
     if (s.plays !== 1 || s.sr !== 0 || !s.learn || !s.game) bad('learn start ' + JSON.stringify(s));
     else ok('intro is playing and the learn mic is waiting');
-    const unlock = await page.evaluate(() => ({ u: window.__utts[0], resumes: window.__resumes }));
-    if (!unlock.u || unlock.u.volume !== 0 || unlock.resumes < 1) bad('speech not unlocked on the learn tap ' + JSON.stringify(unlock));
-    else ok('Let\'s learn tap unlocks speechSynthesis (silent utterance + resume)');
+    const duringIntro = await page.evaluate(() => ({ utts: window.__utts.length, state: document.getElementById('learn').dataset.state }));
+    if (duringIntro.utts !== 0 || duringIntro.state !== 'INTRO') bad('intro not exclusive ' + JSON.stringify(duringIntro));
+    else ok('intro owns the audio: no speechSynthesis and no mic yet');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForFunction(() => window.__srStarts >= 1);
     s = await page.evaluate(() => ({ lang: window.__srLangs[window.__srLangs.length - 1], sr: window.__srStarts }));
@@ -229,6 +237,14 @@ try {
     const listen = await page.locator('#learnStatus').innerText();
     if (!listen.includes('Português')) bad('listening status ' + listen);
     else ok('status says listening in Português');
+    const icons = await page.evaluate(() => ({
+      mics: document.querySelectorAll('#learn .ico-mic').length,
+      emoji: /🎤/.test(document.getElementById('learn').innerText),
+      mark: !document.getElementById('learnListenMark').classList.contains('hidden'),
+      onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
+    }));
+    if (icons.mics !== 1 || icons.emoji || !icons.mark || !icons.onSpeak) bad('listen icons ' + JSON.stringify(icons));
+    else ok('one outline mic; waveform on the status row and the replay spot');
     await shot(page, 'learn-listening-phone');
 
     await page.evaluate(() => window.__emit('gato'));
@@ -485,6 +501,100 @@ try {
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('✅'));
     if (errors.length) bad('interim errors ' + errors.join(';'));
     else ok('interim (not final) "cachorro" is accepted');
+    await page.close();
+  }
+
+  // iOS quirks: no auto-listen, no restart loop, TTS timeout, InvalidStateError once.
+  {
+    const page = await context.newPage();
+    const errors = await open(page, { width: 390, height: 844 }, '&ios=1');
+    await page.click('#modeLearn');
+    await page.click('#go');
+    await page.evaluate(() => window.__fireIntro('ended'));
+    await page.waitForTimeout(250);
+    let s = await page.evaluate(() => ({
+      sr: window.__srStarts,
+      state: document.getElementById('learn').dataset.state,
+      status: document.getElementById('learnStatus').textContent,
+      heard: document.getElementById('learnHeard').textContent,
+    }));
+    if (s.sr !== 0 || s.state !== 'IDLE_NATIVE' || /מקשיב|Listening|Luistert|Ouvindo/.test(s.status + s.heard)) bad('ios auto mic ' + JSON.stringify(s));
+    else ok('iOS stays idle after the intro (no listening label)');
+    const idleIcons = await page.evaluate(() => ({
+      mics: document.querySelectorAll('#learn .ico-mic').length,
+      mark: document.getElementById('learnListenMark').classList.contains('hidden'),
+      onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
+    }));
+    if (idleIcons.mics !== 1 || !idleIcons.mark || idleIcons.onSpeak) bad('idle icons ' + JSON.stringify(idleIcons));
+    else ok('idle hides the waveform and keeps a single mic button');
+    await shot(page, 'learn-idle-phone');
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await shot(page, 'learn-idle-ipad');
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    await page.click('#learnMic');
+    await page.waitForFunction(() => window.__srStarts === 1 && document.getElementById('learn').dataset.state === 'LISTEN_NATIVE');
+    s = await page.evaluate(() => document.getElementById('learnStatus').textContent);
+    if (!s.includes('מקשיב') || !s.includes('עברית')) bad('ios listen label ' + s);
+    else ok('מקשיב only while the native recognizer is running');
+
+    await page.evaluate(() => {
+      const sr = window.__srs[window.__srs.length - 1];
+      sr.onerror({ error: 'no-speech' });
+      sr.onend();
+    });
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_NATIVE');
+    s = await page.evaluate(() => ({
+      sr: window.__srStarts,
+      status: document.getElementById('learnStatus').textContent,
+    }));
+    if (s.sr !== 1 || /מקשיב/.test(s.status)) bad('no-speech restarted ' + JSON.stringify(s));
+    else ok('no-speech ends the session and does not restart');
+
+    await page.evaluate(() => { window.__startThrows = 1; });
+    await page.click('#learnMic');
+    await page.waitForFunction(() => window.__srStarts === 2 && document.getElementById('learn').dataset.state === 'LISTEN_NATIVE');
+    s = await page.evaluate(() => window.__srStarts);
+    if (s !== 2) bad('InvalidStateError recovery ' + s);
+    else ok('InvalidStateError retries start once on the same recognizer');
+
+    await page.evaluate(() => window.__emit('כלב'));
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'SPEAK_TARGET');
+    const srAtSpeak = await page.evaluate(() => window.__srStarts);
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_TARGET', null, { timeout: 4000 });
+    s = await page.evaluate(() => ({
+      sr: window.__srStarts,
+      state: document.getElementById('learn').dataset.state,
+      hidden: document.getElementById('learnSpeak').classList.contains('hidden'),
+      disabled: document.getElementById('learnSpeak').disabled,
+      status: document.getElementById('learnStatus').textContent,
+    }));
+    if (s.sr !== srAtSpeak || s.state !== 'IDLE_TARGET' || s.hidden || s.disabled || /מקשיב/.test(s.status)) bad('tts timeout ' + JSON.stringify(s));
+    else ok('TTS with no onend still returns to idle and keeps 🔊');
+
+    await page.evaluate(() => { window.__startThrows = 0; });
+    await page.click('#learnMic');
+    await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'LISTEN_TARGET');
+    const starts = await page.evaluate(() => window.__srStarts);
+    await page.evaluate(() => {
+      const sr = window.__srs[window.__srs.length - 1];
+      sr.onerror({ error: 'aborted' });
+      sr.onend();
+    });
+    await page.waitForTimeout(400);
+    s = await page.evaluate(() => ({ sr: window.__srStarts, state: document.getElementById('learn').dataset.state }));
+    // aborted is ignored by the handler; onend with no text goes idle (or one pt-PT try).
+    if (s.sr > starts + 1) bad('aborted loop ' + JSON.stringify(s));
+    else ok('aborted/onend does not loop (' + s.state + ', starts +' + (s.sr - starts) + ')');
+
+    for (let i = 0; i < 5; i++) await page.click('#verLblLearn');
+    const dbg = await page.evaluate(() => ({
+      hidden: document.getElementById('learnDbg').classList.contains('hidden'),
+      text: document.getElementById('learnDbg').textContent,
+    }));
+    if (dbg.hidden || !/INTRO/.test(dbg.text) || !/LISTEN_/.test(dbg.text)) bad('debug log ' + JSON.stringify(dbg).slice(0, 300));
+    else ok('five taps on v3.8 open the debug log');
+    if (errors.length) bad('ios errors ' + errors.join(';'));
     await page.close();
   }
 } finally {

@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.0)
+# HilinGo – word-chain game (v4.1)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,9 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.1 – Clear is back on the native word
+- נקה / Clear / Wissen / Limpar sits on the native word whenever that word or a result is showing, and returns to an empty native step.
 
 ## v4.0 – Learn words ship as audio files, and Play’s mic is unchanged
 - Google’s translate TTS URL returns `audio/mpeg` only when the request has no Referer. With `Referer: https://yatamir.github.io/` it returns a 404 HTML page, which an `<audio>` element reports as `NotSupportedError` code 4. StreamElements’ speech URL now answers 401 without an API key. Dictionary words are therefore stored as 24kbps mono MP3s under `audio/tts/<lang>/<id>.mp3`, generated where that Google URL still returns audio. A word that is not in the dictionary still tries the same URL with `referrerpolicy=no-referrer` (and a page referrer policy of `no-referrer`). `speechSynthesis` is only the last fallback, and nothing calls it when the page loads, so Play’s recognizer is not sharing the speech engine.

@@ -298,6 +298,14 @@ try {
     } else if (s.sr !== 1) bad('mic reopened during speech ' + s.sr);
     else if (s.fetches !== fetchesBefore) bad('dictionary hit called MyMemory');
     else ok('כלב → cachorro via local mp3, mic still closed');
+    const clearBtn = await page.evaluate(() => {
+      const b = document.getElementById('learnClear');
+      const r = b.getBoundingClientRect();
+      return { hidden: b.classList.contains('hidden'), w: r.width, h: r.height, text: b.textContent.trim() };
+    });
+    if (clearBtn.hidden || clearBtn.w < 24 || clearBtn.h < 16 || clearBtn.text !== 'נקה') bad('clear visible ' + JSON.stringify(clearBtn));
+    else ok('Clear is visible on the native word');
+    await shot(page, 'learn-clear-phone');
     const order = await page.evaluate(() => window.__ev.join(' | '));
     const startPt = order.indexOf('start:pt-BR');
     if (!order.includes('abort') || startPt >= 0) bad('speak/mic order ' + order);
@@ -600,6 +608,9 @@ try {
     }));
     if (s.sr !== 0 || s.state !== 'IDLE_NATIVE' || /מקשיב|Listening|Luistert|Ouvindo/.test(s.status + s.heard)) bad('ios auto mic ' + JSON.stringify(s));
     else ok('iOS stays idle after the intro (no listening label)');
+    const clearIdle = await page.evaluate(() => document.getElementById('learnClear').classList.contains('hidden'));
+    if (!clearIdle) bad('Clear is showing before any native word');
+    else ok('Clear stays hidden until there is a native word');
     const idleIcons = await page.evaluate(() => {
       const mic = document.querySelector('#learnMic .ico-mic');
       const box = mic.getBoundingClientRect();

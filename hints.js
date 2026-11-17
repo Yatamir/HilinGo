@@ -1,4 +1,4 @@
-/* HilinGo v3.0 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. */
+/* HilinGo v3.2 hint dataset: [word, short kid-friendly description] per language. Every word is in that language's dictionary (words*.js); the description never contains the word. */
 window.HILINGO_HINTS={"he":[
 ["אריה","מלך החיות, יש לו רעמה גדולה ושואג חזק"],
 ["אבטיח","פרי ענק, ירוק מבחוץ ואדום ומתוק מבפנים"],
@@ -403,7 +403,7 @@ window.HILINGO_HINTS={"he":[
 ["joaninha","Besourinho vermelho com bolinhas pretas"],
 ["jogo","Brincadeira com regras, como futebol ou xadrez"],
 ["kiwi","Fruta marrom e peludinha por fora, verde por dentro"],
-["ketchup","Molho vermelho de tomate para batata frita"],
+["karaokê","Cantar junto, olhando a letra da música na tela"],
 ["koala","Bicho fofinho da Austrália que vive em árvores"],
 ["karatê","Luta japonesa com faixas coloridas"],
 ["leão","O rei da selva, com uma juba grande"],
@@ -471,6 +471,4 @@ window.HILINGO_HINTS={"he":[
 ["zero","O número que vale nada"],
 ["zumbi","Monstro de filme que anda devagar"],
 ["wifi","Internet sem fio no celular e no computador"],
-["windsurf","Esporte com uma prancha e uma vela no mar"],
-["yeti","Monstro peludo das montanhas geladas, das lendas"],
-["yakisoba","Macarrão oriental com legumes"]]};
+["Wikipédia","Site enorme da internet onde a gente pesquisa qualquer assunto"]]};

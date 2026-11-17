@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="3.1">
+<meta name="hilingo-version" content="3.2">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -441,11 +441,17 @@ const WG = (()=>{
   const memCustom={}, customLoaded={};
   const customKey = code => 'hilingo_custom_words_'+code;
   const normFor = (code, raw) => { try { return (LANGS[code]||L).normalize(raw); } catch(_){ return ''; } };
+  // Portuguese words end in a vowel or l/m/r/s/z. The allowlist is the same short
+  // set of real lemmas kept in words_pt.js (hífen, pólen, tórax, fax, …).
+  const PT_END_OK = new Set('aeioulmrsz'.split(''));
+  const PT_END_ALLOW = new Set('hifen polen abdomen liquen eletron proton neutron gluten himen semen canon ion neon plancton radon colon germen lumen torax latex onix climax fax coccix fenix cortex silex borax helix'.split(' '));
+  function ptEndingOk(w){ return !!(w && (PT_END_OK.has(w[w.length-1]) || PT_END_ALLOW.has(w))); }
   function sanitizeList(code, arr){
     const out=[], seen=new Set();
     for(const item of arr||[]){
       const w=normFor(code, item);
       if(!w || w.length<2 || seen.has(w)) continue;
+      if(code==='pt' && !ptEndingOk(w)) continue;
       seen.add(w); out.push(w);
     }
     return out;
@@ -482,6 +488,7 @@ const WG = (()=>{
   function addCustomWord(raw, code=lang){
     const w=normFor(code, raw);
     if(!w || w.length<2) return null;
+    if(code==='pt' && !ptEndingOk(w)) return null;
     if(!(BUILTIN[code] && BUILTIN[code].has(w))){
       const list=readCustom(code);
       if(!list.includes(w)) writeCustom(code, list.concat(w));
@@ -546,6 +553,7 @@ const WG = (()=>{
     if(w.length<2) return {ok:false, reason:'short', word:w};
     if(g.required && firstLetter(w)!==g.required) return {ok:false, reason:'letter', word:w};
     if(g.used.has(w)) return {ok:false, reason:'used', word:w};
+    if(lang==='pt' && !ptEndingOk(w)) return {ok:false, reason:'ending', word:w};
     if(!force && !isWord(w)) return {ok:false, reason:'dict', word:w};
     return {ok:true, word:w};
   }
@@ -603,7 +611,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords };
 })();
-window.WG = WG; window.HILINGO_VERSION='3.1';
+window.WG = WG; window.HILINGO_VERSION='3.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -728,7 +736,7 @@ const STR = {
   statusNeed:(n,l,gone)=>`Vez de <b>${n}</b> – uma palavra começando com <span class="need">${l}</span>`+(gone?' <small>(já apagada – nada será apagado)</small>':''),
   statusFree:n=>`Vez de <b>${n}</b> – qualquer palavra!`,
   typing:'⌨️ Modo digitação – microfone desligado neste turno (toque em 🎤 para falar)',
-  reasons:{empty:'Nenhuma palavra reconhecida – tente de novo',short:'Palavra curta demais – tente de novo',letter:'A palavra precisa começar com ',used:'Essa palavra já foi usada – tente outra',dict:'Não encontrei essa palavra no dicionário'},
+  reasons:{empty:'Nenhuma palavra reconhecida – tente de novo',short:'Palavra curta demais – tente de novo',letter:'A palavra precisa começar com ',used:'Essa palavra já foi usada – tente outra',dict:'Não encontrei essa palavra no dicionário',ending:'A palavra precisa terminar em vogal, L, M, R, S ou Z'},
   dictHint:' – se for uma palavra de verdade, toque no botão abaixo', heard:'Ouvi: ', typed:'Digitado: ', rejected:'" – não aceito',
   okRemoved:l=>`✔ A letra ${l} foi apagada!`, okKept:l=>`✔ A letra ${l} já tinha sido apagada – nada foi apagado, o turno passa`, accepted:'✔ Aceito: ',
   timeUp:'⏰ O tempo acabou', freed2:'Vocês dois travaram – escolha livre de letra!', freedN:'Todos travaram – escolha livre de letra!', cont:l=>`Sua vez! Continuamos com a letra ${l}`,
@@ -1140,7 +1148,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 const diagLog=[]; const diagT0=performance.now();
 function diag(ev){ diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>24) diagLog.shift(); drawDiag(); }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v3.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v3.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }

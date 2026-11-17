@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v3.1)
+# HilinGo – word-chain game (v3.2)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -53,3 +53,10 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 ## v3.1 – toast after a word is saved on this device
 - Right after the existing "real word" button saves a word to localStorage, a small pill fades in, stays about 2 seconds, and fades out by itself: "המילה נשמרה רק במכשיר הזה" / "Word saved on this device only" / "Woord alleen op dit apparaat opgeslagen" / "Palavra salva apenas neste dispositivo".
 - The pill does not take taps or focus, does not pause the game, and does not stop the microphone. If storage fails, there is no toast.
+
+## v3.2 – Portuguese word list cleaned up
+- The list still starts from hermitdave/FrequencyWords (OpenSubtitles 2018, union of pt_full + pt_br_full), CC BY-SA 4.0, https://github.com/hermitdave/FrequencyWords — letters only after accent-folding, len>=2, frequency>=8, no triple-repeated letters (227,775 tokens). Other languages are unchanged.
+- Final letter must be a vowel or l, m, r, s, z (same rule a native speaker described). 43,332 tokens ending in another letter were removed. 29 real dictionary lemmas are allowlisted and kept: hífen, pólen, abdômen, líquen, elétron, próton, nêutron, glúten, hímen, sêmen, cânon, íon, néon, plâncton, rádon, cólon, gérmen, lúmen, tórax, látex, ônix, clímax, fax, cóccix, fênix, córtex, sílex, bórax, hélix.
+- What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
+- Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
+- A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.

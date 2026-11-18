@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.6.1">
+<meta name="hilingo-version" content="4.7">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.6.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.7" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,6 +223,14 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .override{font-size:14px;padding:6px 12px;border-radius:12px;background:#FFD0C8;color:#8A2030;font-weight:700;align-self:center}
 .half:not(.active) .inputs,.half:not(.active) .override{visibility:hidden}
 #history{font-size:14px;padding:6px 14px;background:rgba(255,255,255,.7);white-space:nowrap;overflow-x:auto;min-height:28px;font-weight:700}
+#history .sentword{color:#128A3E}
+#sentbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 10px 6px}
+#sentbar.hidden{display:none!important}
+#sentStart,#sentNo{padding:8px 14px;border-radius:999px;font-weight:800;font-size:15px}
+#sentStart{background:linear-gradient(180deg,#F3EEFF,#E4D4FF);color:#4A2DB0;box-shadow:0 3px 0 #C9B8FF}
+#sentNo{background:#fff;color:#8A2030;box-shadow:0 3px 0 #FFD0C8;border:2px solid #FFD0C8}
+#sentMsg{margin:0;font-weight:800;text-align:center;color:#2A2152}
+#endSent{font-weight:800;color:#4A2DB0}
 #errbar{position:fixed;top:0;left:0;right:0;z-index:99;background:#d63031;color:#fff;font:14px/1.4 monospace;padding:6px 10px;direction:ltr;white-space:pre-wrap;max-height:30vh;overflow:auto}
 
 /* end + confetti + podium */
@@ -306,7 +314,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 /* ===== v2.4 phone layout: natural-height panels, page scrolls instead of overlapping ===== */
 @media (max-width:720px), (max-height:520px){
  html,body{height:auto;min-height:100%}
- #game{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+ #game{height:auto;min-height:100vh;min-height:100dvh;min-height:var(--app-h,100dvh);overflow:visible}
  #game.hidden{display:none!important}
  #topbar{gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));padding-top:max(6px,env(safe-area-inset-top))}
  #status{font-size:15px;line-height:1.3}
@@ -601,7 +609,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.6.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.7</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -615,6 +623,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="history"></div>
+  <div id="sentbar" class="hidden"><button type="button" id="sentStart"></button><p id="sentMsg"></p><button type="button" id="sentNo" class="hidden"></button></div>
   <div id="halves"></div>
   <svg id="fxsvg" width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="fxwave" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="fxwaveN" type="turbulence" baseFrequency="0.012 0.045" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter></svg>
   <div id="fx" class="hidden" aria-hidden="true"></div>
@@ -626,7 +635,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.6.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.7</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -651,7 +660,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 </section>
 <div id="learnDbg" class="hidden" dir="ltr"><div class="dbgbar"><button type="button" id="dbgCopy" aria-label="Copy all"><svg class="ico-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="12" height="12" rx="2.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" fill="#4060E0" stroke="#fff" stroke-width="2"/></svg>Copy all</button><button type="button" id="dbgClear">Clear log</button><button type="button" id="dbgPt">Test pt-BR mic</button><span id="dbgCopied" class="hidden">Copied ✓</span></div><pre id="learnDbgText"></pre></div>
 
-<div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
+<div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endSent" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
 <div id="wordsov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wordsTitle">
   <div id="wordsbox">
@@ -663,9 +672,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.6.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.6.1"></script>
-<script src="learn_dict.js?v=4.6.1"></script>
+<script src="words.js?v=4.7" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.7"></script>
+<script src="learn_dict.js?v=4.7"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -837,6 +846,7 @@ const WG = (()=>{
     const w = normalize(raw);
     if(!w) return {ok:false, reason:'empty', word:w};
     if(w.length<2) return {ok:false, reason:'short', word:w};
+    if(w==='הילי'||w==='hili') return {ok:false, reason:'magic', word:w};
     if(g.required && firstLetter(w)!==g.required) return {ok:false, reason:'letter', word:w};
     if(g.used.has(w)) return {ok:false, reason:'used', word:w};
     if(lang==='pt' && !ptEndingOk(w)) return {ok:false, reason:'ending', word:w};
@@ -901,7 +911,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.6.1';
+window.WG = WG; window.HILINGO_VERSION='4.7';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -931,7 +941,9 @@ const STR = {
   statusNeed:(n,l,gone)=>`תור של <b>${n}</b> – מילה שמתחילה ב־<span class="need">${l}</span>`+(gone?' <small>(כבר נמחקה אצלך – לא יימחק כלום)</small>':''),
   statusFree:n=>`תור של <b>${n}</b> – כל מילה שתרצו!`,
   typing:'⌨️ מצב הקלדה – המיקרופון כבוי בתור הזה (לחצו 🎤 כדי לדבר)',
-  reasons:{empty:'לא זוהתה מילה – נסו שוב',short:'מילה קצרה מדי – נסו שוב',letter:'המילה צריכה להתחיל באות ',used:'המילה הזו כבר נאמרה – נסו מילה אחרת',dict:'לא מצאתי את המילה במילון'},
+  reasons:{empty:'לא זוהתה מילה – נסו שוב',short:'מילה קצרה מדי – נסו שוב',letter:'המילה צריכה להתחיל באות ',used:'המילה הזו כבר נאמרה – נסו מילה אחרת',dict:'לא מצאתי את המילה במילון',magic:'הילי היא מילת קסם, לא מילה במשחק'},
+  sentBtn:'משפט של 5 מילים', sentGo:'המשפט התחיל! המשיכו אותו.', sentNo:'לא הגיוני', magic:'הילי',
+  sentPenalty:n=>`הילי! ${n} אותיות חזרו ללוח`, sentBonus:(name,n)=>`בונוס משפט! ${n} אותיות נוספות נמחקו`, sentEndPts:(name,n)=>`${name}: ${n} נקודות משפט`,
   dictHint:' – אם זו מילה אמיתית, לחצו על הכפתור למטה', heard:'שמעתי: ', typed:'הוקלד: ', rejected:'" – לא התקבל',
   okRemoved:l=>`✔ האות ${l} נמחקה!`, okKept:l=>`✔ האות ${l} כבר נמחקה קודם – לא נמחק כלום, התור עובר`, accepted:'✔ התקבל: ',
   timeUp:'⏰ נגמר הזמן', freed2:'שניכם נתקעתם – בחירה חופשית של אות!', freedN:'כולכם נתקעתם – בחירה חופשית של אות!', cont:l=>`תורך! ממשיכים עם האות ${l}`,
@@ -974,7 +986,9 @@ const STR = {
   statusNeed:(n,l,gone)=>`<b>${n}</b>'s turn – a word starting with <span class="need">${l}</span>`+(gone?' <small>(already crossed off – nothing will be removed)</small>':''),
   statusFree:n=>`<b>${n}</b>'s turn – any word you like!`,
   typing:'⌨️ Typing mode – mic off this turn (tap 🎤 to speak)',
-  reasons:{empty:'No word recognized – try again',short:'Word too short – try again',letter:'The word must start with ',used:'That word was already used – try another',dict:"I couldn't find that word in the dictionary"},
+  reasons:{empty:'No word recognized – try again',short:'Word too short – try again',letter:'The word must start with ',used:'That word was already used – try another',dict:"I couldn't find that word in the dictionary",magic:'Hili is the magic word, not a game word'},
+  sentBtn:'Sentence of 5 words', sentGo:'A sentence has started! Continue it.', sentNo:'Not logical', magic:'Hili',
+  sentPenalty:n=>`Hili! ${n} letters came back`, sentBonus:(name,n)=>`Sentence bonus! ${n} extra letters deleted`, sentEndPts:(name,n)=>`${name}: ${n} sentence points`,
   dictHint:" – if it's a real word, tap the button below", heard:'Heard: ', typed:'Typed: ', rejected:'" – not accepted',
   okRemoved:l=>`✔ ${l} crossed off!`, okKept:l=>`✔ ${l} was already crossed off – nothing removed, next turn`, accepted:'✔ Accepted: ',
   timeUp:"⏰ Time's up", freed2:'You both got stuck – free choice of letter!', freedN:'Everyone got stuck – free choice of letter!', cont:l=>`Your turn! Continue with ${l}`,
@@ -1017,7 +1031,9 @@ const STR = {
   statusNeed:(n,l,gone)=>`<b>${n}</b> is aan de beurt – een woord met <span class="need">${l}</span>`+(gone?' <small>(al geschrapt – er wordt niets geschrapt)</small>':''),
   statusFree:n=>`<b>${n}</b> is aan de beurt – elk woord mag!`,
   typing:'⌨️ Typmodus – microfoon uit deze beurt (tik op 🎤 om te spreken)',
-  reasons:{empty:'Geen woord herkend – probeer opnieuw',short:'Woord te kort – probeer opnieuw',letter:'Het woord moet beginnen met ',used:'Dat woord is al gebruikt – probeer een ander',dict:'Dat woord staat niet in het woordenboek'},
+  reasons:{empty:'Geen woord herkend – probeer opnieuw',short:'Woord te kort – probeer opnieuw',letter:'Het woord moet beginnen met ',used:'Dat woord is al gebruikt – probeer een ander',dict:'Dat woord staat niet in het woordenboek',magic:'Hili is het toverwoord, geen spelwoord'},
+  sentBtn:'Zin van 5 woorden', sentGo:'De zin is begonnen! Ga verder.', sentNo:'Niet logisch', magic:'Hili',
+  sentPenalty:n=>`Hili! ${n} letters zijn terug`, sentBonus:(name,n)=>`Zinbonus! ${n} extra letters geschrapt`, sentEndPts:(name,n)=>`${name}: ${n} zinpunt${n===1?'':'en'}`,
   dictHint:' – is het een echt woord, tik dan op de knop hieronder', heard:'Gehoord: ', typed:'Getypt: ', rejected:'" – niet goedgekeurd',
   okRemoved:l=>`✔ ${l} geschrapt!`, okKept:l=>`✔ ${l} was al geschrapt – niets geschrapt, volgende beurt`, accepted:'✔ Goedgekeurd: ',
   timeUp:'⏰ Tijd om', freed2:'Jullie zaten allebei vast – vrije letterkeuze!', freedN:'Iedereen zat vast – vrije letterkeuze!', cont:l=>`Jouw beurt! Verder met ${l}`,
@@ -1060,7 +1076,9 @@ const STR = {
   statusNeed:(n,l,gone)=>`Vez de <b>${n}</b> – uma palavra começando com <span class="need">${l}</span>`+(gone?' <small>(já apagada – nada será apagado)</small>':''),
   statusFree:n=>`Vez de <b>${n}</b> – qualquer palavra!`,
   typing:'⌨️ Modo digitação – microfone desligado neste turno (toque em 🎤 para falar)',
-  reasons:{empty:'Nenhuma palavra reconhecida – tente de novo',short:'Palavra curta demais – tente de novo',letter:'A palavra precisa começar com ',used:'Essa palavra já foi usada – tente outra',dict:'Não encontrei essa palavra no dicionário',ending:'A palavra precisa terminar em vogal, L, M, R, S ou Z'},
+  reasons:{empty:'Nenhuma palavra reconhecida – tente de novo',short:'Palavra curta demais – tente de novo',letter:'A palavra precisa começar com ',used:'Essa palavra já foi usada – tente outra',dict:'Não encontrei essa palavra no dicionário',ending:'A palavra precisa terminar em vogal, L, M, R, S ou Z',magic:'Hili é a palavra mágica, não uma palavra do jogo'},
+  sentBtn:'Frase de 5 palavras', sentGo:'A frase começou! Continue.', sentNo:'Não faz sentido', magic:'Hili',
+  sentPenalty:n=>`Hili! ${n} letras voltaram`, sentBonus:(name,n)=>`Bônus da frase! ${n} letras extras apagadas`, sentEndPts:(name,n)=>`${name}: ${n} pontos de frase`,
   dictHint:' – se for uma palavra de verdade, toque no botão abaixo', heard:'Ouvi: ', typed:'Digitado: ', rejected:'" – não aceito',
   okRemoved:l=>`✔ A letra ${l} foi apagada!`, okKept:l=>`✔ A letra ${l} já tinha sido apagada – nada foi apagado, o turno passa`, accepted:'✔ Aceito: ',
   timeUp:'⏰ O tempo acabou', freed2:'Vocês dois travaram – escolha livre de letra!', freedN:'Todos travaram – escolha livre de letra!', cont:l=>`Sua vez! Continuamos com a letra ${l}`,
@@ -1097,13 +1115,17 @@ const isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|CriOS|Edg/.
 // at a time, and often goes "deaf" after automatic restarts. So in Safari every turn is tap-🎤-and-speak.
 // ?ptt=1 / ?ptt=0 force the mode (tests).
 const PTT = !!SR && (/[?&]ptt=1/.test(location.search) || (isSafari && !/[?&]ptt=0/.test(location.search)));
-if(!SR) $('#autoMic').checked=false;   // no recognizer: typing only
-else {
-  // New key so a fresh visit, and anyone who never saved a choice, starts with auto-mic on.
-  let saved=null; try{ saved=localStorage.getItem('hilingo_automic_v2'); }catch(_){}
-  $('#autoMic').checked = saved==null ? true : saved==='1';
-  $('#autoMic').addEventListener('change', ()=>{ try{ localStorage.setItem('hilingo_automic_v2', $('#autoMic').checked?'1':'0'); }catch(_){} });
+function forceAutoMic(){
+  const box=$('#autoMic'); if(!box) return;
+  if(!SR){ box.checked=false; return; }
+  box.checked=true;
+  try{
+    localStorage.removeItem('hilingo_automic');
+    localStorage.setItem('hilingo_automic_v2','1');
+  }catch(_){}
 }
+forceAutoMic();
+if(SR) $('#autoMic').addEventListener('change', ()=>{ try{ localStorage.setItem('hilingo_automic_v2', $('#autoMic').checked?'1':'0'); }catch(_){} });
 const range = n => Array.from({length:n},(_,i)=>i);
 const others = p => range(G.boards.length).filter(q=>q!==p);
 const defName = i => S.player(i+1);
@@ -1116,7 +1138,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.6.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.7';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1221,8 +1243,8 @@ function render(){
   $('#status').innerHTML = G.required ? S.statusNeed(n, G.required, !G.boards[G.turn].has(G.required)) : S.statusFree(n);
   $('#timerfill').style.width = (100*G.timeLeft/G.seconds)+'%';
   $('#timerfill').style.background = `var(--p${G.turn+1})`;
-  $('#history').innerHTML = G.history.map(h=>`<span style="color:var(--p${h.player+1})">${h.word?wordHTML(h):'⏰'}${h.hinted?'<small title="hint">💡</small>':''}</span>`).join(S.arrow);
-  $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
+  paintHistory();
+  paintSentence();
   // phone: keep the active AND the next player's panels on screen when the turn passes (layout only)
   if(!G.over && G.turn!==lastActiveP){ lastActiveP=G.turn; pinBoards(); }
 }
@@ -1320,9 +1342,180 @@ function showHint(p){
 }
 function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return; t.classList.add('back'); setTimeout(()=>t.classList.remove('back'),800); }
 
+let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
+function sentenceOk(){ return !!(G && !SOLO && MODE!=='learn' && G.boards.length>=2 && !G.over); }
+function isHili(raw){ const w=WG.normalize(String(raw||'').trim()); return w==='הילי'||w==='hili'; }
+function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; }
+function paintSentence(){
+  const bar=$('#sentbar'), go=$('#sentStart'), msg=$('#sentMsg'), no=$('#sentNo');
+  if(!bar) return;
+  const show=sentenceOk() && !!(sentOffer || sent || sentFlash);
+  bar.classList.toggle('hidden', !show);
+  if(go){ go.textContent=S.sentBtn||''; go.classList.toggle('hidden', !(sentOffer && !sent)); }
+  if(no){
+    const last=sent && sent.words[sent.words.length-1];
+    const mine=!!(last && G.turn===(last.player+1)%G.boards.length);
+    no.textContent=S.sentNo||'';
+    no.classList.toggle('hidden', !mine);
+  }
+  if(msg){
+    const text=sent ? (sent.note||S.sentGo||'') : (sentFlash||'');
+    msg.textContent=text;
+    msg.classList.toggle('hidden', !text);
+  }
+}
+function paintHistory(){
+  if(!G) return;
+  const keys=new Set();
+  if(sent) sent.words.forEach(w=>keys.add(w.player+'\0'+w.word));
+  let html='', prev=false;
+  G.history.forEach(h=>{
+    const on=!!(h.word && keys.has(h.player+'\0'+h.word));
+    if(html) html += (prev && on) ? ' ' : S.arrow;
+    if(h.word){
+      const style=on?'':` style="color:var(--p${h.player+1})"`;
+      html+=`<span class="${on?'sentword':''}"${style}>${wordHTML(h)}</span>`;
+    } else html+=`<span style="color:var(--p${h.player+1})">⏰</span>`;
+    prev=on;
+  });
+  $('#history').innerHTML=html;
+  $('#history').scrollLeft = S.dir==='rtl' ? -1e6 : 1e6;
+}
+function markLastHistory(player, word){
+  for(let i=G.history.length-1;i>=0;i--){
+    if(G.history[i].player===player && G.history[i].word===word) return G.history[i];
+  }
+  return null;
+}
+function dropHistoryWord(player, word){
+  for(let i=G.history.length-1;i>=0;i--){
+    if(G.history[i].player===player && G.history[i].word===word){ G.history.splice(i,1); return; }
+  }
+}
+function restoreLetter(p, L){
+  if(!L) return;
+  G.boards[p].add(L);
+  const d=G.deleted[p], i=d.lastIndexOf(L);
+  if(i>=0) d.splice(i,1);
+  tileBack(p, L);
+}
+function notePlayedWord(p, r){
+  sentFlash='';
+  if(!sentenceOk()){ sentOffer=null; return; }
+  if(sent){
+    sent.words.push({player:p, word:r.word, removed:r.removed||null});
+    const h=markLastHistory(p, r.word); if(h) h.sent=1;
+    sent.note=S.sentGo;
+    if(sent.words.length>=5) finishSentence();
+    return;
+  }
+  sentOffer={player:p, word:r.word, removed:r.removed||null};
+}
+function startSentence(){
+  if(!sentenceOk() || !sentOffer || sent) return;
+  sent={words:[{player:sentOffer.player, word:sentOffer.word, removed:sentOffer.removed}], note:S.sentGo};
+  const h=markLastHistory(sentOffer.player, sentOffer.word); if(h) h.sent=1;
+  sentOffer=null;
+  render();
+}
+function voidSentenceWord(){
+  if(!sent || !sent.words.length || !sentenceOk()) return;
+  const last=sent.words[sent.words.length-1];
+  if(G.turn!==(last.player+1)%G.boards.length) return;
+  restoreLetter(last.player, last.removed);
+  G.used.delete(last.word);
+  dropHistoryWord(last.player, last.word);
+  sent.words.pop();
+  if(!sent.words.length){
+    sent=null;
+    G.required=WG.firstLetter(last.word);
+  } else {
+    const prev=sent.words[sent.words.length-1];
+    G.required=WG.chainLetter(prev.word, G.boards[last.player], LANG).letter;
+    sent.note=S.sentGo;
+  }
+  G.turn=last.player;
+  G.timeLeft=G.seconds;
+  stopRec();
+  render(); afterTurnChange();
+}
+function restoreRandom(p, n){
+  const back=[];
+  for(let k=0;k<n;k++){
+    const bag=G.deleted[p];
+    if(!bag.length) break;
+    const j=Math.floor(Math.random()*bag.length);
+    const L=bag.splice(j,1)[0];
+    G.boards[p].add(L);
+    back.push(L);
+    tileBack(p, L);
+  }
+  return back;
+}
+function deleteRandom(p, n){
+  const pool=[...G.boards[p]], gone=[];
+  for(let k=0;k<n && pool.length;k++){
+    const j=Math.floor(Math.random()*pool.length);
+    const L=pool.splice(j,1)[0];
+    G.boards[p].delete(L);
+    G.deleted[p].push(L);
+    gone.push(L);
+  }
+  return gone;
+}
+function cancelSentence(p){
+  const back=restoreRandom(p, 2);
+  sent=null; sentOffer=null;
+  sentFlash=S.sentPenalty(back.length);
+  const note=sentFlash;
+  const bar=$('#sentMsg'); if(bar){ bar.textContent=note; bar.classList.remove('hidden'); }
+  $('#sentbar').classList.remove('hidden');
+  $('#sentStart').classList.add('hidden');
+  $('#sentNo').classList.add('hidden');
+  G.turn=(p+1)%G.boards.length;
+  G.timeLeft=G.seconds;
+  stopRec();
+  render();
+  if($('#sentMsg')) $('#sentMsg').textContent=note;
+  afterTurnChange();
+}
+function sentConfetti(){
+  const box=$('#fx'); if(!box) return;
+  box.classList.remove('hidden');
+  box.innerHTML='';
+  const colors=['#6B2CFF','#1E88FF','#FFE566','#FF7A1A','#FF2D87','#ffffff','#B794FF'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('i');
+    p.className='bit';
+    p.style.setProperty('--x', (Math.random()*100)+'%');
+    p.style.setProperty('--s', (8+Math.random()*8)+'px');
+    p.style.setProperty('--d', (2.2+Math.random()*1.4)+'s');
+    p.style.setProperty('--bc', colors[i%colors.length]);
+    box.appendChild(p);
+  }
+  setTimeout(()=>{ if(box.querySelector('.bit')) { box.innerHTML=''; box.classList.add('hidden'); } }, 3200);
+}
+function finishSentence(){
+  const counts={};
+  sent.words.forEach(w=>{ counts[w.player]=(counts[w.player]||0)+1; });
+  const notes=[];
+  Object.keys(counts).forEach(k=>{
+    const p=+k, n=counts[p];
+    sentPoints[p]=(sentPoints[p]||0)+n;
+    if(!G.over) deleteRandom(p, n);
+    notes.push(S.sentBonus(G.names[p], n));
+  });
+  sent=null; sentOffer=null;
+  sentFlash=notes.join(' · ');
+  sentConfetti();
+  if(!G.over && G.boards.some(b=>b.size===0)) WG.finish(G, null, 'empty');
+}
 function submit(p,raw,force=false,src='typed'){
   if(!G||G.over||paused||p!==G.turn) return false;
   $('#in'+p).value='';
+  if(isHili(raw)){
+    if(sent){ cancelSentence(p); return true; }
+  }
   const r = WG.play(G, raw, force);
   $('#ov'+p).classList.add('hidden'); pendingOverride[p]=null;
   if(!r.ok){
@@ -1349,6 +1542,7 @@ function submit(p,raw,force=false,src='typed'){
   if(r.removed){ const t=$(`#t${p} .tile[data-l="${r.removed}"]`); t.classList.add('boom'); setTimeout(()=>t.classList.remove('boom'),700); }
   if(r.restored) tileBack(p, r.restored);
   others(p).forEach(q=>{ setMsg(q,''); showWord(q,''); setHeard(q,''); });
+  if(!G.over) notePlayedWord(p, r);
   render(); afterTurnChange();
   if(savedHere) showSavedToast();
   return true;
@@ -1824,11 +2018,13 @@ function thawSolo(){
 }
 function startGame(){
   if(LANG!=='he' && !WG.hasDict(LANG)){ ensureDict(LANG).then(ok=>{ if(ok){ updateGo(); startGame(); } }); return; }
+  forceAutoMic();
   if(soloRunning) stopSoloClock(false);
   WG.setLang(LANG);
   G=WG.newGame({seconds, players:NPLAYERS, names:range(NPLAYERS).map(playerName)});
   pendingOverride=[null,null,null,null]; heardNote=['','','',''];
   resetDisrupt();
+  resetSentence();
   $('#start').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#endov').classList.add('hidden');
   $('#game').classList.toggle('solo', SOLO && MODE!=='learn');
   if(SOLO && MODE!=='learn') startSoloClock(); else stopSoloClock(false);
@@ -1850,6 +2046,12 @@ function endScreen(){
   paintSoloBest();
   const winners=G.winners&&G.winners.length?G.winners:(G.winner>=0?[G.winner]:[]);
   $('#endTitle').textContent = G.winner===-1 ? (G.boards.length===2||winners.length<2 ? S.draw : S.drawN(winners.map(i=>G.names[i]))) : S.won(G.names[G.winner]);
+  const es=$('#endSent');
+  if(es){
+    const line=sentPoints.map((n,i)=>n?S.sentEndPts(G.names[i], n):'').filter(Boolean).join(' · ');
+    es.textContent=line;
+    es.classList.toggle('hidden', !line);
+  }
   $('#endText').textContent = (G.reason==='empty'?S.endEmpty:G.reason==='misses'?S.endMisses:S.endManual)+
     G.names.map((nm,i)=>`${nm}: ${G.boards[i].size} ${S.letters}`).join(' · ')+` · ${G.history.filter(h=>h.word).length} ${S.words}`;
   clearFx(); paintPodium(); burstConfetti();
@@ -1880,7 +2082,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.6.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.7');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -1979,7 +2181,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.6.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.7 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -2079,10 +2281,13 @@ function startRec(p,how){
       $('#autoMic').checked=false; stopRec(); return; }
     // A dropped audio route (notification, volume) reports audio-capture or network.
     // Rebuild once, after this instance is gone. Do not turn auto-mic off.
-    if(code==='audio-capture'||code==='network'){
+    if(code==='audio-capture'||code==='network'||code==='aborted'||code==='interrupted'){
+      if(lastAlts || performance.now()-lastResultAt<800){ diag('skip error, results'); return; }
       done=true; clearTimeout(deafT); errShown=true; setHeard(p,'');
-      stopRec(); restartLater(p); return; }
-    if(code==='aborted') return;
+      diag('interrupt '+code);
+      stopRec();
+      scheduleMicRecovery('error:'+code);
+      return; }
     errShown=true;
     if(code==='no-speech') setHeard(p,$('#autoMic').checked?S.listening:(PTT?help:S.noSpeech));
     else setHeard(p,help||(S.micErr+code));
@@ -2098,7 +2303,8 @@ function startRec(p,how){
     if(emptyEnds>MAX_EMPTY_RESTARTS && !$('#autoMic').checked){ setHeard(p,S.micStopped); return; }
     if($('#autoMic').checked) setHeard(p,S.listening);
     diag('state end');
-    restartLater(p);
+    if(!lastAlts) scheduleMicRecovery('end');
+    else restartLater(p);
   };
   diag('start() ['+(how||'?')+(window.event&&window.event.type?' in '+window.event.type:'')+'] '+r.lang);
   try{ r.start(); }catch(err){ diag('start threw: '+(err&&err.message)); rec=null; recFor=null; recCtl=null; $('#mic'+p).classList.remove('on'); setHeard(p,S.cantStart); }
@@ -2119,10 +2325,20 @@ function restartLater(p){
   }, 400);
 }
 function stopRec(){
-  recSession++;   // invalidate current session's handlers
-  if(rec){ const r=rec; rec=null; try{r.abort()}catch(e){} }
-  if(recFor!==null){ const m=$('#mic'+recFor); m&&m.classList.remove('on'); }
-  recFor=null; recCtl=null;
+  recSession++;
+  const r=rec; rec=null; recCtl=null;
+  if(r){
+    try{
+      r.onstart=r.onend=r.onerror=r.onresult=null;
+      r.onaudiostart=r.onaudioend=r.onsoundstart=r.onsoundend=null;
+      r.onspeechstart=r.onspeechend=r.onnomatch=null;
+    }catch(_){}
+    try{ r.abort(); }catch(_){}
+  }
+  if(recFor!==null){ const m=$('#mic'+recFor); if(m) m.classList.remove('on'); }
+  recFor=null;
+  micSawStart=false;
+  document.querySelectorAll('#halves .mic.on').forEach(m=>m.classList.remove('on'));
 }
 function showRestartChip(p){
   const b=$('#micRestart'); if(!b) return;
@@ -2132,29 +2348,69 @@ function showRestartChip(p){
   diag('restart chip');
 }
 function hideRestartChip(){ const b=$('#micRestart'); if(b) b.classList.add('hidden'); }
-let micRecoverAt=0;
-function recoverMic(why){
-  const now=performance.now();
-  if(now-micRecoverAt<800) return;
-  micRecoverAt=now;
+function syncViewport(){
+  const vv=window.visualViewport;
+  const h=Math.round((vv&&vv.height)||window.innerHeight||0);
+  if(h>0) document.documentElement.style.setProperty('--app-h', h+'px');
+}
+function fixLayout(why){
+  diag('layout '+why);
+  try{ clearFx(); }catch(_){}
+  syncViewport();
+  document.documentElement.classList.add('app-resume');
+  document.querySelectorAll('#halves .half, #halves .tiles, #halves .tile').forEach(el=>{
+    el.style.transform=''; el.style.filter='';
+  });
+  const ae=document.activeElement;
+  if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')){ try{ ae.blur(); }catch(_){} }
+  if(G && $('#game') && !$('#game').classList.contains('hidden')){
+    try{ pinBoards(); render(); }catch(_){}
+    if(!G.over && !paused){ cancelAnimationFrame(timerId); lastT=performance.now(); timerId=requestAnimationFrame(loop); }
+  }
+  try{ window.scrollTo(0,0); }catch(_){}
+}
+function killLearnRec(why){
+  clearTimeout(learnListenTimer);
+  const r=learnRec;
+  srRunning=false;
+  learnSession++;
+  learnRec=null;
+  try{ micOff(); }catch(_){}
+  if(typeof learnOwner!=='undefined' && learnOwner==='mic' && typeof setOwner==='function') setOwner('none');
+  if(!r) return;
+  try{ r.onstart=r.onend=r.onerror=r.onresult=r.onaudiostart=r.onaudioend=null; }catch(_){}
+  try{ learnAbort(r, why); }catch(_){}
+}
+function runMicRecovery(why){
+  diag('recover '+why);
+  if(performance.now()-lastResultAt<800){ diag('skip recover, results'); return; }
+  if(typing){ diag('skip recover, typing'); return; }
   const learnOn=$('#learn') && !$('#learn').classList.contains('hidden');
-  diag('recover '+why+(learnOn?' learn':''));
   if(learnOn){
-    const liveListen=typeof srRunning!=='undefined' && srRunning && typeof learnRec!=='undefined' && learnRec
-      && (typeof learnState==='undefined' || learnState==='LISTEN_TARGET' || learnState==='LISTEN_NATIVE');
-    if(liveListen){ diag('skip recover, learn live'); return; }
+    if(learnState==='INTRO'||learnState==='SPEAK_TARGET'){ diag('skip recover, '+learnState); return; }
+    killLearnRec('recover');
+    if(!$('#autoMic').checked || !SR) return;
+    const side=(learnState==='LISTEN_TARGET'||learnState==='IDLE_TARGET'||learnState==='RETRY'||learnState==='OK')?'target':'native';
+    beginListen(side);
     return;
   }
-  if(!G||G.over||paused||typing) return;
+  if(!G||G.over||paused) return;
   if(introHold&&!introHold.done) return;
-  const p=G.turn;
-  if(micSawStart && recFor!==null && rec){ diag('skip recover, live session'); return; }
-  if(performance.now()-lastResultAt<1500){ diag('skip recover, results'); return; }
-  if(!$('#autoMic').checked){ showRestartChip(p); return; }
   stopRec();
   hideRestartChip();
-  startRec(p,'recover');
-  if(recFor!==p) showRestartChip(p);
+  if(!$('#autoMic').checked){ showRestartChip(G.turn); return; }
+  startRec(G.turn,'recover');
+}
+function scheduleMicRecovery(why){
+  if(performance.now()-lastResultAt<800){ diag('skip recovery, results'); return; }
+  clearTimeout(restartTimer);
+  diag('schedule recovery '+why);
+  restartTimer=setTimeout(()=>{ restartTimer=0; runMicRecovery(why); }, 400);
+}
+function resumeApp(why){
+  diag('app '+why);
+  fixLayout(why);
+  scheduleMicRecovery(why);
 }
 let pageHidden=false;
 document.addEventListener('visibilitychange', ()=>{
@@ -2162,24 +2418,34 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='hidden'){ pageHidden=true; return; }
   if(!pageHidden) return;
   pageHidden=false;
-  setTimeout(()=>recoverMic('visible'), 300);
+  resumeApp('visible');
 });
-window.addEventListener('pageshow', ()=>{
-  diag('pageshow');
-  if(!pageHidden){ diag('skip pageshow'); return; }
+window.addEventListener('pageshow', ev=>{
+  diag('pageshow persisted='+(ev&&ev.persisted?1:0));
+  if(!(ev&&ev.persisted) && !pageHidden){ diag('skip pageshow'); return; }
   pageHidden=false;
-  setTimeout(()=>recoverMic('pageshow'), 300);
+  resumeApp('pageshow');
 });
-window.addEventListener('focus', ()=>{ diag('focus'); });
+window.addEventListener('focus', ()=>{
+  diag('focus');
+  if(!pageHidden) return;
+  pageHidden=false;
+  resumeApp('focus');
+});
 window.addEventListener('blur', ()=>{ diag('blur'); });
+if(window.visualViewport){
+  visualViewport.addEventListener('resize', ()=>{ syncViewport(); if(G&&!$('#game').classList.contains('hidden')){ try{ pinBoards(); }catch(_){} } });
+}
+window.addEventListener('resize', syncViewport);
+syncViewport();
 setInterval(()=>{
   if(!G||G.over||paused||typing||!$('#autoMic').checked) return;
   if($('#learn') && !$('#learn').classList.contains('hidden')) return;
   if(introHold&&!introHold.done) return;
   if(recFor!==null && !micSawStart && micArmedAt && performance.now()-micArmedAt>3000){
-    if(performance.now()-lastResultAt<1500) return;
+    if(performance.now()-lastResultAt<800) return;
     diag('watchdog no onstart');
-    recoverMic('watchdog');
+    scheduleMicRecovery('watchdog');
   }
 }, 1000);
 $('#micRestart').onclick=()=>{
@@ -2789,7 +3055,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.6.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.7';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -3072,6 +3338,7 @@ function replayLearn(){
   });
 }
 function startLearn(){
+  forceAutoMic();
   learnGen++;
   learnAfterIntro=null;
   showLearnShell();
@@ -3225,6 +3492,8 @@ $('#learnMic').onclick=()=>learnMicTap();
 $('#learnRepeatMic').onclick=()=>learnRepeatTap();
 $('#learnClear').onclick=()=>clearLearnRound();
 $('#learnSaid').onclick=()=>{ if(learnPair) acceptRepeat([learnPair.t]); };
+$('#sentStart').onclick=()=>startSentence();
+$('#sentNo').onclick=()=>voidSentenceWord();
 function copyLearnLog(){
   const text=learnDbgLines.join('\n');
   let ok=false;

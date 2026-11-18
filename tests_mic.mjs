@@ -133,11 +133,22 @@ async function run(browser, tag) {
     window.__vis = 'visible';
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await page.waitForTimeout(500);
+  await page.waitForFunction(n => window.__srs.length === n + 2, beforeErr);
+  await page.waitForTimeout(700);
   const afterVis = await page.evaluate(() => window.__srs.length);
   const log = await page.evaluate(() => document.getElementById('diag').textContent || '');
-  if (afterVis !== beforeErr + 1 || !/skip recover, live session/.test(log)) bad(tag + ' vis ' + afterVis + ' ' + log.slice(-220));
-  else ok(tag + ' returning to the page does not abort a live session');
+  if (afterVis !== beforeErr + 2 || !/recover visible/.test(log)) bad(tag + ' vis ' + afterVis + ' ' + log.slice(-240));
+  else ok(tag + ' hidden then visible recovers exactly once');
+  const beforeAbort = afterVis;
+  await page.evaluate(() => {
+    const r = window.__srs[window.__srs.length - 1];
+    r.fire('error', { error: 'aborted' });
+  });
+  await page.waitForFunction(n => window.__srs.length === n + 1, beforeAbort);
+  await page.waitForTimeout(800);
+  const afterAbort = await page.evaluate(() => window.__srs.length);
+  if (afterAbort !== beforeAbort + 1) bad(tag + ' aborted loop ' + afterAbort);
+  else ok(tag + ' aborted without results recovers once');
   const heard = await page.evaluate(() => {
     const n0 = window.__srs.length;
     const r = window.__srs[n0 - 1];
@@ -159,13 +170,46 @@ async function run(browser, tag) {
   else ok(tag + ' a result still reaches the board, and focus does not restart');
   if (errors.length) bad(tag + ' ' + errors.join(' | '));
 
-  if (tag === 'chromium') {
+  {
     const shot = await context.newPage();
     await shot.setViewportSize({ width: 390, height: 844 });
     await shot.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
     await shot.evaluate(() => { document.getElementById('autoMic').checked = false; document.getElementById('sound').checked = false; });
     await shot.click('#go');
     await shot.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+    await shot.waitForSelector('#half1');
+    await shot.evaluate(() => window.__hilingoDisrupt.play('fireworks'));
+    await shot.waitForTimeout(200);
+    await shot.screenshot({ path: '/opt/cursor/artifacts/v462-before.png' });
+    await shot.evaluate(() => {
+      document.getElementById('half0').style.transform = 'translateY(80px) scale(0.8)';
+      window.__vis = 'visible';
+      const getter = { configurable: true, get() { return window.__vis; } };
+      try { Object.defineProperty(document, 'visibilityState', getter); } catch (_) {}
+      window.__vis = 'hidden';
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await shot.setViewportSize({ width: 390, height: 700 });
+    await shot.setViewportSize({ width: 390, height: 844 });
+    await shot.evaluate(() => {
+      window.__vis = 'visible';
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await shot.waitForTimeout(500);
+    const lay = await shot.evaluate(() => {
+      const a = document.getElementById('half0').getBoundingClientRect();
+      const fx = document.getElementById('fx');
+      return {
+        h: Math.round(a.height),
+        y: Math.round(a.top),
+        fx: !fx || fx.classList.contains('hidden'),
+        transform: document.getElementById('half0').style.transform,
+        app: getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim(),
+      };
+    });
+    if (lay.h < 120 || !lay.fx || lay.transform) bad(tag + ' layout ' + JSON.stringify(lay));
+    else ok(tag + ' layout intact after resume ' + JSON.stringify(lay));
+    await shot.screenshot({ path: '/opt/cursor/artifacts/v462-after.png' });
     await shot.waitForSelector('#pt0');
     const ring = await shot.evaluate(() => getComputedStyle(document.getElementById('pt0'), '::before').content);
     if (ring && ring !== 'none') bad('timer ring ' + ring);

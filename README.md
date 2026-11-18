@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.6.1)
+# HilinGo – word-chain game (v4.7)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,13 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.7 – Sentence of 5 words
+- After a real word, that player can start a five-word sentence. The next players continue it, still starting with the last letter. "Not logical" voids the last word and gives the turn back. "Hili" cancels the sentence and returns two deleted letters. Five words ends it with confetti and one extra deleted letter per word. Hili is never a normal word. The sentence line is the only green in the game.
+
+## v4.6.2 – Come back and the mic starts again
+- Auto-mic is on at every load and every game or Learn start. An old saved "off" is ignored.
+- Leaving for WhatsApp or a notification, then coming back, tears the recognizer down and starts a fresh one. The boards are redrawn and any disruption is cleared. Focus and blur while the app stayed open do not restart it.
 
 ## v4.6.1 – Mic listens again, countdown is just the number
 - Recognition is no longer torn down on focus, blur, or a normal audio-end. It restarts after a real audio error, and not while a session is already listening.

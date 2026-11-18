@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.4.1)
+# HilinGo – word-chain game (v4.5)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,9 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.5 – Disruptions
+- In a 2–4 player game, the next player can double-tap the active letter grid. Solo and Learn cannot. Each player waits 90 seconds after their own disruption. Effects are silent visuals and do not touch the mic or the turn timer.
 
 ## v4.4.1 – Home screen no longer crashes on a saved record
 - `SOLO_CAP` is declared before the startup call that paints "My New record". A saved solo time no longer throws `Cannot access 'SOLO_CAP' before initialization`.

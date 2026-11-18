@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.7.1">
+<meta name="hilingo-version" content="4.7.2">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.7.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.7.2" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,6 +80,7 @@ label.chk{font-size:15px;color:var(--muted);display:flex;align-items:center;just
 label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .card-opts{display:flex;flex-direction:column;gap:4px}
 #speechNote{max-width:680px}
+#start #speechNote{font-size:14px;color:#6B6490}
 #rules{width:min(680px,100%);max-height:min(340px,46vh);overflow:auto;-webkit-overflow-scrolling:touch;text-align:start;background:rgba(255,255,255,.9);border-radius:20px;padding:12px 14px 14px;box-shadow:0 10px 28px rgba(80,50,180,.08);font-size:14px;line-height:1.45;color:var(--txt)}
 #rules h3{margin:12px 0 4px;font-size:16px;color:#4A2DB0}
 #rules h3:first-child{margin-top:0}
@@ -620,9 +621,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.7.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.7.2</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
-  <p id="speechNote" style="font-size:14px;opacity:.7"></p>
+  <p id="speechNote"></p>
   <div id="rules"></div>
 </section>
 
@@ -646,7 +647,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.7.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.7.2</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -683,9 +684,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.7.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.7.1"></script>
-<script src="learn_dict.js?v=4.7.1"></script>
+<script src="words.js?v=4.7.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.7.2"></script>
+<script src="learn_dict.js?v=4.7.2"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -922,7 +923,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.7.1';
+window.WG = WG; window.HILINGO_VERSION='4.7.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -965,7 +966,7 @@ const STR = {
   ptt:'לחצו ודברו', pttOn:'מקשיב… ⏹', tapToTalk:'לחצו על 🎤 (או Enter בתיבה ריקה) ואז אמרו את המילה', tapAgain:'לא נקלטה מילה – לחצו שוב על 🎤 ודברו',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו",
-  hintNoDel:"💡 נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`💡 רמז בשני תורות ברצף – האות ${l} חזרה ללוח`,
+  hintNoDel:"<span class='rules-hint'>💡 רמז</span> נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`<span class='rules-hint'>💡 רמז</span> בשני תורות ברצף – האות ${l} חזרה ללוח`,
   errs:{'not-allowed':'Safari חוסם את המיקרופון. Safari ← הגדרות (Settings) ← אתרים (Websites) ← מיקרופון ← localhost ← "אפשר" (Allow), ואז לרענן את הדף.',
    'service-not-allowed':'זיהוי הדיבור כבוי במק. הגדרות המערכת ← Apple Intelligence ו-Siri (או Siri) ← להפעיל את Siri; וגם הגדרות המערכת ← מקלדת ← הכתבה ← להפעיל, עם עברית ברשימת השפות. אחר כך לסגור את Safari (Cmd+Q) ולפתוח שוב.',
    'audio-capture':'לא נמצא מיקרופון, או שאפליקציה אחרת תופסת אותו (Zoom, FaceTime וכו׳). בדקו בהגדרות המערכת ← סאונד ← קלט.',
@@ -1010,7 +1011,7 @@ const STR = {
   ptt:'Tap & speak', pttOn:'Listening… ⏹', tapToTalk:'Tap 🎤 (or Enter in the empty box), then say your word', tapAgain:'No word caught – tap 🎤 again and speak',
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter",
-  hintNoDel:"💡 Hint used – no letter crossed off this turn", hintRestored:l=>`💡 Hints two turns in a row – ${l} is back on your board`,
+  hintNoDel:"<span class='rules-hint'>💡 Hint</span> used – no letter crossed off this turn", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> two turns in a row – ${l} is back on your board`,
   errs:{'not-allowed':'Safari is blocking the microphone. Safari → Settings → Websites → Microphone → localhost → "Allow", then reload.',
    'service-not-allowed':'Speech recognition is off on this Mac. System Settings → Apple Intelligence & Siri (or Siri) → turn Siri on; and System Settings → Keyboard → Dictation → On. Then quit Safari (Cmd+Q) and reopen.',
    'audio-capture':'No microphone found, or another app (Zoom, FaceTime…) is using it. Check System Settings → Sound → Input.',
@@ -1055,7 +1056,7 @@ const STR = {
   ptt:'Tik & spreek', pttOn:'Luistert… ⏹', tapToTalk:'Tik op 🎤 (of Enter in het lege vak) en zeg je woord', tapAgain:'Geen woord gehoord – tik opnieuw op 🎤 en spreek',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter",
-  hintNoDel:"💡 Hint gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`💡 Twee beurten op rij een hint – de ${l} staat weer op je bord`,
+  hintNoDel:"<span class='rules-hint'>💡 Hint</span> gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> twee beurten op rij – de ${l} staat weer op je bord`,
   errs:{'not-allowed':'Safari blokkeert de microfoon. Safari → Instellingen → Websites → Microfoon → localhost → "Sta toe", en herlaad de pagina.',
    'service-not-allowed':'Spraakherkenning staat uit op deze Mac. Systeeminstellingen → Apple Intelligence en Siri (of Siri) → Siri aan; en Systeeminstellingen → Toetsenbord → Dicteren → Aan. Stop daarna Safari (Cmd+Q) en open opnieuw.',
    'audio-capture':'Geen microfoon gevonden, of een andere app (Zoom, FaceTime…) gebruikt hem. Controleer Systeeminstellingen → Geluid → Invoer.',
@@ -1100,7 +1101,7 @@ const STR = {
   ptt:'Toque e fale', pttOn:'Ouvindo… ⏹', tapToTalk:'Toque em 🎤 (ou Enter na caixa vazia) e diga a palavra', tapAgain:'Nenhuma palavra captada – toque de novo em 🎤 e fale',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra",
-  hintNoDel:"💡 Você usou dica – nenhuma letra foi apagada neste turno", hintRestored:l=>`💡 Dica em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
+  hintNoDel:"<span class='rules-hint'>💡 Dica</span> usada – nenhuma letra foi apagada neste turno", hintRestored:l=>`<span class='rules-hint'>💡 Dica</span> em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
   errs:{'not-allowed':'O Safari está bloqueando o microfone. Safari → Ajustes → Sites → Microfone → localhost → "Permitir", e recarregue a página.',
    'service-not-allowed':'O reconhecimento de voz está desligado neste Mac. Ajustes do Sistema → Apple Intelligence e Siri (ou Siri) → ligar a Siri; e Ajustes do Sistema → Teclado → Ditação → Ligado. Depois feche o Safari (Cmd+Q) e abra de novo.',
    'audio-capture':'Nenhum microfone encontrado, ou outro app (Zoom, FaceTime…) está usando. Confira em Ajustes do Sistema → Som → Entrada.',
@@ -1149,7 +1150,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.7.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.7.2';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1177,7 +1178,7 @@ function applyLang(code){
   $('#endBtn').textContent=S.endBtn; $('#pauseBtn').textContent=paused?S.resume:S.pause; $('#again').textContent=S.again;
   const mw=$('#myWordsBtn'); if(mw) mw.textContent=S.myWords;
   if($('#wordsov') && !$('#wordsov').classList.contains('hidden')){ pendingDelete=null; renderMyWords(); }
-  $('#speechNote').textContent = SR ? S.speechOk+S.micHint : S.speechNo;
+  paintRich($('#speechNote'), SR ? S.speechOk+S.micHint : S.speechNo);
   document.querySelectorAll('#langs .opt').forEach(b=>b.classList.toggle('sel', b.dataset.lang===LANG));
   WG.setLang(LANG); updateGo();
   if(LANG!=='he' && !WG.hasDict(LANG)) ensureDict(LANG).then(ok=>{ if(ok) WG.setLang(LANG); if(LANG===code){ updateGo(); if(!ok && MODE!=='learn'){ $('#go').textContent=S.dictFail; } } });
@@ -1191,6 +1192,13 @@ function setPlayers(n){
 }
 document.querySelectorAll('#langs .opt').forEach(b=>b.onclick=()=>applyLang(b.dataset.lang));
 document.querySelectorAll('.pc').forEach(b=>b.onclick=()=>setPlayers(b.dataset.n));
+const MIC_ICON='<span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>';
+function paintRich(el,txt){
+  if(!el) return;
+  const s=txt==null?'':String(txt);
+  if(s.includes('🎤')||s.includes('rules-mic')||s.includes('rules-hint')) el.innerHTML=s.replaceAll('🎤', MIC_ICON);
+  else el.textContent=s;
+}
 applyLang('he');
 document.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{document.querySelectorAll('.lvl').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');seconds=+b.dataset.s;});
 
@@ -1290,8 +1298,8 @@ function enterTyping(p){
 }
 const finePointer = window.matchMedia && matchMedia('(pointer:fine)').matches;
 function focusInput(p){ if(!finePointer) return; const e=$('#in'+p); if(e){ try{ e.focus({preventScroll:true}); }catch(_){ e.focus(); } } }
-function setMsg(p,txt,kind){ const e=$('#m'+p); if(!e) return; e.textContent=txt; e.className='msg'+(kind?' '+kind:''); }
-function setHeard(p,txt){ const e=$('#hd'+p); if(e) e.textContent=txt||''; const m=$('#mic'+p); if(m) m.classList.toggle('heard', !!(txt&&/שמעתי|Heard|Gehoord|הוקלד|Typed|Getypt|✔/.test(txt))); }
+function setMsg(p,txt,kind){ const e=$('#m'+p); if(!e) return; paintRich(e,txt); e.className='msg'+(kind?' '+kind:''); }
+function setHeard(p,txt){ const e=$('#hd'+p); if(e) paintRich(e,txt); const m=$('#mic'+p); if(m) m.classList.toggle('heard', !!(txt&&/שמעתי|Heard|Gehoord|הוקלד|Typed|Getypt|✔/.test(txt))); }
 function wordHTML(h){
   const w=h.word;
   if(!w || G.lang!=='pt' || h.link==null || h.link<0 || h.link>=w.length) return esc(w);
@@ -1325,10 +1333,10 @@ function pickHint(g,p,shown){
   const c=hintCandidates(g,p).filter(h=>!shown.has(h.i));
   return c.length ? c[Math.floor(Math.random()*c.length)] : null;
 }
-function setHintText(p,txt,tag){
+function setHintText(p,txt,tag,mark){
   const row=$('#hr'+p), e=$('#hn'+p); if(!row||!e) return;
   if(!txt){ e.textContent=''; row.classList.remove('hinting'); return; }
-  e.innerHTML=esc(txt)+(tag?'<small>'+esc(tag)+'</small>':''); row.classList.add('hinting');
+  e.innerHTML=(mark?'<span class="rules-hint">'+esc(S.hint)+'</span> ':'')+esc(txt)+(tag?'<small>'+esc(tag)+'</small>':''); row.classList.add('hinting');
 }
 function updateHintBtns(){
   if(!G) return;
@@ -1348,7 +1356,7 @@ function showHint(p){
   const h=pickHint(G,p,hintUI.shown);
   if(!h){ setHintText(p,S.hintNone, G.hintsThisTurn?S.hintTag(G.hintsThisTurn):''); diag('hint: none'); return; }
   const n=WG.useHint(G); hintUI.shown.add(h.i);
-  setHintText(p,'💡 '+h.desc,S.hintTag(n));
+  setHintText(p,h.desc,S.hintTag(n),true);
   diag('hint '+n+'/'+WG.MAX_HINTS); updateHintBtns(); focusInput(p);
 }
 function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return; t.classList.add('back'); setTimeout(()=>t.classList.remove('back'),800); }
@@ -2093,7 +2101,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.7.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.7.2');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2192,7 +2200,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.7.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.7.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -2676,7 +2684,7 @@ function syncLearnClear(){
   btn.classList.toggle('hidden', !(word||result));
 }
 function setLearnHeard(t){
-  const e=$('#learnHeard'); if(e) e.textContent=t||'';
+  const e=$('#learnHeard'); if(e) paintRich(e,t);
   const m=$('#learnMic');
   if(m) m.classList.toggle('heard', !!(t&&/שמעתי|Heard|Gehoord|Ouvi|✔/.test(t)));
 }
@@ -3066,7 +3074,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.7.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.7.2';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

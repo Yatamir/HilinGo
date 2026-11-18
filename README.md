@@ -62,7 +62,8 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
 
 ## v4.6.1 – Mic listens again, countdown is just the number
-- Recognition is no longer torn down on focus, blur, or a normal audio-end. It restarts after a real audio error, or when the page returns from the background, and not while words are still arriving.
+- Recognition is no longer torn down on focus, blur, or a normal audio-end. It restarts after a real audio error, and not while a session is already listening.
+- The Learn "Test pt-BR mic" button no longer aborts a listen that is already running. iOS was replaying that click and killing the mic.
 - The turn clock is digits only. The colored ring is gone.
 
 ## v4.6 – Stronger secret disruptions, and a mic that comes back

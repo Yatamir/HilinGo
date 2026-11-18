@@ -133,10 +133,11 @@ async function run(browser, tag) {
     window.__vis = 'visible';
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await page.waitForFunction(n => window.__srs.length > n, beforeErr + 1);
+  await page.waitForTimeout(500);
+  const afterVis = await page.evaluate(() => window.__srs.length);
   const log = await page.evaluate(() => document.getElementById('diag').textContent || '');
-  if (!/visibility|recover visible|state start/.test(log)) bad(tag + ' log ' + log.slice(-200));
-  else ok(tag + ' hidden then visible recreates recognition');
+  if (afterVis !== beforeErr + 1 || !/skip recover, live session/.test(log)) bad(tag + ' vis ' + afterVis + ' ' + log.slice(-220));
+  else ok(tag + ' returning to the page does not abort a live session');
   const heard = await page.evaluate(() => {
     const n0 = window.__srs.length;
     const r = window.__srs[n0 - 1];

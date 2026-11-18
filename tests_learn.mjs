@@ -783,6 +783,15 @@ try {
     const log = await page.evaluate(() => document.getElementById('learnDbgText').textContent);
     if (!/test pt-BR mic path: cold/.test(log) || /tts path:/.test(log) || /mic path: after-release/.test(log)) bad('cold pt ' + log.slice(-500));
     else ok('Test pt-BR mic with no TTS on this load');
+    const starts = await page.evaluate(() => window.__srStarts);
+    await page.click('#dbgPt');
+    await page.waitForTimeout(300);
+    const again = await page.evaluate(() => ({
+      starts: window.__srStarts,
+      log: document.getElementById('learnDbgText').textContent,
+    }));
+    if (again.starts !== starts || !/skip test, live LISTEN_TARGET/.test(again.log) || (again.log.match(/abort test-pt/g) || []).length) bad('second test aborted ' + again.log.slice(-300));
+    else ok('a second Test pt-BR does not abort a live listen');
     if (errors.length) bad('cold pt errors ' + errors.join(';'));
     await page.close();
   }

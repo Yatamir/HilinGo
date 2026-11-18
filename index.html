@@ -2140,19 +2140,15 @@ function recoverMic(why){
   const learnOn=$('#learn') && !$('#learn').classList.contains('hidden');
   diag('recover '+why+(learnOn?' learn':''));
   if(learnOn){
-    if(typeof srRunning!=='undefined' && srRunning && typeof stopSession==='function'){
-      stopSession('recover').then(()=>{
-        if(typeof learnHandsFree==='function' && learnHandsFree() && typeof beginListen==='function'){
-          const side=(typeof learnState!=='undefined' && (learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'))?'target':'native';
-          beginListen(side);
-        } else showRestartChip(0);
-      });
-    }
+    const liveListen=typeof srRunning!=='undefined' && srRunning && typeof learnRec!=='undefined' && learnRec
+      && (typeof learnState==='undefined' || learnState==='LISTEN_TARGET' || learnState==='LISTEN_NATIVE');
+    if(liveListen){ diag('skip recover, learn live'); return; }
     return;
   }
   if(!G||G.over||paused||typing) return;
   if(introHold&&!introHold.done) return;
   const p=G.turn;
+  if(micSawStart && recFor!==null && rec){ diag('skip recover, live session'); return; }
   if(performance.now()-lastResultAt<1500){ diag('skip recover, results'); return; }
   if(!$('#autoMic').checked){ showRestartChip(p); return; }
   stopRec();
@@ -3264,6 +3260,12 @@ function clearLearnLog(){
   if(pre) pre.textContent='';
 }
 function testPtMic(){
+  // The debug button is easy to hit again (and iOS replays the last click when the
+  // audio session flickers). Aborting a live pt-BR listen is what made the mic die.
+  if((learnState==='LISTEN_TARGET'||learnState==='LISTEN_NATIVE') && srRunning && learnRec){
+    learnLog('skip test, live '+learnState);
+    return;
+  }
   learnLog('test pt-BR mic path: '+(learnTtsEver?'after-tts':'cold'));
   if(learnState==='INTRO'){
     learnGen++;
@@ -3285,7 +3287,7 @@ function testPtMic(){
 }
 $('#dbgCopy').onclick=()=>copyLearnLog();
 $('#dbgClear').onclick=()=>clearLearnLog();
-$('#dbgPt').onclick=()=>testPtMic();
+$('#dbgPt').onclick=e=>{ try{ e.preventDefault(); e.currentTarget.blur(); }catch(_){} testPtMic(); };
 $('#learnIn').addEventListener('input', ()=>{
   if(!$('#learnIn').value) return;
   if(!learnTyping){ learnTyping=true; if(learnRec) stopLearnRec(); setLearnHeard(S.typing); }

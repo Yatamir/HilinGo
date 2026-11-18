@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.6)
+# HilinGo – word-chain game (v4.6.1)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,10 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.6.1 – Mic listens again, countdown is just the number
+- Recognition is no longer torn down on focus, blur, or a normal audio-end. It restarts after a real audio error, or when the page returns from the background, and not while words are still arriving.
+- The turn clock is digits only. The colored ring is gone.
 
 ## v4.6 – Stronger secret disruptions, and a mic that comes back
 - The next player double-taps their own letter grid. There is no badge. Each player can disrupt again after 20 seconds. Effects are larger, and the overlay does not take taps.

@@ -89,12 +89,22 @@ async function run(browser, tag) {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', err => errors.push(String(err && err.message || err)));
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('autoMic').checked = true; });
   await page.click('#go');
   await page.evaluate(() => window.__fireIntro('ended'));
   await page.waitForFunction(() => window.__srs.length >= 1 && window.__srs[0].started);
-  const first = await page.evaluate(() => window.__srs.length);
+  const live = await page.evaluate(() => window.__srs.length);
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event('blur'));
+    window.dispatchEvent(new Event('focus'));
+  });
+  await page.waitForTimeout(500);
+  const afterFocus = await page.evaluate(() => window.__srs.length);
+  if (afterFocus !== live) bad(tag + ' focus restarted ' + live + ' -> ' + afterFocus);
+  else ok(tag + ' blur and focus do not restart a live session');
+  const beforeErr = live;
   await page.evaluate(() => {
     const r = window.__srs[window.__srs.length - 1];
     window.__first = r;
@@ -102,40 +112,71 @@ async function run(browser, tag) {
   });
   const dead = await page.evaluate(() => ({
     on: document.getElementById('mic0').classList.contains('on'),
-    nulled: window.__first.onend === null && window.__first.onerror === null,
     aborted: window.__first.aborted,
   }));
-  if (dead.on || !dead.nulled || !dead.aborted) bad(tag + ' teardown ' + JSON.stringify(dead));
+  if (dead.on || !dead.aborted) bad(tag + ' teardown ' + JSON.stringify(dead));
   else ok(tag + ' audio-capture aborts the instance and drops the listening light');
-  await page.waitForFunction(n => window.__srs.length > n, first);
-  const afterErr = await page.evaluate(() => window.__srs.length);
-  if (afterErr <= first) bad(tag + ' no new recognizer after audio-capture');
-  else ok(tag + ' a fresh recognizer starts after audio-capture');
+  await page.waitForFunction(n => window.__srs.length === n + 1, beforeErr);
+  ok(tag + ' one fresh recognizer starts after audio-capture');
+  await page.waitForTimeout(700);
+  const extra = await page.evaluate(n => window.__srs.length, beforeErr);
+  if (extra !== beforeErr + 1) bad(tag + ' restart loop ' + extra);
+  else ok(tag + ' the error does not restart in a loop');
 
-  const beforeEnd = afterErr;
   await page.evaluate(() => {
-    const r = window.__srs[window.__srs.length - 1];
-    window.__second = r;
-    r.fire('end');
-  });
-  await page.waitForFunction(n => window.__srs.length > n, beforeEnd);
-  ok(tag + ' onend creates another recognizer');
-
-  const beforeVis = await page.evaluate(() => window.__srs.length);
-  await page.evaluate(() => {
+    window.__vis = 'visible';
+    const getter = { configurable: true, get() { return window.__vis; } };
+    try { Object.defineProperty(document, 'visibilityState', getter); }
+    catch (_) { try { Object.defineProperty(Document.prototype, 'visibilityState', getter); } catch (e) { window.__visErr = String(e); } }
+    window.__vis = 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.__vis = 'visible';
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await page.waitForFunction(n => window.__srs.length > n, beforeVis);
+  await page.waitForFunction(n => window.__srs.length > n, beforeErr + 1);
   const log = await page.evaluate(() => document.getElementById('diag').textContent || '');
-  if (!/interrupt|restart|recover/.test(log)) bad(tag + ' log ' + log.slice(-180));
-  else ok(tag + ' visibilitychange is logged and recreates recognition');
-
-  const beforeTap = await page.evaluate(() => window.__srs.length);
-  await page.click('#mic0');
-  const afterTap = await page.evaluate(() => window.__srs.length);
-  if (afterTap <= beforeTap) bad(tag + ' mic tap did not reset');
-  else ok(tag + ' mic tap forces a new recognizer');
+  if (!/visibility|recover visible|state start/.test(log)) bad(tag + ' log ' + log.slice(-200));
+  else ok(tag + ' hidden then visible recreates recognition');
+  const heard = await page.evaluate(() => {
+    const n0 = window.__srs.length;
+    const r = window.__srs[n0 - 1];
+    const alt = { transcript: 'אבא' };
+    const res = { isFinal: false, length: 1, 0: alt };
+    r.fire('result', { results: { length: 1, 0: res } });
+    window.dispatchEvent(new Event('blur'));
+    window.dispatchEvent(new Event('focus'));
+    return {
+      n: window.__srs.length,
+      n0,
+      word: document.getElementById('w0').textContent,
+      heard: document.getElementById('hd0').textContent,
+    };
+  });
+  await page.waitForTimeout(500);
+  const still = await page.evaluate(() => window.__srs.length);
+  if (heard.n !== heard.n0 || still !== heard.n0 || !/אבא/.test(heard.word + heard.heard)) bad(tag + ' result lost ' + JSON.stringify({ ...heard, still }));
+  else ok(tag + ' a result still reaches the board, and focus does not restart');
   if (errors.length) bad(tag + ' ' + errors.join(' | '));
+
+  if (tag === 'chromium') {
+    const shot = await context.newPage();
+    await shot.setViewportSize({ width: 390, height: 844 });
+    await shot.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+    await shot.evaluate(() => { document.getElementById('autoMic').checked = false; document.getElementById('sound').checked = false; });
+    await shot.click('#go');
+    await shot.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+    await shot.waitForSelector('#pt0');
+    const ring = await shot.evaluate(() => getComputedStyle(document.getElementById('pt0'), '::before').content);
+    if (ring && ring !== 'none') bad('timer ring ' + ring);
+    else ok('countdown has no ring');
+    await shot.screenshot({ path: '/opt/cursor/artifacts/v461-timer-full.png' });
+    await shot.evaluate(() => { G.timeLeft = 2.2; render(); });
+    const low = await shot.evaluate(() => document.getElementById('pt0').textContent);
+    if (low !== '3' && low !== '2') bad('low digits ' + low);
+    await shot.screenshot({ path: '/opt/cursor/artifacts/v461-timer-low.png' });
+    ok('timer screenshots ' + low);
+    await shot.close();
+  }
   await context.close();
 }
 

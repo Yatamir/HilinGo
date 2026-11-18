@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.6">
+<meta name="hilingo-version" content="4.6.1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.6" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.6.1" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -140,13 +140,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .hhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pname{font-size:22px;font-weight:800;color:var(--c)}
 .count{font-size:14px;font-weight:700;background:#fff;border-radius:999px;padding:4px 10px;color:var(--muted);box-shadow:0 2px 0 rgba(80,50,160,.08)}
-/* circular countdown ring; number stays in #pt so tests and logic are unchanged */
-/* Ring is a masked ::before. A z-index:-1 disc under the number escapes in Safari
-   (parent opacity/filter) and flashes purple behind the tiles while --t updates. */
-.ptimer{--t:1;--ring:var(--c);--track:#EDE8F8;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--c);min-width:54px;text-align:center;position:relative;background:#fff;box-shadow:0 4px 10px rgba(80,50,160,.12);flex-shrink:0}
-.ptimer::before{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(var(--ring) calc(var(--t)*360deg), var(--track) 0);-webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 6.5px), #000 calc(100% - 5px));mask:radial-gradient(farthest-side, transparent calc(100% - 6.5px), #000 calc(100% - 5px));pointer-events:none}
+/* Turn digits only. No ring: a full arc covered the number. */
+.ptimer{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;font-weight:800;color:var(--c);min-width:54px;text-align:center;position:relative;background:#fff;box-shadow:0 2px 0 rgba(80,50,160,.1);flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1}
+.ptimer::before{content:none;display:none}
 .ptimer:empty{visibility:hidden}
-.ptimer.low{--ring:var(--bad);--track:#FDE8EA;color:var(--bad);animation:pulse .5s infinite alternate}
+.ptimer.low{color:var(--c);animation:none}
 @keyframes pulse{to{transform:scale(1.12)}}
 .word{min-height:64px;display:flex;align-items:center;justify-content:center;font-size:clamp(30px,5vw,52px);font-weight:800;background:#fff;border-radius:18px;padding:4px 10px;text-align:center;box-shadow:inset 0 0 0 2px rgba(80,50,160,.06)}
 .word.ok{color:var(--ok);animation:pop .4s} .word.bad{color:var(--bad);animation:shake .4s} .word.interim{color:#8A84A8}
@@ -323,8 +321,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .pname,#halves.n3 .pname,#halves.n4 .pname{font-size:17px;white-space:nowrap}
  .half.active .pname::after{font-size:13px}
  #halves .count,#halves.n3 .count,#halves.n4 .count{font-size:12px;padding:2px 8px;white-space:nowrap}
- #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:38px;height:38px;min-width:38px;font-size:15px}
- .ptimer::before{inset:4px}
+ #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:48px;height:48px;min-width:48px;font-size:26px;border-radius:14px}
  #halves .word,#halves.n3 .word,#halves.n4 .word{min-height:40px;font-size:26px;border-radius:14px;padding:2px 8px}
  .msg{min-height:0;font-size:14px;padding:2px 6px}
  .msg:empty,.heard:empty{display:none}
@@ -372,7 +369,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #halves .tiles,#halves.n3 .tiles,#halves.n4 .tiles{gap:4px}
  #halves .half.active .tiles{max-width:430px}
  #halves .word,#halves.n3 .word,#halves.n4 .word{min-height:36px;font-size:24px}
- #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:34px;height:34px;min-width:34px;font-size:14px}
+ #halves .ptimer,#halves.n3 .ptimer,#halves.n4 .ptimer{width:46px;height:46px;min-width:46px;font-size:24px;border-radius:14px}
  #halves .mic,#halves.n3 .mic,#halves.n4 .mic,#halves .mic.ptt,#halves.n3 .mic.ptt,#halves.n4 .mic.ptt{height:40px;min-width:40px}
  #halves .mic,#halves.n3 .mic,#halves.n4 .mic{width:40px}
  #halves .mic.ptt,#halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto}
@@ -604,7 +601,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.6</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.6.1</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -629,7 +626,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.6</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.6.1</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -666,9 +663,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.6" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.6"></script>
-<script src="learn_dict.js?v=4.6"></script>
+<script src="words.js?v=4.6.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.6.1"></script>
+<script src="learn_dict.js?v=4.6.1"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -904,7 +901,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.6';
+window.WG = WG; window.HILINGO_VERSION='4.6.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1119,7 +1116,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.6';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.6.1';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1167,9 +1164,7 @@ document.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{document.querySelect
 // sound
 let actx=null;
 function beep(f=600,d=.12,type='sine',v=.15){ if(!$('#sound').checked) return; try{
-  if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)();
-    actx.onstatechange=()=>{ noteAudioSession(actx.state, actx.state==='interrupted'); };
-  }
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;
   o.connect(g);g.connect(actx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.stop(actx.currentTime+d);}catch(e){} }
 const sndOk=()=>{beep(660,.1);setTimeout(()=>beep(880,.15),100)};
@@ -1885,7 +1880,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.6');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.6.1');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -1980,11 +1975,11 @@ let recSession=0, heardNote=['','','',''], recCtl=null;
 const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hearing anything
 // ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
-let lastMicAt=performance.now(), lastMicAlive=0, micArmedAt=0, micSawLife=false, micSuspect=false, micBackoff=350, micRestartTimer=0;
+let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false, restartTimer=0;
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.6 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.6.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -1998,14 +1993,9 @@ function pickWord(alts){
 // user gesture (click / Enter / Space): toggle the mic for player p — MUST stay synchronous (Safari)
 function micToggle(p,how){
   if(!SR||!G||G.over||paused||p!==G.turn) return;
-  // A tap always tears the recognizer down and starts a fresh one. A stuck session
-  // (notification, volume, audio-session drop) must not stay "listening".
-  typing=false; emptyEnds=0; heardNote[p]=''; micSuspect=false; micBackoff=350;
-  setMsg(p,'');
-  clearTimeout(micRestartTimer); micRestartTimer=0;
-  diag('mic tap reset');
-  stopRec();
-  startRec(p,how||'tap');
+  if(recFor===p){ if(recCtl) recCtl.userStop(); else { stopRec(); setHeard(p,S.micOff); } return; }
+  typing=false; emptyEnds=0; heardNote[p]='';
+  setMsg(p,''); startRec(p,how||'click');
 }
 document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
   if(e.key==='Escape' && $('#wordsov') && !$('#wordsov').classList.contains('hidden')){ closeMyWords(); return; }
@@ -2033,7 +2023,7 @@ function startRec(p,how){
   try{ r=new SR(); }catch(err){ diag('new SR failed: '+err.message); setHeard(p,S.srNA); return; }
   r.lang=S.speech; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
   rec=r; recFor=p; $('#mic'+p).classList.add('on');
-  micSawLife=false; micArmedAt=performance.now(); micSuspect=false;
+  micSawStart=false; micArmedAt=performance.now();
   let lastAlts=null, done=false, stableT=null, deafT=null, sawSound=false, errShown=false;
   const listening=()=>setHeard(p,(heardNote[p]?heardNote[p]+' · ':'')+S.listening);
   listening();
@@ -2053,23 +2043,17 @@ function startRec(p,how){
     if(lastAlts){ finalize(lastAlts,''); return; }
     try{ r.stop(); }catch(_){ stopRec(); setHeard(p,S.micOff); } } };
   const L=n=>()=>{ diag(n); };
-  const life=()=>{ micSawLife=true; lastMicAlive=performance.now(); micBackoff=350; micSuspect=false; };
-  r.onaudiostart=()=>{ diag('audiostart'); life(); if(sess!==recSession) return; clearTimeout(deafT);
+  r.onaudiostart=()=>{ diag('audiostart'); if(sess!==recSession) return; clearTimeout(deafT);
     deafT=setTimeout(()=>{ if(!live()||sawSound) return; diag('no sound '+DEAF_MS/1000+'s');
       if($('#autoMic').checked){ done=true; stopRec(); listening(); restartLater(p); return; }   // auto-mic: silently keep listening
       if(PTT){ done=true; stopRec(); setMsg(p,S.deaf,'err'); setHeard(p,S.tapAgain); } else setHeard(p,S.deaf); },DEAF_MS); };
   r.onsoundstart=()=>{ diag('soundstart'); sawSound=true; };
   r.onspeechstart=()=>{ diag('speechstart'); sawSound=true; };
-  r.onspeechend=L('speechend'); r.onsoundend=L('soundend'); r.onnomatch=L('nomatch');
-  r.onaudioend=()=>{
-    diag('interrupt audioend');
-    if(sess!==recSession || done) return;
-    setTimeout(()=>{ if(sess!==recSession || done) return; diag('interrupt audioend stuck'); done=true; stopRec(); scheduleRestart(p,'audioend'); }, 600);
-  };
-  r.onstart=()=>{ diag('start'); life(); if(sess===recSession){ listening(); refocus(p); } };
+  r.onspeechend=L('speechend'); r.onsoundend=L('soundend'); r.onaudioend=L('audioend'); r.onnomatch=L('nomatch');
+  r.onstart=()=>{ diag('state start'); micSawStart=true; if(sess===recSession){ listening(); refocus(p); } };
   r.onresult=e=>{
     if(!live()) return;
-    sawSound=true; life();
+    sawSound=true; lastResultAt=performance.now();
     // collect text of all results in this session (Safari may split into several)
     let finalSeen=false; const full=[];
     for(let i=0;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) finalSeen=true; if(res[0]) full.push(res[0].transcript); }
@@ -2086,25 +2070,22 @@ function startRec(p,how){
   };
   r.onerror=e=>{
     const code=e&&e.error||'error';
-    diag('interrupt '+code+(e&&e.message?' "'+e.message+'"':''));
+    diag('state error:'+code+(e&&e.message?' "'+e.message+'"':''));
     if(sess!==recSession) return;
     const help=S.errs[code];
     if(code==='not-allowed'||code==='service-not-allowed'||code==='language-not-supported'){
       done=true; clearTimeout(deafT); errShown=true;
       setMsg(p,help,'err'); setHeard(p,S.micBlocked+' ('+code+')');
-      $('#autoMic').checked=false; stopRec(); showRestartChip(p); return; }
-    if(code==='aborted'){
-      setTimeout(()=>{ if(sess!==recSession||done) return; done=true; stopRec(); scheduleRestart(p,'aborted'); }, 500);
-      return;
-    }
-    done=true; clearTimeout(deafT); errShown=true; stopRec();
-    if(code==='audio-capture'||code==='network'||code==='no-speech'){
-      setHeard(p,'');
-      scheduleRestart(p, code);
-      return;
-    }
-    setHeard(p,help||(S.micErr+code));
-    scheduleRestart(p, code);
+      $('#autoMic').checked=false; stopRec(); return; }
+    // A dropped audio route (notification, volume) reports audio-capture or network.
+    // Rebuild once, after this instance is gone. Do not turn auto-mic off.
+    if(code==='audio-capture'||code==='network'){
+      done=true; clearTimeout(deafT); errShown=true; setHeard(p,'');
+      stopRec(); restartLater(p); return; }
+    if(code==='aborted') return;
+    errShown=true;
+    if(code==='no-speech') setHeard(p,$('#autoMic').checked?S.listening:(PTT?help:S.noSpeech));
+    else setHeard(p,help||(S.micErr+code));
   };
   r.onend=()=>{
     diag('end');
@@ -2115,48 +2096,33 @@ function startRec(p,how){
     if(PTT && !$('#autoMic').checked){ if(!errShown) setHeard(p,S.tapAgain); refocus(p); return; }
     emptyEnds++;
     if(emptyEnds>MAX_EMPTY_RESTARTS && !$('#autoMic').checked){ setHeard(p,S.micStopped); return; }
-    setHeard(p,'');
-    scheduleRestart(p,'end');
+    if($('#autoMic').checked) setHeard(p,S.listening);
+    diag('state end');
+    restartLater(p);
   };
   diag('start() ['+(how||'?')+(window.event&&window.event.type?' in '+window.event.type:'')+'] '+r.lang);
   try{ r.start(); }catch(err){ diag('start threw: '+(err&&err.message)); rec=null; recFor=null; recCtl=null; $('#mic'+p).classList.remove('on'); setHeard(p,S.cantStart); }
 }
 function refocus(p){ setTimeout(()=>{ const a=document.activeElement; if(!a||a===document.body) focusInput(p); },50); }
-function scheduleRestart(p, why){
-  if(!$('#autoMic').checked){ showRestartChip(p); return; }
-  clearTimeout(micRestartTimer);
-  const wait=micBackoff;
-  micBackoff=Math.min(4000, Math.round(micBackoff*1.8));
-  diag('restart '+why+' in '+wait+'ms');
-  micRestartTimer=setTimeout(()=>{
-    micRestartTimer=0;
-    if(!G||G.over||paused||typing||G.turn!==p) return;
-    if($('#learn') && !$('#learn').classList.contains('hidden')) return;
-    if(!$('#autoMic').checked){ showRestartChip(p); return; }
-    if(introHold&&!introHold.done) return;
-    stopRec();
-    hideRestartChip();
-    startRec(p,'restart');
-  }, wait);
-}
 function restartLater(p){
   refocus(p);
-  scheduleRestart(p,'later');
+  if(!$('#autoMic').checked || typing) return;
+  clearTimeout(restartTimer);
+  restartTimer=setTimeout(()=>{
+    restartTimer=0;
+    if(!G||G.over||paused||typing||G.turn!==p||recFor!==null) return;
+    if(performance.now()-lastResultAt<1500){ diag('skip restart, results'); return; }
+    if($('#learn') && !$('#learn').classList.contains('hidden')) return;
+    if(introHold&&!introHold.done) return;
+    diag('state restart');
+    startRec(p,'auto');
+  }, 400);
 }
 function stopRec(){
-  recSession++;
-  const r=rec; rec=null; recCtl=null;
-  if(r){
-    try{
-      r.onstart=r.onend=r.onerror=r.onresult=null;
-      r.onaudiostart=r.onaudioend=r.onsoundstart=r.onsoundend=null;
-      r.onspeechstart=r.onspeechend=r.onnomatch=null;
-    }catch(_){}
-    try{ r.abort(); }catch(_){}
-  }
-  if(recFor!==null){ const m=$('#mic'+recFor); if(m) m.classList.remove('on'); }
-  recFor=null;
-  document.querySelectorAll('#halves .mic.on').forEach(m=>m.classList.remove('on'));
+  recSession++;   // invalidate current session's handlers
+  if(rec){ const r=rec; rec=null; try{r.abort()}catch(e){} }
+  if(recFor!==null){ const m=$('#mic'+recFor); m&&m.classList.remove('on'); }
+  recFor=null; recCtl=null;
 }
 function showRestartChip(p){
   const b=$('#micRestart'); if(!b) return;
@@ -2187,59 +2153,37 @@ function recoverMic(why){
   if(!G||G.over||paused||typing) return;
   if(introHold&&!introHold.done) return;
   const p=G.turn;
+  if(performance.now()-lastResultAt<1500){ diag('skip recover, results'); return; }
   if(!$('#autoMic').checked){ showRestartChip(p); return; }
   stopRec();
   hideRestartChip();
   startRec(p,'recover');
   if(recFor!==p) showRestartChip(p);
 }
-function noteAudioSession(why, dead){
-  diag('audiosession '+why);
-  if(dead){ micSuspect=true; if(recFor!==null){ stopRec(); scheduleRestart(G&&G.turn, why); } }
-  else if(micSuspect) setTimeout(()=>recoverMic(why), 300);
-}
+let pageHidden=false;
 document.addEventListener('visibilitychange', ()=>{
-  diag('interrupt visibility '+document.visibilityState);
-  if(document.visibilityState==='hidden'){ micSuspect=true; return; }
+  diag('visibility '+document.visibilityState);
+  if(document.visibilityState==='hidden'){ pageHidden=true; return; }
+  if(!pageHidden) return;
+  pageHidden=false;
   setTimeout(()=>recoverMic('visible'), 300);
 });
-window.addEventListener('pagehide', ()=>{ diag('interrupt pagehide'); micSuspect=true; stopRec(); });
-window.addEventListener('pageshow', ()=>{ diag('interrupt pageshow'); setTimeout(()=>recoverMic('pageshow'), 300); });
-window.addEventListener('focus', ()=>{
-  diag('interrupt focus');
-  const t=document.activeElement;
-  if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA')) return;
-  if(micSuspect) setTimeout(()=>recoverMic('focus'), 300);
+window.addEventListener('pageshow', ()=>{
+  diag('pageshow');
+  if(!pageHidden){ diag('skip pageshow'); return; }
+  pageHidden=false;
+  setTimeout(()=>recoverMic('pageshow'), 300);
 });
-window.addEventListener('blur', ()=>{ diag('interrupt blur'); if(recFor!==null) micSuspect=true; });
-document.addEventListener('freeze', ()=>{ diag('interrupt freeze'); micSuspect=true; });
-document.addEventListener('resume', ()=>{ diag('interrupt resume'); setTimeout(()=>recoverMic('resume'), 300); });
-try{
-  if(navigator.audioSession && navigator.audioSession.addEventListener){
-    navigator.audioSession.addEventListener('statechange', ()=>{
-      const st=navigator.audioSession.state||navigator.audioSession.type||'';
-      noteAudioSession(String(st), st==='interrupted');
-    });
-  }
-}catch(_){}
+window.addEventListener('focus', ()=>{ diag('focus'); });
+window.addEventListener('blur', ()=>{ diag('blur'); });
 setInterval(()=>{
-  if(!G||G.over||paused||typing) return;
+  if(!G||G.over||paused||typing||!$('#autoMic').checked) return;
   if($('#learn') && !$('#learn').classList.contains('hidden')) return;
   if(introHold&&!introHold.done) return;
-  const listening=!!document.querySelector('#halves .mic.on');
-  if(listening && recFor===null){
-    diag('interrupt ui-dead');
-    document.querySelectorAll('#halves .mic.on').forEach(m=>m.classList.remove('on'));
-    if($('#autoMic').checked) scheduleRestart(G.turn,'ui-dead');
-    else showRestartChip(G.turn);
-    return;
-  }
-  if(listening && !micSawLife && micArmedAt && performance.now()-micArmedAt>4000){
-    diag('watchdog no-life');
-    document.querySelectorAll('#halves .mic.on').forEach(m=>m.classList.remove('on'));
-    stopRec();
-    if($('#autoMic').checked) scheduleRestart(G.turn,'watchdog');
-    else showRestartChip(G.turn);
+  if(recFor!==null && !micSawStart && micArmedAt && performance.now()-micArmedAt>3000){
+    if(performance.now()-lastResultAt<1500) return;
+    diag('watchdog no onstart');
+    recoverMic('watchdog');
   }
 }, 1000);
 $('#micRestart').onclick=()=>{
@@ -2849,7 +2793,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.6';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.6.1';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

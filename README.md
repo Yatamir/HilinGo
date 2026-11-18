@@ -63,6 +63,7 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 
 ## v4.7.1 – Rules you can actually read
 - The home-screen rules are three short sections in every language: how to play, the rules, and tips. Same facts as before, written for kids, and the box scrolls on a phone.
+- Sentence words are called out as turning green. Stuck in a sentence, you have to say Hili, and two already-deleted letters light back up. The mic and the hint in the rules look like the buttons in the game.
 
 ## v4.7 – Sentence of 5 words
 - After a real word, that player can start a five-word sentence. The next players continue it, still starting with the last letter. "Not logical" voids the last word and gives the turn back. "Hili" cancels the sentence and returns two deleted letters. Five words ends it with confetti and one extra deleted letter per word. Hili is never a normal word. The sentence line is the only green in the game.

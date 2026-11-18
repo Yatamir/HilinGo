@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.4.1">
+<meta name="hilingo-version" content="4.5">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.4.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.5" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -232,6 +232,37 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
 #confetti i{position:absolute;top:-16px;left:var(--x);width:var(--s);height:calc(var(--s)*1.35);background:var(--c);border-radius:2px;transform:rotate(var(--rot));animation:cfall var(--d) var(--delay) ease-in forwards}
 @keyframes cfall{0%{transform:translate(0,-10px) rotate(var(--rot));opacity:1}100%{transform:translate(var(--dx),105vh) rotate(calc(var(--rot) + 280deg));opacity:.65}}
+#confetti b{position:absolute;top:-20px;left:var(--x);font-size:var(--s);line-height:1;animation:cfall var(--d) var(--delay) ease-in forwards;pointer-events:none}
+/* v4.5 disruptions: visual only, never take taps except poppable bubbles */
+.tiles{touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.dbadge{position:absolute;z-index:4;left:50%;bottom:5px;transform:translateX(-50%);pointer-events:none;font-size:11px;font-weight:800;line-height:1.2;padding:3px 8px;border-radius:999px;background:#fff;color:var(--c);box-shadow:0 2px 0 color-mix(in srgb, var(--c) 45%, #fff);white-space:nowrap;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis}
+.dbadge.hidden{display:none!important}
+#fx{position:fixed;inset:0;z-index:8;pointer-events:none}
+#fx.hidden{display:none!important}
+#fx .fxbox{position:fixed;overflow:hidden;pointer-events:none;border-radius:16px}
+#fx canvas{display:block;width:100%;height:100%;pointer-events:none}
+#fx .fog{position:absolute;inset:0;background:rgba(255,255,255,.42);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+#fx .bit{position:absolute;top:-8px;left:var(--x);width:8px;height:12px;border-radius:2px;background:var(--bc);animation:fxfall var(--d) linear forwards}
+#fx .star{position:absolute;top:-12px;left:var(--x);font-size:var(--s);line-height:1;color:var(--bc);animation:fxfall var(--d) linear forwards}
+#fx .bub{position:absolute;bottom:-20px;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;pointer-events:auto;background:radial-gradient(circle at 35% 35%, #fff, color-mix(in srgb, var(--bc) 55%, #fff) 62%, var(--bc));box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--bc) 70%, #fff);animation:fxrise var(--d) linear forwards}
+#fx .bub.pop{animation:fxpop .18s ease forwards}
+#fx .emo{position:absolute;left:var(--x);top:var(--y);font-size:var(--s);line-height:1;animation:fxbounce var(--d) ease-in-out infinite}
+#fx .cloud{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle, var(--bc), transparent 70%);animation:fxcloud var(--d) ease-out forwards}
+#fx .spot{position:absolute;width:150px;height:150px;border-radius:50%;box-shadow:0 0 0 200vmax rgba(18,10,40,.72);animation:spotgo 3.2s ease-in-out infinite alternate}
+.tile.fxflip{animation:fxflip 2.4s ease}
+.tiles.waving{filter:url(#fxwave)}
+@keyframes fxfall{to{transform:translateY(115%) rotate(50deg);opacity:.15}}
+@keyframes fxrise{to{transform:translateY(-120%)}}
+@keyframes fxpop{to{transform:scale(1.35);opacity:0}}
+@keyframes fxbounce{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-26px) scale(1.12)}70%{transform:translateY(4px) scale(.96)}}
+@keyframes fxcloud{0%{transform:scale(.25);opacity:0}25%{opacity:.7}100%{transform:scale(1.7);opacity:0}}
+@keyframes fxflip{0%{transform:rotateY(0)}35%{transform:rotateY(180deg) scale(.9)}70%{transform:rotateY(360deg)}100%{transform:none}}
+@keyframes spotgo{from{left:8%;top:18%}to{left:62%;top:58%}}
+@media (prefers-reduced-motion: reduce){
+  #fx .bit,#fx .star,#fx .bub,#fx .emo,#fx .cloud,#fx .spot,.tile.fxflip{animation-duration:.4s;animation-iteration-count:1}
+  #fx .fog{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.28)}
+  .tiles.waving{filter:none}
+}
 #endbox{position:relative;z-index:1;background:#fff;border-radius:28px;padding:28px 36px 32px;text-align:center;max-width:min(92%,520px);box-shadow:0 24px 60px rgba(42,33,82,.25);border:3px solid #F3EEFF}
 #endbox h2{font-size:clamp(28px,5vw,40px);margin:8px 0 6px}
 #endbox p{font-size:18px;color:var(--muted)}
@@ -560,7 +591,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.4.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.5</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote" style="font-size:14px;opacity:.7"></p>
   <p id="rules" style="font-size:13px;opacity:.6">חוקים: אותיות סופיות נחשבות כרגילות (ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ) · אסור לחזור על מילה · נגמר הזמן? התור עובר ליריב עם אותה אות · אם שניהם נכשלים ברצף על אותה אות – הבא בוחר אות חופשית · 3 החמצות ברצף של שני השחקנים (6 בסה״כ) מסיימות את המשחק, ומי שנשארו לו פחות אותיות מנצח. ב־3–4 שחקנים התור עובר לפי הסדר, ושני סבבים מלאים של החמצות מסיימים את המשחק.</p>
@@ -575,6 +606,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="history"></div>
   <div id="halves"></div>
+  <svg id="fxsvg" width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="fxwave" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="fxwaveN" type="turbulence" baseFrequency="0.012 0.045" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter></svg>
+  <div id="fx" class="hidden" aria-hidden="true"></div>
   <div id="soloTimer" class="hidden" aria-hidden="true"><div id="soloClock"><div id="soloTime" dir="ltr">00:00</div></div></div>
   <div id="diag" class="hidden"></div>
 </section>
@@ -583,7 +616,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.4.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.5</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -620,9 +653,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.4.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.4.1"></script>
-<script src="learn_dict.js?v=4.4.1"></script>
+<script src="words.js?v=4.5" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.5"></script>
+<script src="learn_dict.js?v=4.5"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -858,7 +891,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.4.1';
+window.WG = WG; window.HILINGO_VERSION='4.5';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -899,6 +932,7 @@ const STR = {
   ptt:'לחצו ודברו', pttOn:'מקשיב… ⏹', tapToTalk:'לחצו על 🎤 (או Enter בתיבה ריקה) ואז אמרו את המילה', tapAgain:'לא נקלטה מילה – לחצו שוב על 🎤 ודברו',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו",
+  disruptReady:'⚡ מוכן להפריע',
   hintNoDel:"💡 נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`💡 רמז בשני תורות ברצף – האות ${l} חזרה ללוח`,
   errs:{'not-allowed':'Safari חוסם את המיקרופון. Safari ← הגדרות (Settings) ← אתרים (Websites) ← מיקרופון ← localhost ← "אפשר" (Allow), ואז לרענן את הדף.',
    'service-not-allowed':'זיהוי הדיבור כבוי במק. הגדרות המערכת ← Apple Intelligence ו-Siri (או Siri) ← להפעיל את Siri; וגם הגדרות המערכת ← מקלדת ← הכתבה ← להפעיל, עם עברית ברשימת השפות. אחר כך לסגור את Safari (Cmd+Q) ולפתוח שוב.',
@@ -942,6 +976,7 @@ const STR = {
   ptt:'Tap & speak', pttOn:'Listening… ⏹', tapToTalk:'Tap 🎤 (or Enter in the empty box), then say your word', tapAgain:'No word caught – tap 🎤 again and speak',
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter",
+  disruptReady:'⚡ Ready to disrupt',
   hintNoDel:"💡 Hint used – no letter crossed off this turn", hintRestored:l=>`💡 Hints two turns in a row – ${l} is back on your board`,
   errs:{'not-allowed':'Safari is blocking the microphone. Safari → Settings → Websites → Microphone → localhost → "Allow", then reload.',
    'service-not-allowed':'Speech recognition is off on this Mac. System Settings → Apple Intelligence & Siri (or Siri) → turn Siri on; and System Settings → Keyboard → Dictation → On. Then quit Safari (Cmd+Q) and reopen.',
@@ -985,6 +1020,7 @@ const STR = {
   ptt:'Tik & spreek', pttOn:'Luistert… ⏹', tapToTalk:'Tik op 🎤 (of Enter in het lege vak) en zeg je woord', tapAgain:'Geen woord gehoord – tik opnieuw op 🎤 en spreek',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter",
+  disruptReady:'⚡ Klaar om te storen',
   hintNoDel:"💡 Hint gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`💡 Twee beurten op rij een hint – de ${l} staat weer op je bord`,
   errs:{'not-allowed':'Safari blokkeert de microfoon. Safari → Instellingen → Websites → Microfoon → localhost → "Sta toe", en herlaad de pagina.',
    'service-not-allowed':'Spraakherkenning staat uit op deze Mac. Systeeminstellingen → Apple Intelligence en Siri (of Siri) → Siri aan; en Systeeminstellingen → Toetsenbord → Dicteren → Aan. Stop daarna Safari (Cmd+Q) en open opnieuw.',
@@ -1028,6 +1064,7 @@ const STR = {
   ptt:'Toque e fale', pttOn:'Ouvindo… ⏹', tapToTalk:'Toque em 🎤 (ou Enter na caixa vazia) e diga a palavra', tapAgain:'Nenhuma palavra captada – toque de novo em 🎤 e fale',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra",
+  disruptReady:'⚡ Pronto para atrapalhar',
   hintNoDel:"💡 Você usou dica – nenhuma letra foi apagada neste turno", hintRestored:l=>`💡 Dica em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
   errs:{'not-allowed':'O Safari está bloqueando o microfone. Safari → Ajustes → Sites → Microfone → localhost → "Permitir", e recarregue a página.',
    'service-not-allowed':'O reconhecimento de voz está desligado neste Mac. Ajustes do Sistema → Apple Intelligence e Siri (ou Siri) → ligar a Siri; e Ajustes do Sistema → Teclado → Ditação → Ligado. Depois feche o Safari (Cmd+Q) e abra de novo.',
@@ -1073,7 +1110,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.4.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.5';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1149,6 +1186,8 @@ function buildHalves(){
     $('#ov'+p).onclick=()=>{ if(pendingOverride[p]) submit(p,pendingOverride[p],true); };
     $('#hb'+p).onclick=()=>showHint(p);   // v3.0: never touches the recognizer
     if(!SR) $('#mic'+p).classList.add('hidden');
+    const badge=document.createElement('div'); badge.className='dbadge hidden'; badge.id='db'+p; d.appendChild(badge);
+    armDisrupt($('#t'+p));
   });
   pinBoards();
 }
@@ -1382,8 +1421,262 @@ function loop(t){
       afterTurnChange(); }
     render();
   }
+  paintDisruptBadge();
   timerId=requestAnimationFrame(loop);
 }
+/* v4.5 disruptions. Multiplayer only. The next player double-taps the active letter grid.
+   Cooldown is 90s per disruptor and is not reset when the turn changes. Effects are silent
+   and do not touch the mic, the turn timer, or the boards. */
+const DISRUPT_MS=90000;
+const FX_NAMES=['fireworks','bubbles','fog','confetti','scramble','stars','spotlight','emojis','ripple','clouds'];
+const FX_COLORS=['#6B2CFF','#FF2D87','#1E88FF','#FF7A1A','#FFE566','#4C7CFF','#ffffff'];
+let disruptAt=[null,null,null,null], lastFx='', fxToken=0, fxRaf=0, disruptCount=0, fxStop=null;
+function reduceMotion(){ return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function disruptOn(){ return !!(G && !G.over && !SOLO && MODE!=='learn' && G.boards.length>=2); }
+function nextDisruptor(){ return G ? (G.turn+1)%G.boards.length : -1; }
+function coolLeft(p){
+  if(p==null || p<0 || disruptAt[p]==null) return 0;
+  return Math.max(0, DISRUPT_MS-(performance.now()-disruptAt[p]));
+}
+function coolLabel(ms){
+  const s=Math.ceil(ms/1000), m=Math.floor(s/60), r=s%60;
+  return '⚡ '+m+':'+String(r).padStart(2,'0');
+}
+function resetDisrupt(){ disruptAt=[null,null,null,null]; lastFx=''; clearFx(); }
+function paintDisruptBadge(){
+  if(!G) return;
+  const on=disruptOn(), who=on?nextDisruptor():-1;
+  range(G.boards.length).forEach(p=>{
+    const el=$('#db'+p); if(!el) return;
+    if(!on || p!==who){ el.textContent=''; el.classList.add('hidden'); return; }
+    const left=coolLeft(p);
+    el.textContent=left>0 ? coolLabel(left) : (S.disruptReady||'');
+    el.classList.remove('hidden');
+  });
+}
+function pickFx(){
+  const i=Math.floor(Math.random()*FX_NAMES.length);
+  const name=FX_NAMES[i]===lastFx ? FX_NAMES[(i+1)%FX_NAMES.length] : FX_NAMES[i];
+  lastFx=name;
+  return name;
+}
+function armDisrupt(tiles){
+  if(!tiles) return;
+  let last=0, lx=0, ly=0;
+  tiles.addEventListener('pointerup', e=>{
+    const half=tiles.closest('.half');
+    if(!half || !half.classList.contains('active') || !disruptOn()) return;
+    const now=performance.now();
+    const x=e.clientX||0, y=e.clientY||0;
+    if(now-last<420 && Math.hypot(x-lx, y-ly)<56){
+      last=0;
+      try{ e.preventDefault(); }catch(_){}
+      tryDisrupt();
+    } else { last=now; lx=x; ly=y; }
+  }, {passive:false});
+}
+function tryDisrupt(){
+  if(!disruptOn()) return false;
+  const who=nextDisruptor();
+  if(coolLeft(who)>0) return false;
+  const name=pickFx();
+  disruptAt[who]=performance.now();
+  disruptCount++;
+  showFx(name, who);
+  paintDisruptBadge();
+  return name;
+}
+function clearFx(){
+  fxToken++;
+  if(fxStop){ try{ fxStop(); }catch(_){} fxStop=null; }
+  cancelAnimationFrame(fxRaf);
+  document.querySelectorAll('#halves .tiles').forEach(t=>{ t.style.filter=''; t.classList.remove('waving'); });
+  document.querySelectorAll('#halves .tile.fxflip').forEach(t=>{
+    t.classList.remove('fxflip');
+    if(t.dataset.l) t.textContent=t.dataset.l;
+  });
+  const fx=$('#fx'); if(fx){ fx.innerHTML=''; fx.classList.add('hidden'); fx.classList.remove('screen'); }
+}
+function fxHost(screen){
+  const fx=$('#fx'); if(!fx) return null;
+  fx.classList.remove('hidden');
+  fx.innerHTML='';
+  if(screen){ fx.classList.add('screen'); return fx; }
+  fx.classList.remove('screen');
+  const tiles=$('#t'+G.turn); if(!tiles) return fx;
+  const r=tiles.getBoundingClientRect();
+  const box=document.createElement('div');
+  box.className='fxbox';
+  box.style.top=r.top+'px'; box.style.left=r.left+'px';
+  box.style.width=Math.max(1,r.width)+'px'; box.style.height=Math.max(1,r.height)+'px';
+  fx.appendChild(box);
+  return box;
+}
+function showFx(name, who){
+  clearFx();
+  const token=fxToken;
+  const gentle=reduceMotion();
+  const dur={fireworks:3200,bubbles:3600,fog:3000,confetti:3200,scramble:2500,stars:3400,spotlight:3600,emojis:3200,ripple:3000,clouds:3400}[name]||3200;
+  const color='var(--p'+(who+1)+')';
+  if(name==='fireworks') fxStop=fxFireworks(fxHost(false), gentle);
+  else if(name==='bubbles') fxBubbles(fxHost(false), color, gentle);
+  else if(name==='fog'){ const h=fxHost(false); if(h){ const d=document.createElement('div'); d.className='fog'; h.appendChild(d); } }
+  else if(name==='confetti') fxBits(fxHost(false), 'bit', gentle?10:28);
+  else if(name==='scramble') fxScramble(gentle);
+  else if(name==='stars') fxBits(fxHost(false), 'star', gentle?6:16);
+  else if(name==='spotlight') fxSpot(gentle);
+  else if(name==='emojis') fxEmojis(fxHost(false), gentle);
+  else if(name==='ripple') fxRipple(token, gentle);
+  else fxClouds(fxHost(false), color, gentle);
+  setTimeout(()=>{ if(fxToken===token) clearFx(); }, dur);
+}
+function fxFireworks(host, gentle){
+  if(!host) return null;
+  const c=document.createElement('canvas');
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const w=host.clientWidth||180, h=host.clientHeight||120;
+  c.width=Math.max(1,w*dpr); c.height=Math.max(1,h*dpr);
+  host.appendChild(c);
+  const ctx=c.getContext('2d'); if(!ctx) return null;
+  const bursts=[];
+  const boom=()=>{
+    const x=c.width*(0.18+Math.random()*0.64), y=c.height*(0.15+Math.random()*0.5);
+    const col=FX_COLORS[Math.floor(Math.random()*FX_COLORS.length)];
+    const parts=[], k=gentle?10:26;
+    for(let i=0;i<k;i++){
+      const a=Math.random()*Math.PI*2, sp=(0.7+Math.random()*2.1)*dpr;
+      parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,col});
+    }
+    bursts.push(parts);
+  };
+  boom();
+  let ticks=0, alive=true;
+  const frame=()=>{
+    if(!alive) return;
+    ticks++;
+    if(!gentle && ticks%18===0 && bursts.length<4) boom();
+    ctx.clearRect(0,0,c.width,c.height);
+    bursts.forEach(parts=>parts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.025*dpr; p.life-=gentle?0.02:0.012;
+      if(p.life<=0) return;
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.col;
+      ctx.beginPath(); ctx.arc(p.x,p.y,2.1*dpr,0,6.3); ctx.fill();
+    }));
+    ctx.globalAlpha=1;
+    fxRaf=requestAnimationFrame(frame);
+  };
+  frame();
+  return ()=>{ alive=false; };
+}
+function fxBubbles(host, color, gentle){
+  if(!host) return;
+  const n=gentle?4:11;
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='bub';
+    b.style.setProperty('--bc', color);
+    b.style.setProperty('--x', (6+Math.random()*82)+'%');
+    b.style.setProperty('--s', (26+Math.random()*28)+'px');
+    b.style.setProperty('--d', (2.4+Math.random()*1.2)+'s');
+    b.style.animationDelay=(Math.random()*0.5)+'s';
+    b.addEventListener('pointerup', e=>{ e.preventDefault(); e.stopPropagation(); b.classList.add('pop'); });
+    host.appendChild(b);
+  }
+}
+function fxBits(host, kind, n){
+  if(!host) return;
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className=kind;
+    if(kind==='star') b.textContent=i%2?'♥':'★';
+    b.style.setProperty('--bc', FX_COLORS[i%FX_COLORS.length]);
+    b.style.setProperty('--x', (Math.random()*92)+'%');
+    b.style.setProperty('--s', (14+Math.random()*12)+'px');
+    b.style.setProperty('--d', (1.6+Math.random()*1.4)+'s');
+    host.appendChild(b);
+  }
+}
+function fxScramble(gentle){
+  const tiles=[...document.querySelectorAll('#t'+G.turn+' .tile')];
+  const letters=tiles.map(t=>t.dataset.l||t.textContent);
+  tiles.forEach(t=>{
+    t.classList.add('fxflip');
+    if(!gentle){
+      const j=letters[Math.floor(Math.random()*letters.length)]||t.dataset.l;
+      t.textContent=j;
+    }
+  });
+  const token=fxToken;
+  setTimeout(()=>{
+    if(fxToken!==token) return;
+    tiles.forEach(t=>{ t.classList.remove('fxflip'); if(t.dataset.l) t.textContent=t.dataset.l; });
+  }, gentle?700:2000);
+}
+function fxSpot(gentle){
+  const host=fxHost(true); if(!host) return;
+  const s=document.createElement('div'); s.className='spot';
+  if(gentle) s.style.animation='none';
+  host.appendChild(s);
+}
+function fxEmojis(host, gentle){
+  if(!host) return;
+  const faces=['😜','🤪','😂'];
+  const n=gentle?3:9;
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='emo';
+    b.textContent=faces[i%3];
+    b.style.setProperty('--x', (6+Math.random()*78)+'%');
+    b.style.setProperty('--y', (8+Math.random()*70)+'%');
+    b.style.setProperty('--s', (22+Math.random()*16)+'px');
+    b.style.setProperty('--d', (0.7+Math.random()*0.5)+'s');
+    host.appendChild(b);
+  }
+}
+function fxClouds(host, color, gentle){
+  if(!host) return;
+  const n=gentle?3:6;
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='cloud';
+    b.style.setProperty('--bc', color);
+    b.style.setProperty('--x', (Math.random()*70)+'%');
+    b.style.setProperty('--y', (Math.random()*60)+'%');
+    b.style.setProperty('--s', (70+Math.random()*80)+'px');
+    b.style.setProperty('--d', (2.2+Math.random()*1.1)+'s');
+    host.appendChild(b);
+  }
+}
+function fxRipple(token, gentle){
+  const tiles=$('#t'+G.turn); if(!tiles) return;
+  const n=$('#fxwaveN');
+  if(gentle || !n){ tiles.style.opacity='0.92'; setTimeout(()=>{ if(fxToken===token) tiles.style.opacity=''; }, 800); return; }
+  tiles.classList.add('waving');
+  let k=0, alive=true;
+  const frame=()=>{
+    if(!alive || fxToken!==token) return;
+    k+=0.015;
+    n.setAttribute('baseFrequency', (0.01+Math.sin(k)*0.008).toFixed(4)+' '+(0.04+Math.cos(k*0.8)*0.02).toFixed(4));
+    fxRaf=requestAnimationFrame(frame);
+  };
+  frame();
+  const prev=fxStop;
+  fxStop=()=>{ alive=false; tiles.classList.remove('waving'); tiles.style.opacity=''; if(prev) prev(); };
+}
+window.__hilingoDisrupt={
+  MS:DISRUPT_MS,
+  allowed:()=>disruptOn(),
+  next:()=>nextDisruptor(),
+  left:p=>coolLeft(p),
+  count:()=>disruptCount,
+  last:()=>lastFx,
+  badge:p=>{ const e=$('#db'+p); return e && !e.classList.contains('hidden') ? e.textContent : ''; },
+  roll:()=>pickFx(),
+  play:name=>{ if(!disruptOn()) return false; const who=nextDisruptor(); lastFx=name; showFx(name, who); return name; },
+  clear:()=>clearFx(),
+  backdate:p=>{ if(p!=null && disruptAt[p]!=null) disruptAt[p]=performance.now()-DISRUPT_MS-20; paintDisruptBadge(); }
+};
 function fmtSolo(ms){
   let s=Math.floor(Math.max(0, ms)/1000);
   if(s>SOLO_CAP) s=SOLO_CAP;
@@ -1444,6 +1737,7 @@ function startGame(){
   WG.setLang(LANG);
   G=WG.newGame({seconds, players:NPLAYERS, names:range(NPLAYERS).map(playerName)});
   pendingOverride=[null,null,null,null]; heardNote=['','','',''];
+  resetDisrupt();
   $('#start').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#endov').classList.add('hidden');
   $('#game').classList.toggle('solo', SOLO && MODE!=='learn');
   if(SOLO && MODE!=='learn') startSoloClock(); else stopSoloClock(false);
@@ -1467,7 +1761,7 @@ function endScreen(){
   $('#endTitle').textContent = G.winner===-1 ? (G.boards.length===2||winners.length<2 ? S.draw : S.drawN(winners.map(i=>G.names[i]))) : S.won(G.names[G.winner]);
   $('#endText').textContent = (G.reason==='empty'?S.endEmpty:G.reason==='misses'?S.endMisses:S.endManual)+
     G.names.map((nm,i)=>`${nm}: ${G.boards[i].size} ${S.letters}`).join(' · ')+` · ${G.history.filter(h=>h.word).length} ${S.words}`;
-  paintPodium(); burstConfetti();
+  clearFx(); paintPodium(); burstConfetti();
   $('#endov').classList.remove('hidden'); beep(523,.15);setTimeout(()=>beep(659,.15),150);setTimeout(()=>beep(784,.3),300);
 }
 function paintPodium(){
@@ -1480,8 +1774,13 @@ function paintPodium(){
 function burstConfetti(){
   const box=$('#confetti'); if(!box) return; box.innerHTML='';
   const colors=['#6B2CFF','#1E88FF','#FFE566','#4C7CFF','#FF7A1A','#FF2D87','#B794FF','#ffffff'];
-  for(let i=0;i<72;i++){ const p=document.createElement('i');
+  const n=reduceMotion()?24:72;
+  for(let i=0;i<n;i++){ const p=document.createElement('i');
     p.style.cssText=`--x:${Math.random()*100}vw;--dx:${(Math.random()*46-23)}vw;--s:${6+Math.random()*8}px;--c:${colors[i%colors.length]};--rot:${Math.random()*360}deg;--d:${1.4+Math.random()*1.8}s;--delay:${Math.random()*.35}s`;
+    box.appendChild(p); }
+  for(let i=0;i<(reduceMotion()?4:14);i++){ const p=document.createElement('b');
+    p.textContent=i%2?'♥':'★';
+    p.style.cssText=`--x:${Math.random()*100}vw;--dx:${(Math.random()*40-20)}vw;--s:${14+Math.random()*12}px;color:${colors[i%colors.length]};--rot:${Math.random()*80}deg;--d:${1.6+Math.random()*1.4}s;--delay:${Math.random()*.3}s`;
     box.appendChild(p); }
 }
 // Hili's "HilinGo" (~2.2s). Preloaded, played once per game from the start tap
@@ -1490,7 +1789,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.4.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.5');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -1589,7 +1888,7 @@ let lastMicAt=performance.now();
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.4.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.5 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   e.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -2369,7 +2668,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.4.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.5';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

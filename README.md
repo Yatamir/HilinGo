@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.7)
+# HilinGo – word-chain game (v4.7.1)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,9 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.7.1 – Rules you can actually read
+- The home-screen rules are three short sections in every language: how to play, the rules, and tips. Same facts as before, written for kids, and the box scrolls on a phone.
 
 ## v4.7 – Sentence of 5 words
 - After a real word, that player can start a five-word sentence. The next players continue it, still starting with the last letter. "Not logical" voids the last word and gives the turn back. "Hili" cancels the sentence and returns two deleted letters. Five words ends it with confetti and one extra deleted letter per word. Hili is never a normal word. The sentence line is the only green in the game.

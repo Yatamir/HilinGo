@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.2 — a five-word sentence on top of the letter chain.
+ * HilinGo v4.8.3 — a five-word sentence on top of the letter chain.
  *   node tests_sentence.mjs
  */
 import { chromium } from 'playwright-core';
@@ -65,14 +65,13 @@ try {
   if (rejected.turn !== 0 || rejected.hist.length) bad('hili accepted ' + JSON.stringify(rejected));
   else ok('Hili is rejected as a normal word');
 
+  await page.click('#sentStart');
   await page.fill('#in0', 'אבא');
   await page.click('#send0');
   const btn = await page.locator('#sentStart').innerText();
   if (btn.trim() !== 'משפט' || !(await page.locator('#sentStart').isVisible())) bad('button ' + btn);
   else ok('sentence button after a valid word');
   await page.screenshot({ path: path.join(SHOTS, 'v47-button.png') });
-
-  await page.click('#sentStart');
   const started = await page.evaluate(() => ({
     green: document.querySelectorAll('#history .sentword').length,
     msg: document.getElementById('sentMsg').textContent,
@@ -136,9 +135,9 @@ try {
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   await page.waitForSelector('#in0');
   const chain = [['#in0','#send0','אבא'],['#in1','#send1','אגס'],['#in0','#send0','סוס'],['#in1','#send1','ספר'],['#in0','#send0','רגל']];
+  await page.click('#sentStart');
   await page.fill(chain[0][0], chain[0][2]);
   await page.click(chain[0][1]);
-  await page.click('#sentStart');
   for (let i = 1; i < chain.length; i++) {
     await page.fill(chain[i][0], chain[i][2]);
     await page.click(chain[i][1]);

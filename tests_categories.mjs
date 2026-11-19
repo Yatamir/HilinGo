@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.1 — category round, and the sentence strip starts on the right.
+ * HilinGo v4.8.2 — category round, and the sentence strip starts on the right.
  *   node tests_categories.mjs
  */
 import { chromium } from 'playwright-core';
@@ -37,6 +37,7 @@ await context.addInitScript(() => {
   window.webkitSpeechRecognition = window.SpeechRecognition;
 });
 const page = await context.newPage();
+await page.route(/wikidata\.org/, route => route.abort());
 await page.setViewportSize({ width: 390, height: 844 });
 
 async function boot() {
@@ -98,6 +99,7 @@ try {
 
   await page.fill('#in1', 'אגס');
   await page.click('#send1');
+  await page.waitForSelector('#catJudge:not(.hidden)', { timeout: 8000 });
   const judge = await page.locator('#catJudge').isVisible();
   const still = await page.evaluate(() => ({ turn: G.turn, sizes: G.boards.map(b => b.size), streak: G.missStreak }));
   if (!judge || still.turn !== 1 || still.sizes.join() !== size0.join()) bad('judge ' + judge + ' ' + JSON.stringify(still));
@@ -118,6 +120,7 @@ try {
   const before = await page.evaluate(() => G.boards[1].size);
   await page.fill('#in1', 'היפופוטם');
   await page.click('#send1');
+  await page.waitForFunction(() => G.history.some(h => h.word === 'היפופוטם'), null, { timeout: 8000 });
   const got = await page.evaluate(() => ({
     size: G.boards[1].size,
     cat: cat,

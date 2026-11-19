@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.8)
+# HilinGo – word-chain game (v4.8.1)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,11 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.8.1 – The button row stays bright, and the mic waits for a tap
+- משפט, ארץ, עיר, חי, צומח and 🤪 stay on screen in full color in a two-player game and in solo. A tap before a word shows a short hint.
+- An automatic microphone restart that is blocked does not show the settings card. The card appears only after a tap, and it names this site.
+- The mic log has a Copy all button.
 
 ## v4.8 – Sentences, categories, and a silly word
 - The sentence button is משפט / Sentence / Zin / Frase, green with white text, still five words. Starting one slides the old words off to the right.

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.7.2 — a five-word sentence on top of the letter chain.
+ * HilinGo v4.8 — a five-word sentence on top of the letter chain.
  *   node tests_sentence.mjs
  */
 import { chromium } from 'playwright-core';
@@ -68,7 +68,7 @@ try {
   await page.fill('#in0', 'אבא');
   await page.click('#send0');
   const btn = await page.locator('#sentStart').innerText();
-  if (!/משפט של 5 מילים/.test(btn) || !(await page.locator('#sentStart').isVisible())) bad('button ' + btn);
+  if (btn.trim() !== 'משפט' || !(await page.locator('#sentStart').isVisible())) bad('button ' + btn);
   else ok('sentence button after a valid word');
   await page.screenshot({ path: path.join(SHOTS, 'v47-button.png') });
 

@@ -1,4 +1,4 @@
-# HilinGo – word-chain game (v4.7.2)
+# HilinGo – word-chain game (v4.8)
 Open index.html (needs words.js next to it). Speech recognition needs https or http://localhost:
   cd hebrew-word-game && python3 -m http.server 8000  ->  http://localhost:8000
 Word list: words.txt / words.js derived from hermitdave/FrequencyWords (OpenSubtitles 2018, he_full),
@@ -60,6 +60,11 @@ v2.3: Portuguese (Português) as a 5th language, start-screen button "Português
 - What remains is kept only when the folded token occurs in the union of the LibreOffice Hunspell dictionaries pt_BR (Vero) and pt_PT, affixes expanded, accents folded the same way as `latin()` (NFKD, strip marks, lowercase, first a–z run). That removed 70,170 further tokens (English words with a legal ending, names, brands). 114,273 words remain. Brazilian and European forms are both kept. hospital and computador stay; the, you, house, love, people, show, king, blog, computer are gone.
 - Hints: ketchup → karaokê (still a K word, now ending in a vowel); windsurf → Wikipédia (still a W word, ending in a). yeti and yakisoba are not in that lexicon, so those hints were dropped; Y is still covered by yoga.
 - A Portuguese word a player tries to add is rejected, with the usual red message and without the "accept anyway" button, when its final letter is outside that set and it is not on the allowlist.
+
+## v4.8 – Sentences, categories, and a silly word
+- The sentence button is משפט / Sentence / Zin / Frase, green with white text, still five words. Starting one slides the old words off to the right.
+- Country, city, animal, and plant challenge the next player for one word. The game checks a list, the players can decide, and a pass has no penalty.
+- 🤪 once a turn accepts a silly word with the right letter, no points, and the turn stays. Hili is never allowed.
 
 ## v4.7.2 – The mic in the notes matches the button
 - Every on-screen mention of the microphone uses the same purple round mic as the button in the game, including the note under the start button. Hint messages use the yellow hint button.

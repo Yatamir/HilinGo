@@ -145,10 +145,14 @@ try {
   const play = await context.newPage();
   play.on('pageerror', e => errors.push(String(e)));
   await play.goto(`http://127.0.0.1:${port}/index.html?ptt=1`, { waitUntil: 'domcontentloaded' });
-  await play.evaluate(() => { document.getElementById('autoMic').checked = false; });
   await play.click('#go');
   await play.evaluate(() => window.__fireIntro('ended'));
   await play.waitForTimeout(400);
+  // A game start forces auto-mic on. Turning it off mid-game still stops the open mic.
+  await play.evaluate(() => {
+    document.getElementById('autoMic').checked = false;
+    try { stopRec(); } catch (_) {}
+  });
   const playIdle = await play.evaluate(() => {
     const mic = document.querySelector('#mic0 .ico-mic');
     const b = mic.getBoundingClientRect();

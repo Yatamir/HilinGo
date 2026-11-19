@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.8.1">
+<meta name="hilingo-version" content="4.8.2">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.8.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.8.2" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,6 +267,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #sentNo{background:#fff;color:#8A2030;box-shadow:0 3px 0 #FFD0C8;border:2px solid #FFD0C8}
 #catPass{background:#fff;color:#4A2DB0;box-shadow:0 3px 0 #C9B8FF}
 #catBanner{margin:0;font-weight:800;text-align:center;color:#fff;border-radius:14px;padding:6px 10px;width:min(100%,560px)}
+#catCheck{margin:0;font-size:13px;font-weight:800;color:#6B6490;text-align:center}
+#catCheck.hidden{display:none!important}
 #catBanner[data-cat="country"]{background:#5B2CFF}
 #catBanner[data-cat="city"]{background:#FF4B6E}
 #catBanner[data-cat="animal"]{background:#C026D3}
@@ -663,7 +665,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.8.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.8.2</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -677,7 +679,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="historyWrap"><div id="history"></div><div id="stripFly" class="hidden"></div></div>
-  <div id="sentbar" class="hidden"><div id="playrow"><button type="button" id="sentStart"></button><button type="button" class="catbtn" id="catCountry" data-cat="country"></button><button type="button" class="catbtn" id="catCity" data-cat="city"></button><button type="button" class="catbtn" id="catAnimal" data-cat="animal"></button><button type="button" class="catbtn" id="catPlant" data-cat="plant"></button><button type="button" id="crazyBtn" aria-label="crazy">🤪</button></div><p id="rowHint" class="hidden"></p><p id="catBanner" class="hidden"></p><div id="catJudge" class="hidden"><span id="catJudgeQ"></span><button type="button" id="catYes">✓</button><button type="button" id="catNo">✗</button></div><button type="button" id="catPass" class="hidden"></button><p id="sentMsg"></p><button type="button" id="sentNo" class="hidden"></button></div>
+  <div id="sentbar" class="hidden"><div id="playrow"><button type="button" id="sentStart"></button><button type="button" class="catbtn" id="catCountry" data-cat="country"></button><button type="button" class="catbtn" id="catCity" data-cat="city"></button><button type="button" class="catbtn" id="catAnimal" data-cat="animal"></button><button type="button" class="catbtn" id="catPlant" data-cat="plant"></button><button type="button" id="crazyBtn" aria-label="crazy">🤪</button></div><p id="rowHint" class="hidden"></p><p id="catBanner" class="hidden"></p><p id="catCheck" class="hidden"></p><div id="catJudge" class="hidden"><span id="catJudgeQ"></span><button type="button" id="catYes">✓</button><button type="button" id="catNo">✗</button></div><button type="button" id="catPass" class="hidden"></button><p id="sentMsg"></p><button type="button" id="sentNo" class="hidden"></button></div>
   <div id="halves"></div>
   <svg id="fxsvg" width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="fxwave" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="fxwaveN" type="turbulence" baseFrequency="0.012 0.045" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter></svg>
   <div id="fx" class="hidden" aria-hidden="true"></div>
@@ -689,7 +691,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.8.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.8.2</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -726,10 +728,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.8.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.8.1"></script>
-<script src="learn_dict.js?v=4.8.1"></script>
-<script src="categories.js?v=4.8.1"></script>
+<script src="words.js?v=4.8.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.8.2"></script>
+<script src="learn_dict.js?v=4.8.2"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -966,7 +967,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.8.1';
+window.WG = WG; window.HILINGO_VERSION='4.8.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1000,7 +1001,7 @@ const STR = {
   sentBtn:'משפט', sentGo:'המשפט התחיל! המשיכו אותו.', sentNo:'לא הגיוני', magic:'הילי',
   catName:{country:'ארץ',city:'עיר',animal:'חי',plant:'צומח'},
   catNeed:(name,l)=>`עכשיו: מילה של ${name} שמתחילה ב־${l}`,
-  catAsk:w=>`${w} — שייך לקטגוריה?`, catPass:'דלג', catPassed:'דילגתם. בלי עונש.', catNo:'נסו מילה אחרת',
+  catAsk:w=>`${w} — שייך לקטגוריה?`, catPass:'דלג', catPassed:'דילגתם. בלי עונש.', catNo:'נסו מילה אחרת', catCheck:'בודק…',
   crazyOn:'🤪 אמרו מילה מצחיקה! השעון רץ.', crazySaid:'🤪 בלי נקודות ובלי מחיקה. עכשיו מילה אמיתית!', crazyHeard:w=>`🤪 ${w}`,
   needWord:'קודם אמרו מילה 😊', busyRound:'סיימו את זה קודם 😊', crazyOnce:'כבר השתמשתם הפעם 😊',
   sentPenalty:n=>`הילי! ${n} אותיות חזרו ללוח`, sentBonus:(name,n)=>`בונוס משפט! ${n} אותיות נוספות נמחקו`, sentEndPts:(name,n)=>`${name}: ${n} נקודות משפט`,
@@ -1050,7 +1051,7 @@ const STR = {
   sentBtn:'Sentence', sentGo:'A sentence has started! Continue it.', sentNo:'Not logical', magic:'Hili',
   catName:{country:'Country',city:'City',animal:'Animal',plant:'Plant'},
   catNeed:(name,l)=>`Now: a ${name} that starts with ${l}`,
-  catAsk:w=>`${w} — does it belong?`, catPass:'Pass', catPassed:'Passed. No penalty.', catNo:'Try another word',
+  catAsk:w=>`${w} — does it belong?`, catPass:'Pass', catPassed:'Passed. No penalty.', catNo:'Try another word', catCheck:'Checking…',
   crazyOn:'🤪 Say a silly word! The clock keeps going.', crazySaid:'🤪 No points and no letter off. Now a real word!', crazyHeard:w=>`🤪 ${w}`,
   needWord:'Say a word first 😊', busyRound:'Finish this one first 😊', crazyOnce:'Already used this turn 😊',
   sentPenalty:n=>`Hili! ${n} letters came back`, sentBonus:(name,n)=>`Sentence bonus! ${n} extra letters deleted`, sentEndPts:(name,n)=>`${name}: ${n} sentence points`,
@@ -1100,7 +1101,7 @@ const STR = {
   sentBtn:'Zin', sentGo:'De zin is begonnen! Ga verder.', sentNo:'Niet logisch', magic:'Hili',
   catName:{country:'Land',city:'Stad',animal:'Dier',plant:'Plant'},
   catNeed:(name,l)=>`Nu: een ${name} die begint met ${l}`,
-  catAsk:w=>`${w} — hoort het erbij?`, catPass:'Pas', catPassed:'Overgeslagen. Geen straf.', catNo:'Probeer een ander woord',
+  catAsk:w=>`${w} — hoort het erbij?`, catPass:'Pas', catPassed:'Overgeslagen. Geen straf.', catNo:'Probeer een ander woord', catCheck:'Even kijken…',
   crazyOn:'🤪 Zeg een gek woord! De klok loopt door.', crazySaid:'🤪 Geen punten en geen letter weg. Nu een echt woord!', crazyHeard:w=>`🤪 ${w}`,
   needWord:'Zeg eerst een woord 😊', busyRound:'Maak dit eerst af 😊', crazyOnce:'Al gebruikt deze beurt 😊',
   sentPenalty:n=>`Hili! ${n} letters zijn terug`, sentBonus:(name,n)=>`Zinbonus! ${n} extra letters geschrapt`, sentEndPts:(name,n)=>`${name}: ${n} zinpunt${n===1?'':'en'}`,
@@ -1150,7 +1151,7 @@ const STR = {
   sentBtn:'Frase', sentGo:'A frase começou! Continue.', sentNo:'Não faz sentido', magic:'Hili',
   catName:{country:'País',city:'Cidade',animal:'Animal',plant:'Planta'},
   catNeed:(name,l)=>`Agora: ${name} que comece com ${l}`,
-  catAsk:w=>`${w} — entra na categoria?`, catPass:'Pular', catPassed:'Pulou. Sem castigo.', catNo:'Tente outra palavra',
+  catAsk:w=>`${w} — entra na categoria?`, catPass:'Pular', catPassed:'Pulou. Sem castigo.', catNo:'Tente outra palavra', catCheck:'Verificando…',
   crazyOn:'🤪 Diga uma palavra engraçada! O relógio continua.', crazySaid:'🤪 Sem ponto e sem apagar letra. Agora uma palavra de verdade!', crazyHeard:w=>`🤪 ${w}`,
   needWord:'Diga uma palavra primeiro 😊', busyRound:'Termine esta primeiro 😊', crazyOnce:'Já usou neste turno 😊',
   sentPenalty:n=>`Hili! ${n} letras voltaram`, sentBonus:(name,n)=>`Bônus da frase! ${n} letras extras apagadas`, sentEndPts:(name,n)=>`${name}: ${n} pontos de frase`,
@@ -1213,7 +1214,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.2';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1263,6 +1264,7 @@ function paintRich(el,txt){
   else el.textContent=s;
 }
 applyLang('he');
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 document.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{document.querySelectorAll('.lvl').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');seconds=+b.dataset.s;});
 
 // sound
@@ -1426,35 +1428,135 @@ function showHint(p){
 function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return; t.classList.add('back'); setTimeout(()=>t.classList.remove('back'),800); }
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
-let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1;
+let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false;
+const CAT_CACHE='hilingo-cats-v482';
+const catMemo={};
+const catLoads={};
+window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-let catSets=null;
-function categorySets(){
-  if(catSets) return catSets;
-  catSets={};
-  const src=window.HILINGO_CATS||{};
-  Object.keys(src).forEach(code=>{
-    catSets[code]={};
-    Object.keys(src[code]||{}).forEach(kind=>{
-      const set=new Set();
-      (src[code][kind]||[]).forEach(raw=>{
-        const norm=code==='he'
-          ? String(raw).replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch)
-          : String(raw).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss').replace(/[^a-z]/g,'');
-        if(norm) set.add(norm);
-      });
-      catSets[code][kind]=set;
-    });
-  });
-  return catSets;
+function catUrl(code){ return 'cats/'+code+'.json?v=4.8.2'; }
+function prefetchCats(code){ loadCats(code).catch(()=>{}); }
+async function loadCats(code){
+  if(catMemo[code]) return catMemo[code];
+  if(catLoads[code]) return catLoads[code];
+  catLoads[code]=(async()=>{
+    const url=catUrl(code);
+    let text='';
+    try{
+      const cache=await caches.open(CAT_CACHE);
+      const hit=await cache.match(url);
+      if(hit) text=await hit.text();
+    }catch(_){}
+    if(!text){
+      const res=await fetch(url);
+      if(!res.ok) throw new Error('cats');
+      text=await res.text();
+      try{ const cache=await caches.open(CAT_CACHE); await cache.put(url, new Response(text,{headers:{'Content-Type':'application/json'}})); }catch(_){}
+    }
+    const data=JSON.parse(text);
+    const sets={};
+    ['country','city','animal','plant'].forEach(k=>{ sets[k]=new Set(data[k]||[]); });
+    catMemo[code]=sets;
+    window.__catsReady=code;
+    return sets;
+  })();
+  try{ return await catLoads[code]; }
+  catch(err){ delete catLoads[code]; throw err; }
 }
 function inCategory(kind, word){
-  const set=categorySets()[LANG] && categorySets()[LANG][kind];
-  return !!(set && set.has(foldCat(word)));
+  const sets=catMemo[LANG];
+  return !!(sets && sets[kind] && sets[kind].has(foldCat(word)));
+}
+const CAT_IDS={
+  country:['Q6256','Q3624078','Q7275','Q417175','Q859563'],
+  city:['Q515','Q3957','Q532','Q15284','Q486972','Q1115575','Q1112453','Q18511725','Q7930989','Q15063611','Q1637706','Q2039348','Q3184121','Q56061','Q27676416'],
+  animal:['Q729'],
+  plant:['Q756']
+};
+function claimIds(ent, prop){
+  const out=[];
+  ((ent&&ent.claims&&ent.claims[prop])||[]).forEach(c=>{
+    const v=c&&c.mainsnak&&c.mainsnak.datavalue&&c.mainsnak.datavalue.value;
+    if(v&&v.id) out.push(v.id);
+  });
+  return out;
+}
+async function askWikidata(word, kind, lang){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(), 2500);
+  try{
+    const search=new URL('https://www.wikidata.org/w/api.php');
+    search.searchParams.set('action','wbsearchentities');
+    search.searchParams.set('search', word);
+    search.searchParams.set('language', lang);
+    search.searchParams.set('uselang', lang);
+    search.searchParams.set('type','item');
+    search.searchParams.set('limit','5');
+    search.searchParams.set('format','json');
+    search.searchParams.set('origin','*');
+    const sres=await fetch(search, {signal:ctrl.signal});
+    if(!sres.ok) return 'error';
+    const sjson=await sres.json();
+    let frontier=(sjson.search||[]).map(x=>x.id).filter(Boolean);
+    if(!frontier.length) return 'no';
+    const want=new Set(CAT_IDS[kind]||[]);
+    const seen=new Set();
+    for(let depth=0; depth<4 && frontier.length; depth++){
+      const batch=frontier.filter(id=>!seen.has(id)).slice(0, 40);
+      if(!batch.length) break;
+      batch.forEach(id=>seen.add(id));
+      if(batch.some(id=>want.has(id))) return 'yes';
+      const get=new URL('https://www.wikidata.org/w/api.php');
+      get.searchParams.set('action','wbgetentities');
+      get.searchParams.set('ids', batch.join('|'));
+      get.searchParams.set('props','claims');
+      get.searchParams.set('format','json');
+      get.searchParams.set('origin','*');
+      const gres=await fetch(get, {signal:ctrl.signal});
+      if(!gres.ok) return 'error';
+      const gjson=await gres.json();
+      const next=[];
+      for(const id of batch){
+        const ent=gjson.entities&&gjson.entities[id];
+        if(!ent||ent.missing==='') continue;
+        const p31=claimIds(ent,'P31'), p279=claimIds(ent,'P279'), p171=claimIds(ent,'P171');
+        if(kind==='animal' && p31.includes('Q5')) continue;
+        if([...p31,...p279,...p171].some(x=>want.has(x))) return 'yes';
+        next.push(...p31,...p279,...p171);
+      }
+      frontier=next;
+    }
+    return 'no';
+  }catch(_){ return 'error'; }
+  finally{ clearTimeout(timer); }
+}
+function showCatCheck(on){
+  const el=$('#catCheck'); if(!el) return;
+  el.textContent=on?(S.catCheck||'…'):'';
+  el.classList.toggle('hidden', !on);
+}
+async function resolveCategory(p, word){
+  if(catChecking||!cat) return;
+  const kind=cat.kind;
+  catChecking=true;
+  showCatCheck(true);
+  let verdict='error';
+  try{
+    await loadCats(LANG);
+    if(inCategory(kind, word)) verdict='yes';
+    else verdict=await askWikidata(word, kind, LANG);
+  }catch(_){ verdict='error'; }
+  catChecking=false;
+  showCatCheck(false);
+  if(!G||G.over||G.turn!==p||!cat||cat.kind!==kind){ render(); return; }
+  if(verdict==='yes'){ submit(p, word, false, 'catlist'); return; }
+  catJudge={word};
+  setMsg(p, S.catAsk?S.catAsk(word):'', '');
+  render();
 }
 function sentenceOk(){ return !!(G && MODE!=='learn' && G.boards.length>=2 && !G.over); }
 function isHili(raw){ const w=WG.normalize(String(raw||'').trim()); return !!(w && (w==='הילי'||w==='hili'||w.includes('הילי')||w.includes('hili'))); }
-function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; cat=null; catJudge=null; stripFrom=0; crazyArmed=false; crazyUsed=false; crazyFor=-1; }
+function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; cat=null; catJudge=null; catChecking=false; stripFrom=0; crazyArmed=false; crazyUsed=false; crazyFor=-1; showCatCheck(false); }
 function paintSentence(){
   const bar=$('#sentbar'), go=$('#sentStart'), msg=$('#sentMsg'), no=$('#sentNo');
   if(!bar) return;
@@ -1719,7 +1821,7 @@ function submit(p,raw,force=false,src='typed'){
     if(sent){ cancelSentence(p); return true; }
   }
   if(crazyArmed && src!=='catyes') return playCrazy(p, raw);
-  if(cat && src!=='catyes'){
+  if(cat && src!=='catyes' && src!=='catlist'){
     const pre=WG.check(G, raw, true);
     if(!pre.ok){
       showWord(p, pre.word||String(raw||'').trim(), 'bad'); sndBad();
@@ -1731,10 +1833,7 @@ function submit(p,raw,force=false,src='typed'){
       return false;
     }
     if(!inCategory(cat.kind, pre.word)){
-      catJudge={word:pre.word};
-      setMsg(p, S.catAsk?S.catAsk(pre.word):'', '');
-      render();
-      if($('#autoMic').checked && !typing) setTimeout(()=>{ if(G&&G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
+      resolveCategory(p, pre.word);
       return false;
     }
     src='catlist';
@@ -1836,6 +1935,7 @@ function loop(t){
   if(!G||G.over) return;
   const dt=(t-lastT)/1000; lastT=t;
   if(!paused){
+    if(catChecking){ render(); timerId=requestAnimationFrame(loop); return; }
     const before=Math.ceil(G.timeLeft), p=G.turn;
     if(cat && G.timeLeft<=Math.min(dt,.5)){
       lastT=t;
@@ -2263,6 +2363,7 @@ function startGame(){
   try{ window.scrollTo(0,0); }catch(_){}   // phone: the start screen may be scrolled down to the Go button
   hintUI={key:null,shown:new Set()};
   buildHalves(); render(); lastT=performance.now(); cancelAnimationFrame(timerId); timerId=requestAnimationFrame(loop);
+  prefetchCats(LANG);
   afterTurnChange();
 }
 function endScreen(){
@@ -2313,7 +2414,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.8.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.8.2');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2415,7 +2516,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.8.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.8.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3308,7 +3409,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.2';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

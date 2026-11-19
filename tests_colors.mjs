@@ -33,9 +33,18 @@ function satOf(r, g, b) {
 
 const cssAll = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').split('<style>')[1].split('</style>')[0];
 const sentenceRule = cssAll.match(/#history \.sentword\{[^}]*\}/);
+const sentBtnRule = cssAll.match(/#sentStart\{[^}]*\}/);
+const rulesSentRule = cssAll.match(/\.rules-sent\{[^}]*\}/);
 if (!sentenceRule || !/#128A3E/i.test(sentenceRule[0])) bad('sentence words are not the one allowed green');
 else ok('sentence words use the one green exception');
-const css = cssAll.replace(/#history \.sentword\{[^}]*\}/g, '');
+if (!sentBtnRule || !/#128A3E/i.test(sentBtnRule[0]) || !/#fff/i.test(sentBtnRule[0])) bad('sentence button is not green with white text');
+else ok('sentence button is the other allowed green');
+if (!rulesSentRule || !/#128A3E/i.test(rulesSentRule[0])) bad('rules sentence chip is not green');
+else ok('rules sentence chip matches the button');
+const css = cssAll
+  .replace(/#history \.sentword\{[^}]*\}/g, '')
+  .replace(/#sentStart\{[^}]*\}/g, '')
+  .replace(/\.rules-sent\{[^}]*\}/g, '');
 const hits = [];
 for (const m of css.matchAll(/#([0-9A-Fa-f]{6})\b/g)) {
   const h = m[1];

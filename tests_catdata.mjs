@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.3 — category files, lazy load, and the Wikidata fallback.
+ * HilinGo v4.8.4 — category files, lazy load, and the Wikidata fallback.
  *   node tests_catdata.mjs
  */
 import { chromium } from 'playwright-core';

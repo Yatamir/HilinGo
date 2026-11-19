@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.2 — one silly word per turn, and Hili is never allowed.
+ * HilinGo v4.8.3 — one silly word per turn, and Hili is never allowed.
  *   node tests_crazy.mjs
  */
 import { chromium } from 'playwright-core';
@@ -82,7 +82,7 @@ try {
       green: !!(el && el.classList.contains('sentword')),
     };
   });
-  if (silly.turn !== 0 || silly.size !== before.size || silly.t > before.t + 0.2 || silly.t < 5 || !silly.crazy || silly.word !== 'בלהבלה' || silly.zanies < 10 || silly.opacity !== '1' || silly.green || silly.color === 'rgb(18, 138, 62)') bad('silly ' + JSON.stringify(silly));
+  if (silly.turn !== 0 || silly.size !== before.size || silly.t > before.t + 0.2 || silly.t < 5 || !silly.crazy || silly.word !== 'בלהבלה' || silly.zanies < 10 || silly.opacity === '1' || silly.green || silly.color === 'rgb(18, 138, 62)') bad('silly ' + JSON.stringify(silly));
   else ok('silly word stays on this turn, deletes nothing, and bursts 🤪');
 
   await page.fill('#in0', 'אבא');

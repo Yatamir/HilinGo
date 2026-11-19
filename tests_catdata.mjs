@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.2 — category files, lazy load, and the Wikidata fallback.
+ * HilinGo v4.8.3 — category files, lazy load, and the Wikidata fallback.
  *   node tests_catdata.mjs
  */
 import { chromium } from 'playwright-core';
@@ -110,9 +110,9 @@ try {
       }
     });
     await newGame(page);
+    await page.click('#catCity');
     await page.fill('#in0', 'אבא');
     await page.click('#send0');
-    await page.click('#catCity');
     const before = await page.evaluate(() => G.timeLeft);
     const pending = page.waitForSelector('#catCheck:not(.hidden)');
     await page.fill('#in1', 'אטלנטיס');
@@ -132,9 +132,9 @@ try {
     const page = await context.newPage();
     await page.route(/wikidata\.org/, route => route.fulfill({ contentType: 'application/json', body: '{"search":[]}' }));
     await newGame(page);
+    await page.click('#catCountry');
     await page.fill('#in0', 'אבא');
     await page.click('#send0');
-    await page.click('#catCountry');
     await page.fill('#in1', 'אטלנטיס');
     await page.click('#send1');
     await page.waitForSelector('#catJudge:not(.hidden)');
@@ -150,9 +150,9 @@ try {
     const page = await context.newPage();
     await page.route(/wikidata\.org/, route => route.abort());
     await newGame(page);
+    await page.click('#catCountry');
     await page.fill('#in0', 'אבא');
     await page.click('#send0');
-    await page.click('#catCountry');
     const before = await page.evaluate(() => G.timeLeft);
     await page.fill('#in1', 'אטלנטיס');
     await page.click('#send1');

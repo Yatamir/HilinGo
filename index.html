@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.8.2">
+<meta name="hilingo-version" content="4.8.3">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.8.2" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.8.3" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -253,7 +253,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #sentbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 8px 6px}
 #sentbar.hidden{display:none!important}
 #playrow{direction:rtl;display:flex;flex-wrap:nowrap;gap:4px;width:min(100%,560px);align-items:center}
-#playrow button{direction:ltr;flex:1 1 0;min-width:0;padding:7px 3px;border-radius:999px;font-weight:800;font-size:13px;color:#fff;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:1;filter:none}
+#playrow button{direction:ltr;flex:1 1 0;min-width:0;padding:7px 3px;border-radius:999px;font-weight:800;font-size:13px;color:#fff;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.4}
+#playrow button.lit{opacity:1}
 #rowHint{margin:0;min-height:0;font-weight:800;text-align:center;color:#4A2DB0}
 #rowHint.hidden{display:none!important}
 #sentStart{background:#128A3E;color:#fff;box-shadow:0 3px 0 #0B6B32}
@@ -665,7 +666,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.8.2</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.8.3</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -691,7 +692,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.8.2</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.8.3</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -728,9 +729,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.8.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.8.2"></script>
-<script src="learn_dict.js?v=4.8.2"></script>
+<script src="words.js?v=4.8.3" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.8.3"></script>
+<script src="learn_dict.js?v=4.8.3"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -967,7 +968,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.8.2';
+window.WG = WG; window.HILINGO_VERSION='4.8.3';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -986,7 +987,7 @@ const STR = {
   learnListen:name=>'מקשיב: '+name+'…', learnSpeaking:'משמיע…',
   learnWordsNote:'נשמרות רק במכשיר הזה, לזוג השפות הזה.', learnWordsEmpty:'עוד אין מילים.',
   loading:'טוען מילון…', dictFail:'המילון לא נטען',
-  rules:'<h3>כללים 🎲</h3><ul><li>כל אחד אומר מילה שמתחילה באות האחרונה של המילה שלפניה.</li><li>האות הראשונה של המילה שלך נמחקת מהלוח.</li><li>מי שמרוקן את הלוח ראשון — מנצח! 🏆</li><li>שחקן אחד: אתם נגד השעון.</li><li>שניים, שלושה או ארבעה: תור תור, לפי הסדר.</li><li>למידה: אומרים מילה בשפה שלכם, שומעים ורואים אותה בשפה השנייה, חוזרים עליה ומקבלים ✅. היא נשמרת ב״המילים שלי״.</li></ul><h3>חוקים 📜</h3><ul><li>אות סופית היא אות רגילה: ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ.</li><li>אסור לחזור על מילה שכבר נאמרה.</li><li>נגמר הזמן? התור עובר, ואותה אות נשארת.</li><li>אם כולם מפספסים את אותה אות ברצף, הבא בוחר אות חופשית.</li><li>שישה פספוסים ברצף (בשניים) או שני סיבובים מלאים (בשלושה–ארבעה) מסיימים את המשחק. מי שנשארו לו פחות אותיות — מנצח.</li><li><span class="rules-hint">💡 רמז</span> עד 3 רמזים בתור, רק למילים שעוד לא נאמרו. רמז = לא נמחקת אות באותו תור. שני תורות ברצף עם רמז? האות האחרונה שנמחקה חוזרת.</li><li>רק עם עוד שחקנים: אחרי מילה טובה לוחצים על <span class="rules-sent">משפט</span>. זה משפט של 5 מילים, וזו המילה הראשונה.</li><li>הבאים ממשיכים את המשפט, ועדיין מתחילים באות האחרונה.</li><li>מילות המשפט נהיות ירוקות. אין ביניהן חצים.</li><li>השחקן הבא יכול ללחוץ <span class="rules-no">לא הגיוני</span>. המילה יורדת, האות שהיא מחקה חוזרת, בלי נקודה ובלי עונש, והתור חוזר למי שאמר אותה.</li><li>🪄 נתקעתם במשפט? חייבים לומר הילי. המשפט מתבטל. שתי אותיות עונש נדלקות שוב על הלוח שלכם, אם הן כבר נמחקו קודם.</li><li>הילי אף פעם לא מתקבלת כמילה רגילה.</li><li>🎉 חמש מילים? קונפטי! כל מילה שווה נקודה, וכל נקודה מוחקת עוד אות אקראית. הנקודות מופיעות בסוף. אם הבונוס מרוקן לוח — זה ניצחון.</li><li>אחרי מילה טובה אפשר גם <span class="rules-cat ctry">ארץ</span> <span class="rules-cat city">עיר</span> <span class="rules-cat anim">חי</span> <span class="rules-cat plant">צומח</span>. הבא אומר מילה מהסוג הזה, שמתחילה באות האחרונה.</li><li>המשחק בודק ברשימה. לא בטוחים? קופץ „שייך לקטגוריה?” ולוחצים ✓ או ✗.</li><li>אין מילה? <span class="rules-pass">דלג</span> או נגמר הזמן, והתור עובר בלי עונש. אין בונוס. רק מילה אחת. אי אפשר יחד עם משפט.</li><li>פעם אחת בתור, לפני המילה, לוחצים <span class="rules-crazy">🤪</span> לעצמכם. אומרים מילה מצחיקה באות הנכונה. בלי נקודות, בלי מחיקה, והתור נשאר. השעון רץ. הילי אסורה גם כאן.</li></ul><h3>טיפים 🌟</h3><ul><li>😜 הפרעה סודית, רק במשחק של שניים עד ארבעה: אם אתם הבאים בתור, הקשה כפולה על אמצע הלוח שלכם שולחת אפקט שקט ואקראי למי שמשחק עכשיו. פעם ב־20 שניות. לא בשחקן אחד, ולא בלמידה.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> המיקרופון נדלק לבד בכל תור. נתקע אחרי הודעה או אחרי שיצאתם לאפליקציה? חוזרים, והוא מתאושש. או לוחצים על <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ בשחקן אחד השעון סופר למעלה. ״My New record״ נשמר רק אם סיימתם באמת, ורק במכשיר הזה.</li></ul>',
+  rules:'<h3>כללים 🎲</h3><ul><li>כל אחד אומר מילה שמתחילה באות האחרונה של המילה שלפניה.</li><li>האות הראשונה של המילה שלך נמחקת מהלוח.</li><li>מי שמרוקן את הלוח ראשון — מנצח! 🏆</li><li>שחקן אחד: אתם נגד השעון.</li><li>שניים, שלושה או ארבעה: תור תור, לפי הסדר.</li><li>למידה: אומרים מילה בשפה שלכם, שומעים ורואים אותה בשפה השנייה, חוזרים עליה ומקבלים ✅. היא נשמרת ב״המילים שלי״.</li></ul><h3>חוקים 📜</h3><ul><li>אות סופית היא אות רגילה: ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ.</li><li>אסור לחזור על מילה שכבר נאמרה.</li><li>נגמר הזמן? התור עובר, ואותה אות נשארת.</li><li>אם כולם מפספסים את אותה אות ברצף, הבא בוחר אות חופשית.</li><li>שישה פספוסים ברצף (בשניים) או שני סיבובים מלאים (בשלושה–ארבעה) מסיימים את המשחק. מי שנשארו לו פחות אותיות — מנצח.</li><li><span class="rules-hint">💡 רמז</span> עד 3 רמזים בתור, רק למילים שעוד לא נאמרו. רמז = לא נמחקת אות באותו תור. שני תורות ברצף עם רמז? האות האחרונה שנמחקה חוזרת.</li><li>לפני המילה לוחצים על <span class="rules-sent">משפט</span>. הכפתור נדלק בצבע מלא, ואז אומרים מילה. זו מילה 1 במשפט של 5. טיפ: בחרו מילה שקשה להמשיך!</li><li>הבאים ממשיכים את המשפט, ועדיין מתחילים באות האחרונה.</li><li>מילות המשפט נהיות ירוקות. אין ביניהן חצים.</li><li>השחקן הבא יכול ללחוץ <span class="rules-no">לא הגיוני</span>. המילה יורדת, האות שהיא מחקה חוזרת, בלי נקודה ובלי עונש, והתור חוזר למי שאמר אותה.</li><li>🪄 נתקעתם במשפט? חייבים לומר הילי. המשפט מתבטל. שתי אותיות עונש נדלקות שוב על הלוח שלכם, אם הן כבר נמחקו קודם.</li><li>הילי אף פעם לא מתקבלת כמילה רגילה.</li><li>🎉 חמש מילים? קונפטי! כל מילה שווה נקודה, וכל נקודה מוחקת עוד אות אקראית. הנקודות מופיעות בסוף. אם הבונוס מרוקן לוח — זה ניצחון.</li><li>לפני המילה אפשר גם להדליק <span class="rules-cat ctry">ארץ</span> <span class="rules-cat city">עיר</span> <span class="rules-cat anim">חי</span> <span class="rules-cat plant">צומח</span>. התחרטתם? לוחצים על כפתור עמום אחר, והבחירה עוברת. האתגר הולך לשחקן הבא: מילה מהסוג הזה, שמתחילה באות האחרונה.</li><li>המשחק בודק ברשימה. לא בטוחים? קופץ „שייך לקטגוריה?” ולוחצים ✓ או ✗.</li><li>אין מילה? <span class="rules-pass">דלג</span> או נגמר הזמן, והתור עובר בלי עונש. אין בונוס. רק מילה אחת. אי אפשר יחד עם משפט.</li><li>פעם אחת בתור, לפני המילה, לוחצים <span class="rules-crazy">🤪</span> לעצמכם. אומרים מילה מצחיקה באות הנכונה. בלי נקודות, בלי מחיקה, והתור נשאר. השעון רץ. הילי אסורה גם כאן.</li></ul><h3>טיפים 🌟</h3><ul><li>😜 הפרעה סודית, רק במשחק של שניים עד ארבעה: אם אתם הבאים בתור, הקשה כפולה על אמצע הלוח שלכם שולחת אפקט שקט ואקראי למי שמשחק עכשיו. פעם ב־20 שניות. לא בשחקן אחד, ולא בלמידה.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> המיקרופון נדלק לבד בכל תור. נתקע אחרי הודעה או אחרי שיצאתם לאפליקציה? חוזרים, והוא מתאושש. או לוחצים על <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ בשחקן אחד השעון סופר למעלה. ״My New record״ נשמר רק אם סיימתם באמת, ורק במכשיר הזה.</li></ul>',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
   override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש',
@@ -1036,7 +1037,7 @@ const STR = {
   learnListen:name=>'Listening in '+name+'…', learnSpeaking:'Speaking…',
   learnWordsNote:'Saved on this device only, for this language pair.', learnWordsEmpty:'No words yet.',
   loading:'Loading dictionary…', dictFail:'Dictionary failed to load',
-  rules:'<h3>How to play 🎲</h3><ul><li>Say a word that starts with the last letter of the word before yours.</li><li>That first letter gets crossed off your board.</li><li>Empty your board first and you win! 🏆</li><li>One player: it\'s you versus the clock.</li><li>Two, three, or four: take turns, in order.</li><li>Learn: say a word in your language, see and hear it in the other one, say it back for a ✅, and keep it in My words.</li></ul><h3>Rules 📜</h3><ul><li>Big letters, small letters, and accents don\'t matter.</li><li>You can\'t say a word that was already used.</li><li>Time\'s up? The turn moves on, and the same letter stays.</li><li>If everyone misses that letter in a row, the next player picks any letter.</li><li>Six misses in a row (two players), or two full rounds of misses (three or four), end the game. Fewest letters left wins.</li><li><span class="rules-hint">💡 Hint</span> Up to 3 hints a turn, only for words nobody has said yet. Use a hint and no letter comes off that turn. Hints two of your turns in a row? Your last crossed-off letter pops back.</li><li>Only with other players: right after a good word, tap <span class="rules-sent">Sentence</span>. It is still 5 words, and that word is word number one.</li><li>The next players keep the sentence going, and they still start with the last letter.</li><li>The sentence words turn green. There are no arrows between them.</li><li>The next player can tap <span class="rules-no">Not logical</span>. That word leaves, and the letter it crossed off comes back. No point, no penalty. The turn goes back to whoever said it.</li><li>🪄 Stuck in a sentence? You have to say Hili. The sentence is cancelled. Two penalty letters light back up on your keyboard, if they were already crossed off.</li><li>Hili is never a normal word.</li><li>🎉 Five words done? Confetti! Each word you added is 1 point, and each point crosses off one more random letter. The points show up at the end. Empty a board with the bonus and that player wins.</li><li>Right after a good word you can also tap <span class="rules-cat ctry">Country</span> <span class="rules-cat city">City</span> <span class="rules-cat anim">Animal</span> <span class="rules-cat plant">Plant</span>. The next player says a word of that kind, starting with the last letter.</li><li>The game checks a list. Not sure? It asks “does it belong?” and you tap ✓ or ✗.</li><li>No word? Tap <span class="rules-pass">Pass</span>, or let the time run out. The turn moves on with no penalty. No bonus. Just one word. Not together with a sentence.</li><li>Once a turn, before your word, tap <span class="rules-crazy">🤪</span> for yourself. Say a silly word that starts with the right letter. No points, no letter off, and the turn stays yours. The clock keeps going. Hili is never allowed, not even here.</li></ul><h3>Tips 🌟</h3><ul><li>😜 Secret disruption, only with 2–4 players: if you\'re next, double-tap the middle of your own board. The player who\'s playing gets a random silent effect. Once every 20 seconds. Not in solo, and not in Learn.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> The mic turns itself on every turn. Stuck after a notification or after you hopped to another app? Come back and it wakes up. Or tap <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ In solo the clock counts up. My New record is saved only if you really finish, and only on this device.</li></ul>',
+  rules:'<h3>How to play 🎲</h3><ul><li>Say a word that starts with the last letter of the word before yours.</li><li>That first letter gets crossed off your board.</li><li>Empty your board first and you win! 🏆</li><li>One player: it\'s you versus the clock.</li><li>Two, three, or four: take turns, in order.</li><li>Learn: say a word in your language, see and hear it in the other one, say it back for a ✅, and keep it in My words.</li></ul><h3>Rules 📜</h3><ul><li>Big letters, small letters, and accents don\'t matter.</li><li>You can\'t say a word that was already used.</li><li>Time\'s up? The turn moves on, and the same letter stays.</li><li>If everyone misses that letter in a row, the next player picks any letter.</li><li>Six misses in a row (two players), or two full rounds of misses (three or four), end the game. Fewest letters left wins.</li><li><span class="rules-hint">💡 Hint</span> Up to 3 hints a turn, only for words nobody has said yet. Use a hint and no letter comes off that turn. Hints two of your turns in a row? Your last crossed-off letter pops back.</li><li>Before your word, tap <span class="rules-sent">Sentence</span>. It lights up, then you say the word. That word is word 1 of 5. Tip: pick a word that\'s hard to continue!</li><li>The next players keep the sentence going, and they still start with the last letter.</li><li>The sentence words turn green. There are no arrows between them.</li><li>The next player can tap <span class="rules-no">Not logical</span>. That word leaves, and the letter it crossed off comes back. No point, no penalty. The turn goes back to whoever said it.</li><li>🪄 Stuck in a sentence? You have to say Hili. The sentence is cancelled. Two penalty letters light back up on your keyboard, if they were already crossed off.</li><li>Hili is never a normal word.</li><li>🎉 Five words done? Confetti! Each word you added is 1 point, and each point crosses off one more random letter. The points show up at the end. Empty a board with the bonus and that player wins.</li><li>Before your word you can also light up <span class="rules-cat ctry">Country</span> <span class="rules-cat city">City</span> <span class="rules-cat anim">Animal</span> <span class="rules-cat plant">Plant</span>. Changed your mind? Tap another dim button and the choice switches. The next player gets the challenge: a word of that kind, starting with the last letter.</li><li>The game checks a list. Not sure? It asks “does it belong?” and you tap ✓ or ✗.</li><li>No word? Tap <span class="rules-pass">Pass</span>, or let the time run out. The turn moves on with no penalty. No bonus. Just one word. Not together with a sentence.</li><li>Once a turn, before your word, tap <span class="rules-crazy">🤪</span> for yourself. Say a silly word that starts with the right letter. No points, no letter off, and the turn stays yours. The clock keeps going. Hili is never allowed, not even here.</li></ul><h3>Tips 🌟</h3><ul><li>😜 Secret disruption, only with 2–4 players: if you\'re next, double-tap the middle of your own board. The player who\'s playing gets a random silent effect. Once every 20 seconds. Not in solo, and not in Learn.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> The mic turns itself on every turn. Stuck after a notification or after you hopped to another app? Come back and it wakes up. Or tap <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ In solo the clock counts up. My New record is saved only if you really finish, and only on this device.</li></ul>',
   speechOk:'Speech recognition available 🎤 (allow microphone access). You can also type.', speechNo:"This browser doesn't support speech recognition – type your words. Chrome is recommended for voice.",
   micHint:" If the microphone doesn't work, tap 🎤 in the game.",
   override:"It's a real word – accept anyway", micTitle:'Speak', inputPh:'Type a word', send:'Send', endBtn:'End game', pause:'Pause', resume:'Resume', again:'New game',
@@ -1086,7 +1087,7 @@ const STR = {
   learnListen:name=>'Luistert in '+name+'…', learnSpeaking:'Spreekt…',
   learnWordsNote:'Alleen op dit apparaat bewaard, voor dit talenpaar.', learnWordsEmpty:'Nog geen woorden.',
   loading:'Woordenboek laden…', dictFail:'Woordenboek niet geladen',
-  rules:'<h3>Zo speel je 🎲</h3><ul><li>Zeg een woord dat begint met de laatste letter van het woord ervoor.</li><li>Die eerste letter gaat van jouw bord af.</li><li>Wie het bord het eerst leeg heeft, wint! 🏆</li><li>Eén speler: jij tegen de klok.</li><li>Twee, drie of vier: om de beurt, op volgorde.</li><li>Leren: zeg een woord in jouw taal, hoor en zie het in de andere taal, zeg het na voor een ✅, en bewaar het bij Mijn woorden.</li></ul><h3>Regels 📜</h3><ul><li>Hoofdletters en accenten tellen niet (é = e). IJ telt als I + J.</li><li>Een woord mag maar één keer.</li><li>Tijd om? De beurt gaat door, en dezelfde letter blijft.</li><li>Mist iedereen die letter na elkaar, dan kiest de volgende een vrije letter.</li><li>Zes missers op rij (twee spelers) of twee volle rondes (drie of vier) stoppen het spel. Wie de minste letters over heeft, wint.</li><li><span class="rules-hint">💡 Hint</span> Maximaal 3 hints per beurt, alleen voor woorden die nog niet gezegd zijn. Met een hint gaat er die beurt geen letter af. Twee beurten op rij een hint? Je laatst geschrapte letter komt terug.</li><li>Alleen met andere spelers: na een goed woord tik je op <span class="rules-sent">Zin</span>. Het zijn nog steeds 5 woorden, en dat is woord één.</li><li>De volgenden maken de zin af, en beginnen nog steeds met de laatste letter.</li><li>De woorden van de zin worden groen. Er staan geen pijltjes tussen.</li><li>De volgende speler kan op <span class="rules-no">Niet logisch</span> tikken. Het woord gaat weg, de letter die het schrapte komt terug, zonder punt en zonder straf, en de beurt gaat terug.</li><li>🪄 Vast in een zin? Je moet Hili zeggen. De zin stopt. Twee strafletters lichten weer op op jouw bord, als ze al weg waren.</li><li>Hili telt nooit als gewoon woord.</li><li>🎉 Vijf woorden klaar? Confetti! Elk woord is 1 punt, en elk punt schrapt nog een willekeurige letter. De punten zie je aan het eind. Maakt de bonus een bord leeg, dan wint die speler.</li><li>Na een goed woord kun je ook <span class="rules-cat ctry">Land</span> <span class="rules-cat city">Stad</span> <span class="rules-cat anim">Dier</span> <span class="rules-cat plant">Plant</span> tikken. De volgende zegt een woord van dat soort, met de laatste letter.</li><li>Het spel kijkt op een lijst. Twijfel? Dan vraagt het „hoort het erbij?” en jullie tikken ✓ of ✗.</li><li>Geen woord? Tik <span class="rules-pass">Pas</span>, of laat de tijd aflopen. De beurt gaat door zonder straf. Geen bonus. Eén woord maar. Niet samen met een zin.</li><li>Eén keer per beurt, vóór je woord, tik je <span class="rules-crazy">🤪</span> voor jezelf. Zeg een gek woord met de juiste letter. Geen punten, geen letter weg, en de beurt blijft bij jou. De klok loopt door. Hili mag nooit, ook hier niet.</li></ul><h3>Tips 🌟</h3><ul><li>😜 Geheime stoorzender, alleen met 2–4 spelers: ben jij daarna aan de beurt, tik dan twee keer midden op je eigen bord. De speler die nu speelt krijgt een stil, willekeurig effect. Eens per 20 seconden. Niet bij één speler, en niet bij Leren.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> De microfoon gaat elke beurt vanzelf aan. Blijft hij hangen na een melding of na een andere app? Kom terug, dan wordt hij weer wakker. Of tik op <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ Bij één speler telt de klok op. My New record wordt alleen bewaard als je echt uitgespeeld bent, en alleen op dit apparaat.</li></ul>',
+  rules:'<h3>Zo speel je 🎲</h3><ul><li>Zeg een woord dat begint met de laatste letter van het woord ervoor.</li><li>Die eerste letter gaat van jouw bord af.</li><li>Wie het bord het eerst leeg heeft, wint! 🏆</li><li>Eén speler: jij tegen de klok.</li><li>Twee, drie of vier: om de beurt, op volgorde.</li><li>Leren: zeg een woord in jouw taal, hoor en zie het in de andere taal, zeg het na voor een ✅, en bewaar het bij Mijn woorden.</li></ul><h3>Regels 📜</h3><ul><li>Hoofdletters en accenten tellen niet (é = e). IJ telt als I + J.</li><li>Een woord mag maar één keer.</li><li>Tijd om? De beurt gaat door, en dezelfde letter blijft.</li><li>Mist iedereen die letter na elkaar, dan kiest de volgende een vrije letter.</li><li>Zes missers op rij (twee spelers) of twee volle rondes (drie of vier) stoppen het spel. Wie de minste letters over heeft, wint.</li><li><span class="rules-hint">💡 Hint</span> Maximaal 3 hints per beurt, alleen voor woorden die nog niet gezegd zijn. Met een hint gaat er die beurt geen letter af. Twee beurten op rij een hint? Je laatst geschrapte letter komt terug.</li><li>Vóór je woord tik je op <span class="rules-sent">Zin</span>. Die knop wordt fel, en dan zeg je het woord. Dat is woord 1 van 5. Tip: kies een woord dat lastig is om af te maken!</li><li>De volgenden maken de zin af, en beginnen nog steeds met de laatste letter.</li><li>De woorden van de zin worden groen. Er staan geen pijltjes tussen.</li><li>De volgende speler kan op <span class="rules-no">Niet logisch</span> tikken. Het woord gaat weg, de letter die het schrapte komt terug, zonder punt en zonder straf, en de beurt gaat terug.</li><li>🪄 Vast in een zin? Je moet Hili zeggen. De zin stopt. Twee strafletters lichten weer op op jouw bord, als ze al weg waren.</li><li>Hili telt nooit als gewoon woord.</li><li>🎉 Vijf woorden klaar? Confetti! Elk woord is 1 punt, en elk punt schrapt nog een willekeurige letter. De punten zie je aan het eind. Maakt de bonus een bord leeg, dan wint die speler.</li><li>Vóór je woord kun je ook <span class="rules-cat ctry">Land</span> <span class="rules-cat city">Stad</span> <span class="rules-cat anim">Dier</span> <span class="rules-cat plant">Plant</span> laten oplichten. Van gedachten veranderd? Tik op een andere doffe knop. De volgende speler krijgt de opdracht: een woord van dat soort, met de laatste letter.</li><li>Het spel kijkt op een lijst. Twijfel? Dan vraagt het „hoort het erbij?” en jullie tikken ✓ of ✗.</li><li>Geen woord? Tik <span class="rules-pass">Pas</span>, of laat de tijd aflopen. De beurt gaat door zonder straf. Geen bonus. Eén woord maar. Niet samen met een zin.</li><li>Eén keer per beurt, vóór je woord, tik je <span class="rules-crazy">🤪</span> voor jezelf. Zeg een gek woord met de juiste letter. Geen punten, geen letter weg, en de beurt blijft bij jou. De klok loopt door. Hili mag nooit, ook hier niet.</li></ul><h3>Tips 🌟</h3><ul><li>😜 Geheime stoorzender, alleen met 2–4 spelers: ben jij daarna aan de beurt, tik dan twee keer midden op je eigen bord. De speler die nu speelt krijgt een stil, willekeurig effect. Eens per 20 seconden. Niet bij één speler, en niet bij Leren.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> De microfoon gaat elke beurt vanzelf aan. Blijft hij hangen na een melding of na een andere app? Kom terug, dan wordt hij weer wakker. Of tik op <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ Bij één speler telt de klok op. My New record wordt alleen bewaard als je echt uitgespeeld bent, en alleen op dit apparaat.</li></ul>',
   speechOk:'Spraakherkenning beschikbaar 🎤 (sta de microfoon toe). Typen kan ook.', speechNo:'Deze browser ondersteunt geen spraakherkenning – typ je woorden. Voor spraak wordt Chrome aanbevolen.',
   micHint:' Werkt de microfoon niet? Tik dan in het spel op 🎤.',
   override:'Het is een echt woord – toch goedkeuren', micTitle:'Spreek', inputPh:'Typ een woord', send:'Stuur', endBtn:'Spel stoppen', pause:'Pauze', resume:'Verder', again:'Nieuw spel',
@@ -1136,7 +1137,7 @@ const STR = {
   learnListen:name=>'Ouvindo em '+name+'…', learnSpeaking:'Falando…',
   learnWordsNote:'Salvas só neste aparelho, para este par de idiomas.', learnWordsEmpty:'Nenhuma palavra ainda.',
   loading:'Carregando dicionário…', dictFail:'O dicionário não carregou',
-  rules:'<h3>Como jogar 🎲</h3><ul><li>Diga uma palavra que comece com a última letra da palavra anterior.</li><li>Essa primeira letra sai do seu tabuleiro.</li><li>Quem esvaziar o tabuleiro primeiro, vence! 🏆</li><li>Um jogador: você contra o relógio.</li><li>Dois, três ou quatro: um de cada vez, na ordem.</li><li>Aprender: diga uma palavra no seu idioma, ouça e veja no outro, repita para ganhar um ✅, e guarde em Minhas palavras.</li></ul><h3>Regras 📜</h3><ul><li>Maiúsculas e acentos não contam (á = a, ç = c).</li><li>Cada palavra só vale uma vez.</li><li>Acabou o tempo? A vez passa, e a mesma letra fica.</li><li>Se todo mundo errar essa letra seguida, o próximo escolhe uma letra livre.</li><li>Seis erros seguidos (dois jogadores) ou duas rodadas completas (três ou quatro) acabam o jogo. Quem tiver menos letras, vence.</li><li><span class="rules-hint">💡 Dica</span> Até 3 dicas por turno, só para palavras que ninguém disse ainda. Com dica, nenhuma letra sai naquele turno. Dicas em dois turnos seus seguidos? A última letra apagada volta.</li><li>K, W e Y ficam cinza: não saem, não contam para vencer e nunca são pedidas.</li><li>Se a última letra já saiu do tabuleiro de quem joga a seguir e a palavra tem B, C, D, F, G, H, J, N, P, Q, T, V ou X, pede-se a que estiver mais perto do fim, mesmo se essa também já tiver saído. Sem nenhuma dessas, continua a última letra.</li><li>Só com outros jogadores: depois de uma palavra boa, toque em <span class="rules-sent">Frase</span>. Ainda são 5 palavras, e ela é a número um.</li><li>Os próximos continuam a frase, e ainda começam com a última letra.</li><li>As palavras da frase ficam verdes. Não há setas entre elas.</li><li>O próximo jogador pode tocar em <span class="rules-no">Não faz sentido</span>. A palavra sai, a letra que ela apagou volta, sem ponto e sem castigo, e a vez volta para quem disse.</li><li>🪄 Travou no meio da frase? Você tem que dizer Hili. A frase é cancelada. Duas letras de castigo acendem de novo no seu teclado, se já tinham sido apagadas.</li><li>Hili nunca vale como palavra normal.</li><li>🎉 Cinco palavras? Confete! Cada palavra vale 1 ponto, e cada ponto apaga mais uma letra sorteada. Os pontos aparecem no fim. Se o bônus esvaziar um tabuleiro, esse jogador vence.</li><li>Depois de uma palavra boa dá para tocar em <span class="rules-cat ctry">País</span> <span class="rules-cat city">Cidade</span> <span class="rules-cat anim">Animal</span> <span class="rules-cat plant">Planta</span>. O próximo diz uma palavra desse tipo, começando com a última letra.</li><li>O jogo olha uma lista. Na dúvida, aparece „entra na categoria?” e vocês tocam ✓ ou ✗.</li><li>Não achou? Toque em <span class="rules-pass">Pular</span>, ou deixe o tempo acabar. A vez passa sem castigo. Sem bônus. Só uma palavra. Não junto com uma frase.</li><li>Uma vez por turno, antes da palavra, toque em <span class="rules-crazy">🤪</span> para você. Diga uma palavra engraçada com a letra certa. Sem ponto, sem apagar letra, e a vez continua sua. O relógio segue. Hili nunca vale, nem aqui.</li></ul><h3>Dicas 🌟</h3><ul><li>😜 Bagunça secreta, só com 2 a 4 jogadores: se você é o próximo, toque duas vezes no meio do seu tabuleiro. Quem está jogando recebe um efeito silencioso e surpresa. Uma vez a cada 20 segundos. Não no solo e não em Aprender.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> O microfone liga sozinho em cada turno. Travou depois de uma notificação ou de outro app? Volte, que ele se recupera. Ou toque em <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ No solo o relógio conta para cima. My New record só é salvo se você terminar de verdade, e só neste aparelho.</li></ul>',
+  rules:'<h3>Como jogar 🎲</h3><ul><li>Diga uma palavra que comece com a última letra da palavra anterior.</li><li>Essa primeira letra sai do seu tabuleiro.</li><li>Quem esvaziar o tabuleiro primeiro, vence! 🏆</li><li>Um jogador: você contra o relógio.</li><li>Dois, três ou quatro: um de cada vez, na ordem.</li><li>Aprender: diga uma palavra no seu idioma, ouça e veja no outro, repita para ganhar um ✅, e guarde em Minhas palavras.</li></ul><h3>Regras 📜</h3><ul><li>Maiúsculas e acentos não contam (á = a, ç = c).</li><li>Cada palavra só vale uma vez.</li><li>Acabou o tempo? A vez passa, e a mesma letra fica.</li><li>Se todo mundo errar essa letra seguida, o próximo escolhe uma letra livre.</li><li>Seis erros seguidos (dois jogadores) ou duas rodadas completas (três ou quatro) acabam o jogo. Quem tiver menos letras, vence.</li><li><span class="rules-hint">💡 Dica</span> Até 3 dicas por turno, só para palavras que ninguém disse ainda. Com dica, nenhuma letra sai naquele turno. Dicas em dois turnos seus seguidos? A última letra apagada volta.</li><li>K, W e Y ficam cinza: não saem, não contam para vencer e nunca são pedidas.</li><li>Se a última letra já saiu do tabuleiro de quem joga a seguir e a palavra tem B, C, D, F, G, H, J, N, P, Q, T, V ou X, pede-se a que estiver mais perto do fim, mesmo se essa também já tiver saído. Sem nenhuma dessas, continua a última letra.</li><li>Antes da palavra, toque em <span class="rules-sent">Frase</span>. O botão acende, e aí você diz a palavra. Ela é a palavra 1 de 5. Dica: escolha uma palavra difícil de continuar!</li><li>Os próximos continuam a frase, e ainda começam com a última letra.</li><li>As palavras da frase ficam verdes. Não há setas entre elas.</li><li>O próximo jogador pode tocar em <span class="rules-no">Não faz sentido</span>. A palavra sai, a letra que ela apagou volta, sem ponto e sem castigo, e a vez volta para quem disse.</li><li>🪄 Travou no meio da frase? Você tem que dizer Hili. A frase é cancelada. Duas letras de castigo acendem de novo no seu teclado, se já tinham sido apagadas.</li><li>Hili nunca vale como palavra normal.</li><li>🎉 Cinco palavras? Confete! Cada palavra vale 1 ponto, e cada ponto apaga mais uma letra sorteada. Os pontos aparecem no fim. Se o bônus esvaziar um tabuleiro, esse jogador vence.</li><li>Antes da palavra dá para acender <span class="rules-cat ctry">País</span> <span class="rules-cat city">Cidade</span> <span class="rules-cat anim">Animal</span> <span class="rules-cat plant">Planta</span>. Mudou de ideia? Toque em outro botão apagado. O desafio vai para o próximo: uma palavra desse tipo, começando com a última letra.</li><li>O jogo olha uma lista. Na dúvida, aparece „entra na categoria?” e vocês tocam ✓ ou ✗.</li><li>Não achou? Toque em <span class="rules-pass">Pular</span>, ou deixe o tempo acabar. A vez passa sem castigo. Sem bônus. Só uma palavra. Não junto com uma frase.</li><li>Uma vez por turno, antes da palavra, toque em <span class="rules-crazy">🤪</span> para você. Diga uma palavra engraçada com a letra certa. Sem ponto, sem apagar letra, e a vez continua sua. O relógio segue. Hili nunca vale, nem aqui.</li></ul><h3>Dicas 🌟</h3><ul><li>😜 Bagunça secreta, só com 2 a 4 jogadores: se você é o próximo, toque duas vezes no meio do seu tabuleiro. Quem está jogando recebe um efeito silencioso e surpresa. Uma vez a cada 20 segundos. Não no solo e não em Aprender.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> O microfone liga sozinho em cada turno. Travou depois de uma notificação ou de outro app? Volte, que ele se recupera. Ou toque em <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ No solo o relógio conta para cima. My New record só é salvo se você terminar de verdade, e só neste aparelho.</li></ul>',
   speechOk:'Reconhecimento de voz disponível 🎤 (permita o acesso ao microfone). Também dá para digitar.', speechNo:'Este navegador não oferece reconhecimento de voz – digite as palavras. Para voz, o Chrome é o mais recomendado.',
   micHint:' Se o microfone não funcionar, toque em 🎤 no jogo.',
   override:'É uma palavra de verdade – aceitar mesmo assim', micTitle:'Fale', inputPh:'Digite uma palavra', send:'Enviar', endBtn:'Encerrar jogo', pause:'Pausar', resume:'Continuar', again:'Novo jogo',
@@ -1214,7 +1215,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.2';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.3';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1327,7 +1328,7 @@ function render(){
   $('#status').innerHTML = G.required ? S.statusNeed(n, G.required, !G.boards[G.turn].has(G.required)) : S.statusFree(n);
   $('#timerfill').style.width = (100*G.timeLeft/G.seconds)+'%';
   $('#timerfill').style.background = `var(--p${G.turn+1})`;
-  if(G && crazyFor!==G.turn){ crazyFor=G.turn; crazyArmed=false; crazyUsed=false; }
+  if(G && crazyFor!==G.turn){ crazyFor=G.turn; crazyArmed=false; crazyUsed=false; arm=null; }
   paintHistory();
   paintSentence();
   // phone: keep the active AND the next player's panels on screen when the turn passes (layout only)
@@ -1428,13 +1429,13 @@ function showHint(p){
 function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return; t.classList.add('back'); setTimeout(()=>t.classList.remove('back'),800); }
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
-let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false;
-const CAT_CACHE='hilingo-cats-v482';
+let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
+const CAT_CACHE='hilingo-cats-v483';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.8.2'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.8.3'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -1556,17 +1557,17 @@ async function resolveCategory(p, word){
 }
 function sentenceOk(){ return !!(G && MODE!=='learn' && G.boards.length>=2 && !G.over); }
 function isHili(raw){ const w=WG.normalize(String(raw||'').trim()); return !!(w && (w==='הילי'||w==='hili'||w.includes('הילי')||w.includes('hili'))); }
-function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; cat=null; catJudge=null; catChecking=false; stripFrom=0; crazyArmed=false; crazyUsed=false; crazyFor=-1; showCatCheck(false); }
+function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; cat=null; catJudge=null; catChecking=false; stripFrom=0; crazyArmed=false; crazyUsed=false; crazyFor=-1; arm=null; showCatCheck(false); }
 function paintSentence(){
   const bar=$('#sentbar'), go=$('#sentStart'), msg=$('#sentMsg'), no=$('#sentNo');
   if(!bar) return;
   const playing=!!(G && MODE!=='learn' && !G.over);
-  const offer=sentenceOk() && !!(sentOffer && !sent && !cat);
   bar.classList.toggle('hidden', !playing);
-  if(go){ go.textContent=S.sentBtn||''; go.classList.remove('hidden'); go.disabled=false; }
-  document.querySelectorAll('.catbtn').forEach(b=>{ b.textContent=(S.catName&&S.catName[b.dataset.cat])||''; b.classList.remove('hidden'); b.disabled=false; });
+  const mark=(el,key)=>{ if(!el) return; const on=arm===key; el.classList.toggle('lit', on); el.classList.toggle('dim', !on); };
+  if(go){ go.textContent=S.sentBtn||''; go.classList.remove('hidden'); go.disabled=false; mark(go,'sentence'); }
+  document.querySelectorAll('.catbtn').forEach(b=>{ b.textContent=(S.catName&&S.catName[b.dataset.cat])||''; b.classList.remove('hidden'); b.disabled=false; mark(b, b.dataset.cat); });
   const crazy=$('#crazyBtn');
-  if(crazy){ crazy.classList.remove('hidden'); crazy.classList.toggle('armed', !!crazyArmed); crazy.disabled=false; }
+  if(crazy){ crazy.classList.remove('hidden'); crazy.disabled=false; mark(crazy,'crazy'); crazy.classList.toggle('armed', arm==='crazy'); }
   const pass=$('#catPass'); if(pass){ pass.textContent=S.catPass||''; pass.classList.toggle('hidden', !cat); }
   const banner=$('#catBanner');
   if(banner){
@@ -1639,9 +1640,21 @@ function restoreLetter(p, L){
   if(i>=0) d.splice(i,1);
   tileBack(p, L);
 }
+function beginSentence(p, r){
+  const word=r.word;
+  let cut=0;
+  for(let i=G.history.length-1;i>=0;i--){ if(G.history[i].player===p && G.history[i].word===word){ cut=i; break; } }
+  if(cut>0) flyStrip();
+  stripFrom=cut;
+  sent={words:[{player:p, word, removed:r.removed||null}], note:S.sentGo};
+  const h=markLastHistory(p, word); if(h) h.sent=1;
+}
 function notePlayedWord(p, r){
   sentFlash='';
-  if(!sentenceOk()){ sentOffer=null; return; }
+  const choice=arm;
+  arm=null;
+  crazyArmed=false;
+  if(!sentenceOk()) return;
   if(sent){
     sent.words.push({player:p, word:r.word, removed:r.removed||null});
     const h=markLastHistory(p, r.word); if(h) h.sent=1;
@@ -1649,27 +1662,8 @@ function notePlayedWord(p, r){
     if(sent.words.length>=5) finishSentence();
     return;
   }
-  sentOffer={player:p, word:r.word, removed:r.removed||null};
-}
-function startSentence(){
-  if(!sentenceOk() || !sentOffer || sent || cat) return;
-  const word=sentOffer.word, player=sentOffer.player;
-  let cut=0;
-  for(let i=G.history.length-1;i>=0;i--){ if(G.history[i].player===player && G.history[i].word===word){ cut=i; break; } }
-  if(cut>0) flyStrip();
-  stripFrom=cut;
-  sent={words:[{player, word, removed:sentOffer.removed}], note:S.sentGo};
-  const h=markLastHistory(player, word); if(h) h.sent=1;
-  sentOffer=null;
-  render();
-}
-function startCategory(kind){
-  if(!sentenceOk() || !sentOffer || sent || cat) return;
-  if(!S.catName || !S.catName[kind]) return;
-  cat={kind, letter:G.required};
-  sentOffer=null;
-  catJudge=null;
-  render();
+  if(choice==='sentence'){ beginSentence(p, r); return; }
+  if(choice && S.catName && S.catName[choice]){ cat={kind:choice}; catJudge=null; }
 }
 function passCategory(){
   if(!cat || !G || G.over) return;
@@ -1695,7 +1689,7 @@ function playCrazy(p, raw){
   }
   G.used.add(pre.word);
   G.history.push({player:p, word:pre.word, crazy:1, removed:null});
-  crazyArmed=false; crazyUsed=true;
+  crazyArmed=false; crazyUsed=true; arm=null;
   crazyBurst();
   showWord(p, pre.word, 'ok');
   setMsg(p, S.crazySaid||'', 'good');
@@ -2414,7 +2408,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.8.2');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.8.3');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2516,7 +2510,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.8.2 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.8.3 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3409,7 +3403,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.2';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.3';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -3854,19 +3848,23 @@ function showRowHint(text){
   clearTimeout(rowHintT);
   rowHintT=setTimeout(()=>{ el.classList.add('hidden'); }, 2200);
 }
-function canMarkWord(){ return sentenceOk() && sentOffer && !sent && !cat; }
-$('#sentStart').onclick=()=>{
-  if(!canMarkWord()){ showRowHint(sent||cat ? (S.busyRound||S.needWord) : (S.needWord||'')); return; }
-  startSentence();
-};
-document.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>{
-  if(!canMarkWord()){ showRowHint(sent||cat ? (S.busyRound||S.needWord) : (S.needWord||'')); return; }
-  startCategory(b.dataset.cat);
-});
+function armChoice(key){
+  if(!sentenceOk() || sent || cat){ showRowHint(S.busyRound||''); return; }
+  arm=key;
+  crazyArmed=false;
+  const hint=$('#rowHint'); if(hint) hint.classList.add('hidden');
+  render();
+}
+$('#sentStart').onclick=()=>armChoice('sentence');
+document.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>armChoice(b.dataset.cat));
 $('#crazyBtn').onclick=()=>{
   if(!G||G.over||paused||MODE==='learn') return;
-  if(crazyUsed||crazyArmed){ showRowHint(S.crazyOnce||''); return; }
-  crazyArmed=true; setMsg(G.turn, S.crazyOn||''); render();
+  if(crazyUsed){ showRowHint(S.crazyOnce||''); return; }
+  arm='crazy';
+  crazyArmed=true;
+  const hint=$('#rowHint'); if(hint) hint.classList.add('hidden');
+  setMsg(G.turn, S.crazyOn||'');
+  render();
 };
 $('#catPass').onclick=()=>passCategory();
 $('#catYes').onclick=()=>{ if(!catJudge) return; const w=catJudge.word; catJudge=null; submit(G.turn, w, false, 'catyes'); };

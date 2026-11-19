@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.2 — category round, and the sentence strip starts on the right.
+ * HilinGo v4.8.3 — category round, and the sentence strip starts on the right.
  *   node tests_categories.mjs
  */
 import { chromium } from 'playwright-core';
@@ -52,9 +52,9 @@ try {
   await boot();
   await page.fill('#in0', 'אבא');
   await page.click('#send0');
+  await page.click('#sentStart');
   await page.fill('#in1', 'אגס');
   await page.click('#send1');
-  await page.click('#sentStart');
   const strip = await page.evaluate(() => {
     const hist = document.getElementById('history');
     const word = hist.querySelector('.sentword');
@@ -70,8 +70,6 @@ try {
   else ok('sentence strip drops the old words and starts at the right');
 
   await boot();
-  await page.fill('#in0', 'אבא');
-  await page.click('#send0');
   const row = await page.evaluate(() => {
     const ids = ['sentStart','catCountry','catCity','catAnimal','catPlant','crazyBtn'];
     const boxes = ids.map(id => {
@@ -90,8 +88,10 @@ try {
   if (!ordered || !labels.startsWith('משפט,ארץ,עיר,חי,צומח') || !row.bg.includes('18, 138, 62') || row.color !== 'rgb(255, 255, 255)') bad('row ' + JSON.stringify(row));
   else ok('button row is right-to-left and משפט is green');
 
-  const size0 = await page.evaluate(() => G.boards.map(b => b.size));
   await page.click('#catCountry');
+  await page.fill('#in0', 'אבא');
+  await page.click('#send0');
+  const size0 = await page.evaluate(() => G.boards.map(b => b.size));
   const banner = await page.locator('#catBanner').innerText();
   const sentShown = await page.locator('#sentStart').isVisible();
   if (!sentShown || !banner.includes('ארץ') || !banner.includes('א')) bad('banner ' + banner + ' sentShown ' + sentShown);
@@ -114,9 +114,9 @@ try {
   if (passed.turn !== 0 || passed.streak !== 0 || passed.cat || passed.sizes.join() !== size0.join()) bad('pass ' + JSON.stringify(passed));
   else ok('pass moves the turn with no penalty');
 
+  await page.click('#catAnimal');
   await page.fill('#in0', 'אנגליה');
   await page.click('#send0');
-  await page.click('#catAnimal');
   const before = await page.evaluate(() => G.boards[1].size);
   await page.fill('#in1', 'היפופוטם');
   await page.click('#send1');

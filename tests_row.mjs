@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.2 — the full button row stays bright, the header fits, and an
+ * HilinGo v4.8.3 — the full button row stays bright, the header fits, and an
  * automatic not-allowed does not show the settings card.
  *   node tests_row.mjs
  */
@@ -110,21 +110,25 @@ try {
   await start('two');
   let row = await rowInfo();
   const labels = row.buttons.map(b => b.text).join(',');
-  const bright = row.buttons.every(b => !b.hidden && b.opacity === '1' && (b.filter === 'none' || b.filter === ''));
+  const bright = row.buttons.every(b => !b.hidden && b.opacity !== '1' && (b.filter === 'none' || b.filter === ''));
   const rights = row.buttons.map(b => b.right);
   const ordered = rights.every((n, i) => i === 0 || rights[i - 1] >= n - 1);
   if (!bright || !ordered || !labels.startsWith('משפט,ארץ,עיר,חי,צומח') || !row.wide || !row.header || row.clipped.length) bad('2p row ' + JSON.stringify(row));
-  else ok('2 players: full vivid row and the header fits at 390px');
+  else ok('2 players: the row starts dimmed and the header fits at 390px');
 
   await page.click('#sentStart');
-  const hint = await page.evaluate(() => ({ text: document.getElementById('rowHint').textContent, sent: !!sent, hidden: document.getElementById('rowHint').classList.contains('hidden') }));
-  if (hint.sent || hint.hidden || !hint.text.includes('קודם אמרו מילה')) bad('hint ' + JSON.stringify(hint));
-  else ok('an early tap shows a hint and does not fade the button');
+  const armed = await page.evaluate(() => ({
+    sent: getComputedStyle(document.getElementById('sentStart')).opacity,
+    city: getComputedStyle(document.getElementById('catCity')).opacity,
+    hint: document.getElementById('rowHint').classList.contains('hidden'),
+  }));
+  if (armed.sent !== '1' || armed.city === '1' || !armed.hint) bad('arm ' + JSON.stringify(armed));
+  else ok('tapping משפט lights only that button');
 
   await start('solo');
   row = await rowInfo();
   const soloLabels = row.buttons.map(b => b.text).join(',');
-  const soloBright = row.buttons.every(b => !b.hidden && b.opacity === '1');
+  const soloBright = row.buttons.every(b => !b.hidden && b.opacity !== '1');
   if (!soloBright || !soloLabels.startsWith('משפט,ארץ,עיר,חי,צומח') || !row.header || row.clipped.length) bad('solo ' + JSON.stringify(row));
   else ok('solo shows the same full row');
 

@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.8">
+<meta name="hilingo-version" content="4.8.1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.8" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.8.1" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -132,8 +132,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 @supports (height:100svh){
   #game{height:100svh;max-height:100dvh}
 }
-#topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,50,180,.08);border-bottom:1px solid rgba(255,255,255,.8)}
-#status{font-size:clamp(16px,2.4vw,24px);font-weight:700;text-align:center;flex:1}
+#topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 16px rgba(80,50,180,.08);border-bottom:1px solid rgba(255,255,255,.8);min-width:0;max-width:100%;box-sizing:border-box}
+#status{font-size:clamp(16px,2.4vw,24px);font-weight:700;text-align:center;flex:1;min-width:0}
 #status .need{display:inline-block;min-width:1.6em;padding:0 8px;border-radius:10px;background-color:var(--yellow);font-size:1.3em;box-shadow:0 2px 0 #E0A800}
 .smallbtn{padding:8px 14px;border-radius:14px;background:#fff;font-size:15px;font-weight:700;color:var(--txt);box-shadow:0 3px 0 #E6E0F8}
 .smallbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #E6E0F8}
@@ -229,7 +229,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 @keyframes micinv{to{box-shadow:0 0 0 6px #fff,0 0 0 9px var(--c),0 8px 16px color-mix(in srgb, var(--c) 30%, transparent)}}
 #halves.n3 .mic.ptt,#halves.n4 .mic.ptt{width:auto;height:44px;padding:0 10px;font-size:18px}
 #halves.n3 .mic.ptt .ml,#halves.n4 .mic.ptt .ml{font-size:14px}
-#diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:3px 8px;white-space:pre-wrap;max-height:16vh;max-height:22dvh;overflow:auto;flex-shrink:0;padding-bottom:max(3px,env(safe-area-inset-bottom))}
+#diag{font:11px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;background:#2A2152;color:#F6F2FF;padding:0;white-space:pre-wrap;max-height:16vh;max-height:22dvh;overflow:auto;flex-shrink:0}
+#diagText{padding:3px 8px  max(3px,env(safe-area-inset-bottom))}
+.diagbar,.dbgbar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;background:#2a2152}
+#diagCopy,#dbgCopy{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 12px;border-radius:10px;background:#4060E0;color:#fff;font:800 14px/1.2 "Rubik","Assistant",sans-serif}
 #game{position:relative}
 #soloTimer:not(.hidden){display:flex;justify-content:center;position:static;pointer-events:none;padding:4px 0 8px;flex-shrink:0}
 #soloClock{width:96px;height:96px;border-radius:50%;background:linear-gradient(180deg,#fff,#F4F0FF);display:grid;place-items:center;box-shadow:0 1px 0 #fff inset,0 0 0 2px #fff,0 0 0 5px rgba(30,136,255,.45),0 6px 14px rgba(80,50,160,.08)}
@@ -250,7 +253,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #sentbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 8px 6px}
 #sentbar.hidden{display:none!important}
 #playrow{direction:rtl;display:flex;flex-wrap:nowrap;gap:4px;width:min(100%,560px);align-items:center}
-#playrow button{direction:ltr;flex:1 1 0;min-width:0;padding:7px 3px;border-radius:999px;font-weight:800;font-size:13px;color:#fff;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#playrow button{direction:ltr;flex:1 1 0;min-width:0;padding:7px 3px;border-radius:999px;font-weight:800;font-size:13px;color:#fff;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:1;filter:none}
+#rowHint{margin:0;min-height:0;font-weight:800;text-align:center;color:#4A2DB0}
+#rowHint.hidden{display:none!important}
 #sentStart{background:#128A3E;color:#fff;box-shadow:0 3px 0 #0B6B32}
 #catCountry{background:#5B2CFF;box-shadow:0 3px 0 #3A14C4}
 #catCity{background:#FF4B6E;box-shadow:0 3px 0 #C42748}
@@ -359,8 +364,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  html,body{height:auto;min-height:100%}
  #game{height:auto;min-height:100vh;min-height:100dvh;min-height:var(--app-h,100dvh);overflow:visible}
  #game.hidden{display:none!important}
- #topbar{gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));padding-top:max(6px,env(safe-area-inset-top))}
- #status{font-size:15px;line-height:1.3}
+ #topbar{gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));padding-top:max(6px,env(safe-area-inset-top));flex-wrap:wrap;overflow:hidden}
+ #status{font-size:14px;line-height:1.25;max-height:2.6em;overflow:hidden}
+ #topbar .smallbtn{padding:6px 8px;font-size:12px}
+ #micRestart{flex:1 0 100%;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
  #status .need{font-size:1.15em;padding:0 6px;border-radius:8px;min-width:1.4em}
  .smallbtn{padding:6px 9px;font-size:13px;border-radius:11px;box-shadow:0 2px 0 #E6E0F8;flex-shrink:0}
  #timerbar{height:6px}
@@ -601,8 +608,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #learnSpeak.listening .sp-listen{display:flex}
 #learnDbg{position:fixed;z-index:30;left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));max-height:42vh;overflow:auto;display:flex;flex-direction:column;background:#1c1638;color:#f6f2ff;font:11px/1.4 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;padding:0;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
 #learnDbg.hidden{display:none!important}
-.dbgbar{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;background:#2a2152}
-.dbgbar button{display:inline-flex;align-items:center;gap:4px;font:700 12px/1.2 ui-monospace,Menlo,monospace;background:#4060E0;color:#fff;border-radius:8px;padding:6px 8px}
+.dbgbar button{display:inline-flex;align-items:center;gap:4px;min-height:40px;font:800 14px/1.2 "Rubik","Assistant",sans-serif;background:#4060E0;color:#fff;border-radius:10px;padding:8px 12px}
 .ico-copy{width:14px;height:14px;min-width:14px;min-height:14px;display:block;flex:0 0 14px}
 #dbgCopied{font-weight:800;color:#1E88FF}
 #learnDbgText{margin:0;padding:8px 10px;white-space:pre-wrap;font:inherit}
@@ -657,7 +663,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.8</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.8.1</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -671,19 +677,19 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="historyWrap"><div id="history"></div><div id="stripFly" class="hidden"></div></div>
-  <div id="sentbar" class="hidden"><div id="playrow"><button type="button" id="sentStart"></button><button type="button" class="catbtn" id="catCountry" data-cat="country"></button><button type="button" class="catbtn" id="catCity" data-cat="city"></button><button type="button" class="catbtn" id="catAnimal" data-cat="animal"></button><button type="button" class="catbtn" id="catPlant" data-cat="plant"></button><button type="button" id="crazyBtn" aria-label="crazy">🤪</button></div><p id="catBanner" class="hidden"></p><div id="catJudge" class="hidden"><span id="catJudgeQ"></span><button type="button" id="catYes">✓</button><button type="button" id="catNo">✗</button></div><button type="button" id="catPass" class="hidden"></button><p id="sentMsg"></p><button type="button" id="sentNo" class="hidden"></button></div>
+  <div id="sentbar" class="hidden"><div id="playrow"><button type="button" id="sentStart"></button><button type="button" class="catbtn" id="catCountry" data-cat="country"></button><button type="button" class="catbtn" id="catCity" data-cat="city"></button><button type="button" class="catbtn" id="catAnimal" data-cat="animal"></button><button type="button" class="catbtn" id="catPlant" data-cat="plant"></button><button type="button" id="crazyBtn" aria-label="crazy">🤪</button></div><p id="rowHint" class="hidden"></p><p id="catBanner" class="hidden"></p><div id="catJudge" class="hidden"><span id="catJudgeQ"></span><button type="button" id="catYes">✓</button><button type="button" id="catNo">✗</button></div><button type="button" id="catPass" class="hidden"></button><p id="sentMsg"></p><button type="button" id="sentNo" class="hidden"></button></div>
   <div id="halves"></div>
   <svg id="fxsvg" width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="fxwave" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="fxwaveN" type="turbulence" baseFrequency="0.012 0.045" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter></svg>
   <div id="fx" class="hidden" aria-hidden="true"></div>
   <div id="soloTimer" class="hidden" aria-hidden="true"><div id="soloClock"><div id="soloTime" dir="ltr">00:00</div></div></div>
-  <div id="diag" class="hidden"></div>
+  <div id="diag" class="hidden"><div class="diagbar"><button type="button" id="diagCopy">העתק הכל / Copy all</button><span id="diagCopied" class="hidden">הועתק</span></div><div id="diagText"></div></div>
 </section>
 
 <section id="learn" class="hidden">
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.8</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.8.1</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -706,7 +712,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
 </section>
-<div id="learnDbg" class="hidden" dir="ltr"><div class="dbgbar"><button type="button" id="dbgCopy" aria-label="Copy all"><svg class="ico-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="12" height="12" rx="2.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" fill="#4060E0" stroke="#fff" stroke-width="2"/></svg>Copy all</button><button type="button" id="dbgClear">Clear log</button><button type="button" id="dbgPt">Test pt-BR mic</button><span id="dbgCopied" class="hidden">Copied ✓</span></div><pre id="learnDbgText"></pre></div>
+<div id="learnDbg" class="hidden" dir="ltr"><div class="dbgbar"><button type="button" id="dbgCopy"><svg class="ico-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="12" height="12" rx="2.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" fill="#4060E0" stroke="#fff" stroke-width="2"/></svg>העתק הכל / Copy all</button><button type="button" id="dbgClear">Clear log</button><button type="button" id="dbgPt">Test pt-BR mic</button><span id="dbgCopied" class="hidden">הועתק</span></div><pre id="learnDbgText"></pre></div>
 
 <div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endSent" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
@@ -720,10 +726,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.8" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.8"></script>
-<script src="learn_dict.js?v=4.8"></script>
-<script src="categories.js?v=4.8"></script>
+<script src="words.js?v=4.8.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.8.1"></script>
+<script src="learn_dict.js?v=4.8.1"></script>
+<script src="categories.js?v=4.8.1"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -960,7 +966,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.8';
+window.WG = WG; window.HILINGO_VERSION='4.8.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -996,6 +1002,7 @@ const STR = {
   catNeed:(name,l)=>`עכשיו: מילה של ${name} שמתחילה ב־${l}`,
   catAsk:w=>`${w} — שייך לקטגוריה?`, catPass:'דלג', catPassed:'דילגתם. בלי עונש.', catNo:'נסו מילה אחרת',
   crazyOn:'🤪 אמרו מילה מצחיקה! השעון רץ.', crazySaid:'🤪 בלי נקודות ובלי מחיקה. עכשיו מילה אמיתית!', crazyHeard:w=>`🤪 ${w}`,
+  needWord:'קודם אמרו מילה 😊', busyRound:'סיימו את זה קודם 😊', crazyOnce:'כבר השתמשתם הפעם 😊',
   sentPenalty:n=>`הילי! ${n} אותיות חזרו ללוח`, sentBonus:(name,n)=>`בונוס משפט! ${n} אותיות נוספות נמחקו`, sentEndPts:(name,n)=>`${name}: ${n} נקודות משפט`,
   dictHint:' – אם זו מילה אמיתית, לחצו על הכפתור למטה', heard:'שמעתי: ', typed:'הוקלד: ', rejected:'" – לא התקבל',
   okRemoved:l=>`✔ האות ${l} נמחקה!`, okKept:l=>`✔ האות ${l} כבר נמחקה קודם – לא נמחק כלום, התור עובר`, accepted:'✔ התקבל: ',
@@ -1008,7 +1015,7 @@ const STR = {
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו",
   hintNoDel:"<span class='rules-hint'>💡 רמז</span> נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`<span class='rules-hint'>💡 רמז</span> בשני תורות ברצף – האות ${l} חזרה ללוח`,
-  errs:{'not-allowed':'Safari חוסם את המיקרופון. Safari ← הגדרות (Settings) ← אתרים (Websites) ← מיקרופון ← localhost ← "אפשר" (Allow), ואז לרענן את הדף.',
+  errs:{'not-allowed':'Safari חוסם את המיקרופון. Safari ← הגדרות (Settings) ← אתרים (Websites) ← מיקרופון ← HOST ← "אפשר" (Allow), ואז לרענן את הדף.',
    'service-not-allowed':'זיהוי הדיבור כבוי במק. הגדרות המערכת ← Apple Intelligence ו-Siri (או Siri) ← להפעיל את Siri; וגם הגדרות המערכת ← מקלדת ← הכתבה ← להפעיל, עם עברית ברשימת השפות. אחר כך לסגור את Safari (Cmd+Q) ולפתוח שוב.',
    'audio-capture':'לא נמצא מיקרופון, או שאפליקציה אחרת תופסת אותו (Zoom, FaceTime וכו׳). בדקו בהגדרות המערכת ← סאונד ← קלט.',
    'network':'אין חיבור לשירות זיהוי הדיבור של Apple – בדקו את חיבור האינטרנט ונסו שוב.',
@@ -1045,6 +1052,7 @@ const STR = {
   catNeed:(name,l)=>`Now: a ${name} that starts with ${l}`,
   catAsk:w=>`${w} — does it belong?`, catPass:'Pass', catPassed:'Passed. No penalty.', catNo:'Try another word',
   crazyOn:'🤪 Say a silly word! The clock keeps going.', crazySaid:'🤪 No points and no letter off. Now a real word!', crazyHeard:w=>`🤪 ${w}`,
+  needWord:'Say a word first 😊', busyRound:'Finish this one first 😊', crazyOnce:'Already used this turn 😊',
   sentPenalty:n=>`Hili! ${n} letters came back`, sentBonus:(name,n)=>`Sentence bonus! ${n} extra letters deleted`, sentEndPts:(name,n)=>`${name}: ${n} sentence points`,
   dictHint:" – if it's a real word, tap the button below", heard:'Heard: ', typed:'Typed: ', rejected:'" – not accepted',
   okRemoved:l=>`✔ ${l} crossed off!`, okKept:l=>`✔ ${l} was already crossed off – nothing removed, next turn`, accepted:'✔ Accepted: ',
@@ -1057,7 +1065,7 @@ const STR = {
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> used – no letter crossed off this turn", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> two turns in a row – ${l} is back on your board`,
-  errs:{'not-allowed':'Safari is blocking the microphone. Safari → Settings → Websites → Microphone → localhost → "Allow", then reload.',
+  errs:{'not-allowed':'Safari is blocking the microphone. Safari → Settings → Websites → Microphone → HOST → "Allow", then reload.',
    'service-not-allowed':'Speech recognition is off on this Mac. System Settings → Apple Intelligence & Siri (or Siri) → turn Siri on; and System Settings → Keyboard → Dictation → On. Then quit Safari (Cmd+Q) and reopen.',
    'audio-capture':'No microphone found, or another app (Zoom, FaceTime…) is using it. Check System Settings → Sound → Input.',
    'network':"Can't reach Apple's speech service – check your internet connection and try again.",
@@ -1094,6 +1102,7 @@ const STR = {
   catNeed:(name,l)=>`Nu: een ${name} die begint met ${l}`,
   catAsk:w=>`${w} — hoort het erbij?`, catPass:'Pas', catPassed:'Overgeslagen. Geen straf.', catNo:'Probeer een ander woord',
   crazyOn:'🤪 Zeg een gek woord! De klok loopt door.', crazySaid:'🤪 Geen punten en geen letter weg. Nu een echt woord!', crazyHeard:w=>`🤪 ${w}`,
+  needWord:'Zeg eerst een woord 😊', busyRound:'Maak dit eerst af 😊', crazyOnce:'Al gebruikt deze beurt 😊',
   sentPenalty:n=>`Hili! ${n} letters zijn terug`, sentBonus:(name,n)=>`Zinbonus! ${n} extra letters geschrapt`, sentEndPts:(name,n)=>`${name}: ${n} zinpunt${n===1?'':'en'}`,
   dictHint:' – is het een echt woord, tik dan op de knop hieronder', heard:'Gehoord: ', typed:'Getypt: ', rejected:'" – niet goedgekeurd',
   okRemoved:l=>`✔ ${l} geschrapt!`, okKept:l=>`✔ ${l} was al geschrapt – niets geschrapt, volgende beurt`, accepted:'✔ Goedgekeurd: ',
@@ -1106,7 +1115,7 @@ const STR = {
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> twee beurten op rij – de ${l} staat weer op je bord`,
-  errs:{'not-allowed':'Safari blokkeert de microfoon. Safari → Instellingen → Websites → Microfoon → localhost → "Sta toe", en herlaad de pagina.',
+  errs:{'not-allowed':'Safari blokkeert de microfoon. Safari → Instellingen → Websites → Microfoon → HOST → "Sta toe", en herlaad de pagina.',
    'service-not-allowed':'Spraakherkenning staat uit op deze Mac. Systeeminstellingen → Apple Intelligence en Siri (of Siri) → Siri aan; en Systeeminstellingen → Toetsenbord → Dicteren → Aan. Stop daarna Safari (Cmd+Q) en open opnieuw.',
    'audio-capture':'Geen microfoon gevonden, of een andere app (Zoom, FaceTime…) gebruikt hem. Controleer Systeeminstellingen → Geluid → Invoer.',
    'network':'Geen verbinding met de spraakdienst van Apple – controleer je internet en probeer opnieuw.',
@@ -1143,6 +1152,7 @@ const STR = {
   catNeed:(name,l)=>`Agora: ${name} que comece com ${l}`,
   catAsk:w=>`${w} — entra na categoria?`, catPass:'Pular', catPassed:'Pulou. Sem castigo.', catNo:'Tente outra palavra',
   crazyOn:'🤪 Diga uma palavra engraçada! O relógio continua.', crazySaid:'🤪 Sem ponto e sem apagar letra. Agora uma palavra de verdade!', crazyHeard:w=>`🤪 ${w}`,
+  needWord:'Diga uma palavra primeiro 😊', busyRound:'Termine esta primeiro 😊', crazyOnce:'Já usou neste turno 😊',
   sentPenalty:n=>`Hili! ${n} letras voltaram`, sentBonus:(name,n)=>`Bônus da frase! ${n} letras extras apagadas`, sentEndPts:(name,n)=>`${name}: ${n} pontos de frase`,
   dictHint:' – se for uma palavra de verdade, toque no botão abaixo', heard:'Ouvi: ', typed:'Digitado: ', rejected:'" – não aceito',
   okRemoved:l=>`✔ A letra ${l} foi apagada!`, okKept:l=>`✔ A letra ${l} já tinha sido apagada – nada foi apagado, o turno passa`, accepted:'✔ Aceito: ',
@@ -1155,7 +1165,7 @@ const STR = {
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra",
   hintNoDel:"<span class='rules-hint'>💡 Dica</span> usada – nenhuma letra foi apagada neste turno", hintRestored:l=>`<span class='rules-hint'>💡 Dica</span> em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
-  errs:{'not-allowed':'O Safari está bloqueando o microfone. Safari → Ajustes → Sites → Microfone → localhost → "Permitir", e recarregue a página.',
+  errs:{'not-allowed':'O Safari está bloqueando o microfone. Safari → Ajustes → Sites → Microfone → HOST → "Permitir", e recarregue a página.',
    'service-not-allowed':'O reconhecimento de voz está desligado neste Mac. Ajustes do Sistema → Apple Intelligence e Siri (ou Siri) → ligar a Siri; e Ajustes do Sistema → Teclado → Ditação → Ligado. Depois feche o Safari (Cmd+Q) e abra de novo.',
    'audio-capture':'Nenhum microfone encontrado, ou outro app (Zoom, FaceTime…) está usando. Confira em Ajustes do Sistema → Som → Entrada.',
    'network':'Não foi possível alcançar o serviço de voz da Apple – confira a internet e tente de novo.',
@@ -1203,7 +1213,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.1';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1442,7 +1452,7 @@ function inCategory(kind, word){
   const set=categorySets()[LANG] && categorySets()[LANG][kind];
   return !!(set && set.has(foldCat(word)));
 }
-function sentenceOk(){ return !!(G && !SOLO && MODE!=='learn' && G.boards.length>=2 && !G.over); }
+function sentenceOk(){ return !!(G && MODE!=='learn' && G.boards.length>=2 && !G.over); }
 function isHili(raw){ const w=WG.normalize(String(raw||'').trim()); return !!(w && (w==='הילי'||w==='hili'||w.includes('הילי')||w.includes('hili'))); }
 function resetSentence(){ sent=null; sentOffer=null; sentFlash=''; sentPoints=[0,0,0,0]; cat=null; catJudge=null; stripFrom=0; crazyArmed=false; crazyUsed=false; crazyFor=-1; }
 function paintSentence(){
@@ -1451,10 +1461,10 @@ function paintSentence(){
   const playing=!!(G && MODE!=='learn' && !G.over);
   const offer=sentenceOk() && !!(sentOffer && !sent && !cat);
   bar.classList.toggle('hidden', !playing);
-  if(go){ go.textContent=S.sentBtn||''; go.classList.toggle('hidden', !offer); }
-  document.querySelectorAll('.catbtn').forEach(b=>{ b.textContent=(S.catName&&S.catName[b.dataset.cat])||''; b.classList.toggle('hidden', !offer); });
+  if(go){ go.textContent=S.sentBtn||''; go.classList.remove('hidden'); go.disabled=false; }
+  document.querySelectorAll('.catbtn').forEach(b=>{ b.textContent=(S.catName&&S.catName[b.dataset.cat])||''; b.classList.remove('hidden'); b.disabled=false; });
   const crazy=$('#crazyBtn');
-  if(crazy){ crazy.classList.toggle('hidden', !playing); crazy.classList.toggle('armed', !!crazyArmed); crazy.disabled=!!(crazyUsed||crazyArmed); }
+  if(crazy){ crazy.classList.remove('hidden'); crazy.classList.toggle('armed', !!crazyArmed); crazy.disabled=false; }
   const pass=$('#catPass'); if(pass){ pass.textContent=S.catPass||''; pass.classList.toggle('hidden', !cat); }
   const banner=$('#catBanner');
   if(banner){
@@ -2303,7 +2313,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.8');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.8.1');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2394,16 +2404,19 @@ $('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S
    A word is submitted when: a final result arrives, OR the interim text has been stable for STABLE_MS,
    OR recognition ends while we still hold an interim transcript. */
 const STABLE_MS=1000, DEAF_MS=6000;
-let recSession=0, heardNote=['','','',''], recCtl=null;
+let recSession=0, heardNote=['','','',''], recCtl=null, lastStartUser=false, micHoldAuto=false;
+function micHost(){ const h=(location.hostname||'').trim(); return h||'this site'; }
+function withHost(s){ return String(s||'').split('HOST').join(micHost()); }
+function userMicHow(how){ return how==='click'||how==='space'||how==='chip'||how==='enter'; }
 const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hearing anything
 // ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
 let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false, restartTimer=0;
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
-function drawDiag(){ const e=$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.8 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
-  e.scrollTop=1e6; }
+function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
+  e.textContent='HilinGo v4.8.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
 // choose the best candidate: first alternative/word that is valid now; else first word of top alternative
@@ -2435,6 +2448,10 @@ document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
 });
 function startRec(p,how){
   if(!SR||!G||G.over||paused||p!==G.turn) return;
+  const user=userMicHow(how);
+  if(user) micHoldAuto=false;
+  if(!user && micHoldAuto){ diag('skip start, held'); return; }
+  if(!user && recFor===p && micSawStart){ diag('skip start, live'); return; }
   // First turn: don't open the mic while Hili's intro is still playing.
   if(introHold&&!introHold.done){
     introHold.pending=()=>{ if(how==='auto'&&typing) return; startRec(p,how); };
@@ -2446,7 +2463,7 @@ function startRec(p,how){
   try{ r=new SR(); }catch(err){ diag('new SR failed: '+err.message); setHeard(p,S.srNA); return; }
   r.lang=S.speech; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
   rec=r; recFor=p; $('#mic'+p).classList.add('on');
-  micSawStart=false; micArmedAt=performance.now();
+  lastStartUser=user; micSawStart=false; micArmedAt=performance.now();
   let lastAlts=null, done=false, stableT=null, deafT=null, sawSound=false, errShown=false;
   const listening=()=>setHeard(p,(heardNote[p]?heardNote[p]+' · ':'')+S.listening);
   listening();
@@ -2468,7 +2485,9 @@ function startRec(p,how){
   const L=n=>()=>{ diag(n); };
   r.onaudiostart=()=>{ diag('audiostart'); if(sess!==recSession) return; clearTimeout(deafT);
     deafT=setTimeout(()=>{ if(!live()||sawSound) return; diag('no sound '+DEAF_MS/1000+'s');
-      if($('#autoMic').checked){ done=true; stopRec(); listening(); restartLater(p); return; }   // auto-mic: silently keep listening
+      // The mic already opened. Tearing it down and calling start() again is not a
+      // user tap, so iOS answers not-allowed and the restarts loop. Leave it up.
+      if($('#autoMic').checked) return;
       if(PTT){ done=true; stopRec(); setMsg(p,S.deaf,'err'); setHeard(p,S.tapAgain); } else setHeard(p,S.deaf); },DEAF_MS); };
   r.onsoundstart=()=>{ diag('soundstart'); sawSound=true; };
   r.onspeechstart=()=>{ diag('speechstart'); sawSound=true; };
@@ -2496,10 +2515,22 @@ function startRec(p,how){
     diag('state error:'+code+(e&&e.message?' "'+e.message+'"':''));
     if(sess!==recSession) return;
     const help=S.errs[code];
-    if(code==='not-allowed'||code==='service-not-allowed'||code==='language-not-supported'){
+    if(code==='not-allowed'||code==='service-not-allowed'){
       done=true; clearTimeout(deafT); errShown=true;
-      setMsg(p,help,'err'); setHeard(p,S.micBlocked+' ('+code+')');
-      $('#autoMic').checked=false; stopRec(); return; }
+      stopRec();
+      if(!lastStartUser){
+        micHoldAuto=true;
+        diag('auto '+code+', wait for tap');
+        setHeard(p,'');
+        return;
+      }
+      setMsg(p, withHost(help), 'err');
+      setHeard(p, S.micBlocked+' ('+code+')');
+      return; }
+    if(code==='language-not-supported'){
+      done=true; clearTimeout(deafT); errShown=true;
+      setMsg(p, help, 'err'); setHeard(p, S.micBlocked+' ('+code+')');
+      stopRec(); return; }
     // A dropped audio route (notification, volume) reports audio-capture or network.
     // Rebuild once, after this instance is gone. Do not turn auto-mic off.
     if(code==='audio-capture'||code==='network'||code==='aborted'||code==='interrupted'){
@@ -2629,6 +2660,7 @@ function scheduleMicRecovery(why){
   restartTimer=setTimeout(()=>{ restartTimer=0; runMicRecovery(why); }, 400);
 }
 function resumeApp(why){
+  micHoldAuto=false;
   diag('app '+why);
   fixLayout(why);
   scheduleMicRecovery(why);
@@ -3276,7 +3308,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.1';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -3713,15 +3745,38 @@ $('#learnMic').onclick=()=>learnMicTap();
 $('#learnRepeatMic').onclick=()=>learnRepeatTap();
 $('#learnClear').onclick=()=>clearLearnRound();
 $('#learnSaid').onclick=()=>{ if(learnPair) acceptRepeat([learnPair.t]); };
-$('#sentStart').onclick=()=>startSentence();
-document.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>startCategory(b.dataset.cat));
-$('#crazyBtn').onclick=()=>{ if(!G||G.over||paused||MODE==='learn'||crazyUsed||crazyArmed) return; crazyArmed=true; setMsg(G.turn, S.crazyOn||''); render(); };
+let rowHintT=0;
+function showRowHint(text){
+  const el=$('#rowHint'); if(!el) return;
+  el.textContent=text||'';
+  el.classList.remove('hidden');
+  clearTimeout(rowHintT);
+  rowHintT=setTimeout(()=>{ el.classList.add('hidden'); }, 2200);
+}
+function canMarkWord(){ return sentenceOk() && sentOffer && !sent && !cat; }
+$('#sentStart').onclick=()=>{
+  if(!canMarkWord()){ showRowHint(sent||cat ? (S.busyRound||S.needWord) : (S.needWord||'')); return; }
+  startSentence();
+};
+document.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>{
+  if(!canMarkWord()){ showRowHint(sent||cat ? (S.busyRound||S.needWord) : (S.needWord||'')); return; }
+  startCategory(b.dataset.cat);
+});
+$('#crazyBtn').onclick=()=>{
+  if(!G||G.over||paused||MODE==='learn') return;
+  if(crazyUsed||crazyArmed){ showRowHint(S.crazyOnce||''); return; }
+  crazyArmed=true; setMsg(G.turn, S.crazyOn||''); render();
+};
 $('#catPass').onclick=()=>passCategory();
 $('#catYes').onclick=()=>{ if(!catJudge) return; const w=catJudge.word; catJudge=null; submit(G.turn, w, false, 'catyes'); };
 $('#catNo').onclick=()=>{ catJudge=null; if(G) setMsg(G.turn, S.catNo||''); render(); if($('#autoMic').checked && G && !typing) setTimeout(()=>{ if(G&&G.turn!=null&&!G.over&&!paused&&!typing) startRec(G.turn,'auto'); },300); };
 $('#sentNo').onclick=()=>voidSentenceWord();
+function fullLogText(){
+  const mic=diagLog.length?diagLog.join('\n')+'\n':'';
+  return mic+learnDbgLines.join('\n');
+}
 function copyLearnLog(){
-  const text=learnDbgLines.join('\n');
+  const text=fullLogText();
   let ok=false;
   try{
     const ta=document.createElement('textarea');
@@ -3738,7 +3793,7 @@ function copyLearnLog(){
   const show=worked=>{
     const note=$('#dbgCopied');
     if(!note) return;
-    note.textContent=worked?'Copied ✓':'Copy failed';
+    note.textContent=worked?'הועתק':'Copy failed';
     note.classList.remove('hidden');
     setTimeout(()=>note.classList.add('hidden'), 1200);
   };
@@ -3781,6 +3836,27 @@ function testPtMic(){
   beginListen('target','pt-BR');
 }
 $('#dbgCopy').onclick=()=>copyLearnLog();
+$('#diagCopy').onclick=()=>{
+  const text=fullLogText();
+  const show=worked=>{
+    const note=$('#diagCopied'); if(!note) return;
+    note.textContent=worked?'הועתק':'Copy failed';
+    note.classList.remove('hidden');
+    setTimeout(()=>note.classList.add('hidden'), 1200);
+  };
+  let ok=false;
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ ta.setSelectionRange(0, text.length); }catch(_){}
+    ok=document.execCommand('copy'); ta.remove();
+  }catch(_){}
+  if(ok){ show(true); return; }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>show(true), ()=>show(false)); return; }
+  show(false);
+};
 $('#dbgClear').onclick=()=>clearLearnLog();
 $('#dbgPt').onclick=e=>{ try{ e.preventDefault(); e.currentTarget.blur(); }catch(_){} testPtMic(); };
 $('#learnIn').addEventListener('input', ()=>{

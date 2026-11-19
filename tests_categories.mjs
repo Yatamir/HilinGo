@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8 — category round, and the sentence strip starts on the right.
+ * HilinGo v4.8.1 — category round, and the sentence strip starts on the right.
  *   node tests_categories.mjs
  */
 import { chromium } from 'playwright-core';
@@ -92,8 +92,8 @@ try {
   const size0 = await page.evaluate(() => G.boards.map(b => b.size));
   await page.click('#catCountry');
   const banner = await page.locator('#catBanner').innerText();
-  const sentHidden = await page.locator('#sentStart').isHidden();
-  if (!sentHidden || !banner.includes('ארץ') || !banner.includes('א')) bad('banner ' + banner + ' sentHidden ' + sentHidden);
+  const sentShown = await page.locator('#sentStart').isVisible();
+  if (!sentShown || !banner.includes('ארץ') || !banner.includes('א')) bad('banner ' + banner + ' sentShown ' + sentShown);
   else ok('category banner tells the next player the letter');
 
   await page.fill('#in1', 'אגס');

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.8.3 — the full button row stays bright, the header fits, and an
+ * HilinGo v4.8.4 — the full button row stays bright, the header fits, and an
  * automatic not-allowed does not show the settings card.
  *   node tests_row.mjs
  */
@@ -124,6 +124,36 @@ try {
   }));
   if (armed.sent !== '1' || armed.city === '1' || !armed.hint) bad('arm ' + JSON.stringify(armed));
   else ok('tapping משפט lights only that button');
+
+  const pause = await page.evaluate(() => {
+    const b = document.getElementById('pauseBtn');
+    const cs = getComputedStyle(b);
+    const show = (sel) => getComputedStyle(b.querySelector(sel)).display !== 'none';
+    return {
+      text: b.textContent.trim(),
+      label: b.getAttribute('aria-label'),
+      pause: show('.ico-pause'),
+      play: show('.ico-play'),
+      bg: cs.backgroundColor,
+      paused,
+    };
+  });
+  if (pause.text || pause.play || !pause.pause || pause.paused || pause.bg !== 'rgb(107, 44, 255)') bad('pause icon ' + JSON.stringify(pause));
+  else ok('running game shows a purple pause icon and no label');
+  const beforeClock = await page.evaluate(() => G.timeLeft);
+  await page.click('#pauseBtn');
+  await page.waitForTimeout(400);
+  const held = await page.evaluate(() => {
+    const b = document.getElementById('pauseBtn');
+    const show = (sel) => getComputedStyle(b.querySelector(sel)).display !== 'none';
+    return { play: show('.ico-play'), pause: show('.ico-pause'), paused, left: G.timeLeft, label: b.getAttribute('aria-label') };
+  });
+  if (!held.play || held.pause || !held.paused || held.left < beforeClock - 0.15 || held.label !== 'המשך') bad('paused ' + JSON.stringify({ ...held, beforeClock }));
+  else ok('pause swaps to a play icon and holds the clock');
+  await page.click('#pauseBtn');
+  const resumed = await page.evaluate(() => ({ paused, label: document.getElementById('pauseBtn').getAttribute('aria-label') }));
+  if (resumed.paused || resumed.label !== 'השהיה') bad('resume ' + JSON.stringify(resumed));
+  else ok('play resumes the game');
 
   await start('solo');
   row = await rowInfo();

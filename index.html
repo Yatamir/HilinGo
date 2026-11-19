@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.8.3">
+<meta name="hilingo-version" content="4.8.4">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.8.3" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.8.4" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -137,6 +137,12 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #status .need{display:inline-block;min-width:1.6em;padding:0 8px;border-radius:10px;background-color:var(--yellow);font-size:1.3em;box-shadow:0 2px 0 #E0A800}
 .smallbtn{padding:8px 14px;border-radius:14px;background:#fff;font-size:15px;font-weight:700;color:var(--txt);box-shadow:0 3px 0 #E6E0F8}
 .smallbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #E6E0F8}
+#pauseBtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;min-width:36px;padding:0;border-radius:14px;background:var(--p1);color:#fff;box-shadow:0 3px 0 #3A1FA8;flex:0 0 auto;line-height:0}
+#pauseBtn svg{width:16px;height:16px;display:block}
+#pauseBtn .ico-play{display:none}
+#pauseBtn.is-paused .ico-pause{display:none}
+#pauseBtn.is-paused .ico-play{display:block}
+#pauseBtn:active{box-shadow:0 1px 0 #3A1FA8}
 #timerbar{height:8px;background:rgba(255,255,255,.55)}
 #timerfill{height:100%;width:100%;background:var(--p1);transition:width .1s linear;border-radius:0 8px 8px 0}
 #halves{flex:1;display:flex;min-height:0;min-width:0;padding:8px;gap:8px}
@@ -666,7 +672,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
     </div>
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.8.3</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.8.4</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -676,7 +682,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div id="topbar">
     <button class="smallbtn" id="endBtn">סיום משחק</button>
     <div id="status"></div>
-    <button class="smallbtn" id="diagBtn" title="mic log">🔍</button><button class="smallbtn hidden" id="micRestart" type="button"></button><button class="smallbtn" id="pauseBtn">השהיה</button>
+    <button class="smallbtn" id="diagBtn" title="mic log">🔍</button><button class="smallbtn hidden" id="micRestart" type="button"></button><button class="smallbtn" id="pauseBtn" type="button" aria-label="השהיה"><svg class="ico-pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.6" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.6" fill="currentColor"/></svg><svg class="ico-play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.8v14.4L19.2 12z" fill="currentColor"/></svg></button>
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="historyWrap"><div id="history"></div><div id="stripFly" class="hidden"></div></div>
@@ -692,7 +698,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.8.3</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.8.4</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -729,9 +735,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.8.3" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.8.3"></script>
-<script src="learn_dict.js?v=4.8.3"></script>
+<script src="words.js?v=4.8.4" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.8.4"></script>
+<script src="learn_dict.js?v=4.8.4"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -968,7 +974,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.8.3';
+window.WG = WG; window.HILINGO_VERSION='4.8.4';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1215,7 +1221,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.3';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.8.4';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1240,7 +1246,7 @@ function applyLang(code){
   document.querySelectorAll('.lvl').forEach(b=>b.textContent=S.lvl[b.dataset.s]);
   $('#autoMicL').textContent=S.autoMic; $('#soundL').textContent=S.sound; $('#rules').innerHTML=S.rules;
   [1,2,3,4].forEach(i=>{ const e=$('#n'+i); e.placeholder=S.player(i); e.setAttribute('aria-label',S.playerAria(i)); });
-  $('#endBtn').textContent=S.endBtn; $('#pauseBtn').textContent=paused?S.resume:S.pause; $('#again').textContent=S.again;
+  $('#endBtn').textContent=S.endBtn; paintPause(); $('#again').textContent=S.again;
   const mw=$('#myWordsBtn'); if(mw) mw.textContent=S.myWords;
   if($('#wordsov') && !$('#wordsov').classList.contains('hidden')){ pendingDelete=null; renderMyWords(); }
   paintRich($('#speechNote'), SR ? S.speechOk+S.micHint : S.speechNo);
@@ -1430,12 +1436,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v483';
+const CAT_CACHE='hilingo-cats-v484';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.8.3'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.8.4'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -2353,7 +2359,7 @@ function startGame(){
   $('#start').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#endov').classList.add('hidden');
   $('#game').classList.toggle('solo', SOLO && MODE!=='learn');
   if(SOLO && MODE!=='learn') startSoloClock(); else stopSoloClock(false);
-  paused=false; $('#pauseBtn').textContent=S.pause;
+  paused=false; paintPause();
   try{ window.scrollTo(0,0); }catch(_){}   // phone: the start screen may be scrolled down to the Go button
   hintUI={key:null,shown:new Set()};
   buildHalves(); render(); lastT=performance.now(); cancelAnimationFrame(timerId); timerId=requestAnimationFrame(loop);
@@ -2408,7 +2414,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.8.3');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.8.4');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2489,7 +2495,12 @@ $('#wordsList').onclick=e=>{
 $('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; stopSoloClock(false); $('#game').classList.remove('solo'); $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); paintSoloBest(); };
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
 $('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
-$('#pauseBtn').onclick=()=>{ paused=!paused; $('#pauseBtn').textContent=paused?S.resume:S.pause; if(paused){ stopRec(); freezeSolo(); } else { lastT=performance.now(); thawSolo(); afterTurnChange(); } };
+function paintPause(){
+  const b=$('#pauseBtn'); if(!b) return;
+  b.classList.toggle('is-paused', !!paused);
+  b.setAttribute('aria-label', paused?(S&&S.resume||''):(S&&S.pause||''));
+}
+$('#pauseBtn').onclick=()=>{ paused=!paused; paintPause(); if(paused){ stopRec(); freezeSolo(); } else { lastT=performance.now(); thawSolo(); afterTurnChange(); } };
 
 /* speech
    Chrome: optional auto-mic each turn (as before). Safari (PTT): tap 🎤 / Enter-in-empty-box / Space →
@@ -2510,7 +2521,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.8.3 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.8.4 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3403,7 +3414,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.3';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.8.4';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'cats');
-const LANGS = ['he', 'en', 'nl', 'pt'];
+const LANGS = ['he', 'en', 'nl', 'pt', 'es', 'it'];
 const FINALS = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
 
 function tokens(raw, he) {
@@ -84,6 +84,18 @@ const seeds = {
     animal: ['gato','cachorro','tigre','leao','tubarao','aguia','cavalo','vaca','ovelha','elefante','lobo','urso','raposa','coelho','cobra','sapo','baleia','golfinho','macaco','zebra','girafa','pinguim','abelha','borboleta','coruja','panda','canguru','dinossauro','aranha','jacare'],
     plant: ['tulipa','rosa','carvalho','oliveira','maca','trigo','hortela','pinheiro','palmeira','banana','laranja','limao','cenoura','cebola','alho','tomate','alface','morango','girassol','orquidea','figo','uva','arroz','milho','cacto'],
   },
+  es: {
+    country: ['espana','francia','israel','italia','alemania','portugal','egipto','china','japon','india','canada','mexico','polonia','rusia','turquia','marruecos','argentina','chile','peru','cuba','australia','irlanda','suecia','noruega','holanda','belgica','grecia','brasil'],
+    city: ['madrid','barcelona','sevilla','valencia','paris','roma','londres','berlin','lisboa','amsterdam','atenas','moscu','tokio','elcairo','haifa','jerusalen'],
+    animal: ['perro','gato','tigre','leon','caballo','vaca','oveja','elefante','lobo','oso','zorro','conejo','serpiente','rana','ballena','delfin','mono','cebra','jirafa','pinguino','abeja','mariposa','buho','panda','canguro','dinosaurio','arana'],
+    plant: ['rosa','roble','olivo','manzana','trigo','menta','pino','palmera','platano','naranja','limon','zanahoria','cebolla','ajo','tomate','lechuga','fresa','girasol','orquidea','higo','uva','arroz','maiz','cactus'],
+  },
+  it: {
+    country: ['spagna','francia','israele','italia','germania','portogallo','egitto','cina','giappone','india','canada','messico','polonia','russia','turchia','marocco','argentina','cile','peru','cuba','australia','irlanda','svezia','norvegia','olanda','belgio','grecia','brasile'],
+    city: ['roma','milano','napoli','torino','firenze','venezia','parigi','londra','berlino','madrid','lisbona','amsterdam','atene','mosca','tokyo','gerusalemme','haifa'],
+    animal: ['cane','gatto','tigre','leone','cavallo','mucca','pecora','elefante','lupo','orso','volpe','coniglio','serpente','rana','balena','delfino','scimmia','zebra','giraffa','pinguino','ape','farfalla','gufo','panda','canguro','dinosauro','ragno'],
+    plant: ['rosa','quercia','olivo','mela','grano','menta','pino','palma','banana','arancia','limone','carota','cipolla','aglio','pomodoro','lattuga','fragola','girasole','orchidea','fico','uva','riso','mais','cactus'],
+  },
 };
 
 function countryQ(lang) {
@@ -141,6 +153,8 @@ for (const lang of LANGS) {
     addAll(bags.city, await grab('brazil', localQ('pt', 'Q155', ['Q515', 'Q3957', 'Q532', 'Q3184121'])), he);
     addAll(bags.city, await grab('portugal', localQ('pt', 'Q45', ['Q515', 'Q3957', 'Q532'])), he);
   }
+  if (lang === 'es') addAll(bags.city, await grab('spain', localQ('es', 'Q29', ['Q515', 'Q3957'])), he);
+  if (lang === 'it') addAll(bags.city, await grab('italy', localQ('it', 'Q38', ['Q515', 'Q3957'])), he);
 
   for (const [kind, root] of [['animal', 'Q729'], ['plant', 'Q756']]) {
     for (let off = 0; off < 4000; off += 1000) {

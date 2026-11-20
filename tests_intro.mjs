@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.9.1 — Hili's intro plays once when a game starts, and the mic waits.
+ * HilinGo v4.10 — Hili's intro plays once when a game starts, and the mic waits.
  *   npm install playwright-core
  *   node tests_intro.mjs
  * Audio and speech recognition are mocked. The real clip is not decoded.
@@ -127,10 +127,10 @@ try {
     const page = await context.newPage();
     const errors = await open(page);
     let s = await snap(page);
-    if (s.loads < 1 || s.preload !== 'auto' || !/hilingo\.mp3(\?v=4\.9\.1)?$/.test(s.src)) bad('preload ' + JSON.stringify(s));
+    if (s.loads < 1 || s.preload !== 'auto' || !/hilingo\.mp3(\?v=4\.10)?$/.test(s.src)) bad('preload ' + JSON.stringify(s));
     else ok('preloaded audio/hilingo.mp3');
-    if (s.ver !== '4.9.1' || s.version !== '4.9.1') bad('version ' + s.ver + ' / ' + s.version);
-    else ok('version 4.9.1');
+    if (s.ver !== '4.10' || s.version !== '4.10') bad('version ' + s.ver + ' / ' + s.version);
+    else ok('version 4.10');
 
     await page.click('#go');
     s = await snap(page);
@@ -231,6 +231,8 @@ try {
     ['en', 'cat'],
     ['nl', 'huis'],
     ['pt', 'casa'],
+    ['es', 'casa'],
+    ['it', 'casa'],
   ];
   for (const [lang, word] of langs) {
     const page = await context.newPage();

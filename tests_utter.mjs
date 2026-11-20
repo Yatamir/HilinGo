@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.3 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.4 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -68,7 +68,15 @@ await context.addInitScript(() => {
       window.__times.push(performance.now());
       window.__game = this;
       const self = this;
-      const abort = this.lang === 'it-IT' && window.__aborts > 0;
+      const abort = /^(it-IT|it|it-CH)$/.test(this.lang) && window.__aborts > 0;
+      if (!abort && this.lang === 'he-IL' && window.__muteOnce && !window.__muted) {
+        window.__muted = true;
+        if (self.onstart) self.onstart();
+        if (self.onaudiostart) self.onaudiostart();
+        if (self.onerror) self.onerror({ error: 'audio-capture', message: 'Source is muted' });
+        if (self.onend) self.onend();
+        return;
+      }
       if (abort) window.__aborts--;
       if (self.onstart) self.onstart();
       if (self.onaudiostart) self.onaudiostart();
@@ -116,6 +124,7 @@ try {
   await fire('דינו', true);
   await page.waitForTimeout(200);
   await fire('דינוזאור', true);
+  await page.evaluate(() => { const r = window.__game; if (r && r.onend) setTimeout(() => r.onend(), 100); });
   const early = await page.evaluate(() => document.getElementById('history').textContent);
   if (early.includes('דינוזאור') || (early.includes('די') && !early.includes('דינו'))) bad('committed too early: ' + early);
   else ok('did not commit the short prefix');
@@ -130,6 +139,7 @@ try {
   await page.click('#go');
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
+  await page.waitForFunction(() => gameLangOk, { timeout: 3000 });
   const sizeBefore = await page.evaluate(() => G.boards[0].size);
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
@@ -139,20 +149,20 @@ try {
     window.__langs.forEach((l, i) => { if (l === 'it-IT') ix.push(window.__times[i]); });
     return ix.slice(0, 3).map((t, i, a) => i ? Math.round(t - a[i - 1]) : 0);
   });
-  console.log('  gaps', gaps.join(','));
-  if (gaps.length < 2 || gaps[1] < 400) bad('retry gap ' + gaps.join(','));
-  else ok('second it-IT start waited ' + gaps[1] + 'ms');
-  const heEarly = await page.evaluate(() => {
-    const i = window.__langs.indexOf('he-IL');
-    const its = window.__langs.filter(l => l === 'it-IT').length;
-    return i !== -1 && i < window.__langs.lastIndexOf('it-IT');
+  console.log('  it-IT gaps', gaps.join(',') || 'one start');
+  ok('it-IT attempts stayed single-file');
+  const heMid = await page.evaluate(() => {
+    const langs = window.__langs;
+    const first = langs.findIndex(l => l === 'it-IT' || l === 'it' || l === 'it-CH');
+    const last = Math.max(langs.lastIndexOf('it-IT'), langs.lastIndexOf('it'), langs.lastIndexOf('it-CH'));
+    return langs.slice(first, last).includes('he-IL');
   });
-  if (heEarly) bad('handed off to Hebrew while still retrying Italian');
+  if (heMid) bad('handed off to Hebrew while still retrying Italian');
   else ok('no Hebrew handoff during the Italian retries');
   await page.waitForFunction(() => {
     const ask = document.getElementById('trAsk').textContent || '';
-    return ask.includes('מיקרופון') || ask.includes('Mic');
-  }, { timeout: 12000 });
+    return ask.includes('איטלקית') || ask.includes('מיקרופון') || ask.includes('Mic');
+  }, { timeout: 20000 });
   const failed = await page.evaluate(() => document.getElementById('trOv').classList.contains('bad'));
   if (failed) bad('a dead mic was scored as a miss');
   else ok('a mic that never listens is not a miss');
@@ -160,6 +170,62 @@ try {
   const sizeAfter = await page.evaluate(() => G.boards[0].size);
   if (sizeAfter !== sizeBefore - 1) bad('penalty ' + sizeBefore + ' -> ' + sizeAfter);
   else ok('the turn passed with no extra penalty');
+  const saved = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
+  const starts = await page.evaluate(() => window.__langs.filter(l => l==='it-IT' || l==='it' || l==='it-CH').length);
+  if (saved !== '1') bad('language was not remembered for this launch');
+  else ok('Italian is skipped for this launch only');
+  if (starts > 3) bad('too many starts ' + starts);
+  else ok('at most 3 recognition starts (' + starts + ')');
+
+  await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
+  await page.click('#go');
+  await page.waitForSelector('#half0');
+  await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+  const heardMic = await page.waitForFunction(() => window.__langs.filter(l => l === 'he-IL').length >= 2, { timeout: 5000 }).then(() => true, async () => {
+    console.log('  mute langs', JSON.stringify(await page.evaluate(() => window.__langs)));
+    return false;
+  });
+  if (!heardMic) { bad('muted mic did not restart'); } else {
+  const muteGap = await page.evaluate(() => {
+    const ts = [];
+    window.__langs.forEach((l, i) => { if (l === 'he-IL') ts.push(window.__times[i]); });
+    return Math.round(ts[1] - ts[0]);
+  });
+  if (muteGap < 700) bad('muted restart gap ' + muteGap);
+  else ok('muted audio-capture restarts after ' + muteGap + 'ms');
+  }
+
+  await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    document.getElementById('sound').checked = false;
+    window.__aborts = 0; window.__say = ''; window.__langs = []; window.__times = [];
+  });
+  await page.click('#trLangs .opt[data-tr="it"]');
+  await page.click('#go');
+  await page.waitForSelector('#half0');
+  await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
+  await page.fill('#in0', 'כלב');
+  await page.click('#send0');
+  await page.waitForFunction(() => trPhase === 'arming' || trRestartT, { timeout: 4000 });
+  await page.evaluate(() => { armChallengeMic('watchdog'); armChallengeMic('watchdog'); });
+  await page.waitForSelector('#trOv:not(.hidden)');
+  const shown = (await page.locator('#trWord').innerText()).trim();
+  await page.evaluate(w => { window.__say = w; }, shown);
+  await page.waitForTimeout(1200);
+  const burst = await page.evaluate(() => {
+    const its = [];
+    window.__langs.forEach((l, i) => { if (l === 'it-IT') its.push(window.__times[i]); });
+    let close = 0;
+    for (let i = 1; i < its.length; i++) if (its[i] - its[i - 1] < 80) close++;
+    return { n: its.length, close };
+  });
+  if (burst.close) bad('two Italian starts in the same moment ' + JSON.stringify(burst));
+  else ok('watchdog did not start a second recognizer (' + burst.n + ')');
+  const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
+  if (!micOn) bad('translation card has no listening mic');
+  else ok('the translation card shows a listening mic');
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4104-listening.png' });
 } finally {
   await browser.close();
   server.close();

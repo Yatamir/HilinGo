@@ -167,7 +167,7 @@ try {
     for (let n = 0; n < words.length; n++) {
       const word = words[n];
       const mark = await page.evaluate(() => window.__langs.length);
-      await page.evaluate(drops => { window.__drops = drops; window.__say = ''; }, n === 0 ? 4 : 1);
+      await page.evaluate(drops => { window.__drops = drops; window.__say = ''; }, n === 0 ? 2 : 1);
       const p = await page.evaluate(() => G.turn);
       await page.evaluate(w => { try { WG.addCustomWord(w); } catch (_) {} }, word);
       await page.fill('#in' + p, word);
@@ -205,7 +205,7 @@ try {
       if (!langs.includes(tag)) bad(lang + ' turn ' + (n + 1) + ' langs ' + langs.join(','));
       if (!langs.includes('he-IL')) bad(lang + ' turn ' + (n + 1) + ' did not return to Hebrew ' + langs.join(','));
       const challengeStarts = langs.filter(x => x === tag).length;
-      if (n === 0 && challengeStarts < 4) bad(lang + ' only restarted ' + challengeStarts + ' times');
+      if (n === 0 && challengeStarts !== 3) bad(lang + ' started ' + challengeStarts + ' times');
       heard++;
     }
     if (heard === 10) ok(lang + ' heard 10 challenges in a row (' + expect[lang] + ')');

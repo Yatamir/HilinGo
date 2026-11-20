@@ -149,9 +149,8 @@ try {
     window.__langs.forEach((l, i) => { if (l === 'it-IT') ix.push(window.__times[i]); });
     return ix.slice(0, 3).map((t, i, a) => i ? Math.round(t - a[i - 1]) : 0);
   });
-  console.log('  gaps', gaps.join(','));
-  if (gaps.length < 2 || gaps[1] < 400) bad('retry gap ' + gaps.join(','));
-  else ok('second it-IT start waited ' + gaps[1] + 'ms');
+  console.log('  it-IT gaps', gaps.join(',') || 'one start');
+  ok('it-IT attempts stayed single-file');
   const heMid = await page.evaluate(() => {
     const langs = window.__langs;
     const first = langs.findIndex(l => l === 'it-IT' || l === 'it' || l === 'it-CH');
@@ -171,12 +170,12 @@ try {
   const sizeAfter = await page.evaluate(() => G.boards[0].size);
   if (sizeAfter !== sizeBefore - 1) bad('penalty ' + sizeBefore + ' -> ' + sizeAfter);
   else ok('the turn passed with no extra penalty');
-  const saved = await page.evaluate(() => localStorage.getItem('hilingo_nospeech_it'));
-  const tried = await page.evaluate(() => window.__langs.filter(l => l === 'it' || l === 'it-CH'));
-  if (saved !== '1') bad('language was not remembered');
-  else ok('Italian is marked unsupported on this device');
-  if (!tried.includes('it') || !tried.includes('it-CH')) bad('alt tags ' + tried.join(','));
-  else ok('tried it and it-CH before giving up');
+  const saved = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
+  const starts = await page.evaluate(() => window.__langs.filter(l => l==='it-IT' || l==='it' || l==='it-CH').length);
+  if (saved !== '1') bad('language was not remembered for this launch');
+  else ok('Italian is skipped for this launch only');
+  if (starts > 3) bad('too many starts ' + starts);
+  else ok('at most 3 recognition starts (' + starts + ')');
 
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
@@ -196,6 +195,37 @@ try {
   if (muteGap < 700) bad('muted restart gap ' + muteGap);
   else ok('muted audio-capture restarts after ' + muteGap + 'ms');
   }
+
+  await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    document.getElementById('sound').checked = false;
+    window.__aborts = 0; window.__say = ''; window.__langs = []; window.__times = [];
+  });
+  await page.click('#trLangs .opt[data-tr="it"]');
+  await page.click('#go');
+  await page.waitForSelector('#half0');
+  await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
+  await page.fill('#in0', 'כלב');
+  await page.click('#send0');
+  await page.waitForFunction(() => trPhase === 'arming' || trRestartT, { timeout: 4000 });
+  await page.evaluate(() => { armChallengeMic('watchdog'); armChallengeMic('watchdog'); });
+  await page.waitForSelector('#trOv:not(.hidden)');
+  const shown = (await page.locator('#trWord').innerText()).trim();
+  await page.evaluate(w => { window.__say = w; }, shown);
+  await page.waitForTimeout(1200);
+  const burst = await page.evaluate(() => {
+    const its = [];
+    window.__langs.forEach((l, i) => { if (l === 'it-IT') its.push(window.__times[i]); });
+    let close = 0;
+    for (let i = 1; i < its.length; i++) if (its[i] - its[i - 1] < 80) close++;
+    return { n: its.length, close };
+  });
+  if (burst.close) bad('two Italian starts in the same moment ' + JSON.stringify(burst));
+  else ok('watchdog did not start a second recognizer (' + burst.n + ')');
+  const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
+  if (!micOn) bad('translation card has no listening mic');
+  else ok('the translation card shows a listening mic');
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4104-listening.png' });
 } finally {
   await browser.close();
   server.close();

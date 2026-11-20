@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.1 — translation card, hands-free repeat, and the word bank.
+ * HilinGo v4.10.2 — translation card, hands-free repeat, and the word bank.
  *   node tests_translate.mjs
  */
 import { chromium } from 'playwright-core';
@@ -85,7 +85,7 @@ try {
   await page.reload({ waitUntil: 'domcontentloaded' });
   const migrated = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
   if (migrated !== '45') bad('migrate ' + migrated);
-  else ok('updating to v4.10.1 resets a saved level to 45 once');
+  else ok('updating to v4.10.2 resets a saved level to 45 once');
   await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   const keptLevel = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
@@ -158,10 +158,8 @@ try {
 
   await page.click('#endBtn');
   await page.click('#again');
-  await page.evaluate(() => { document.getElementById('sound').checked = false; });
-  await page.click('#go');
   await page.waitForSelector('#in0');
-  await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('אבא'); });
+  await page.evaluate(() => { document.getElementById('sound').checked = false; try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('אבא'); });
   const before = await page.evaluate(() => G.boards[0].size);
   await page.fill('#in0', 'אבא');
   await page.click('#send0');

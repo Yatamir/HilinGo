@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.10.1">
+<meta name="hilingo-version" content="4.10.2">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.10.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.10.2" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -711,7 +711,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.10.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.10.2</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -737,7 +737,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.10.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.10.2</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -776,10 +776,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.10.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.10.1"></script>
-<script src="cat_hints.js?v=4.10.1"></script>
-<script src="learn_dict.js?v=4.10.1"></script>
+<script src="words.js?v=4.10.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.10.2"></script>
+<script src="cat_hints.js?v=4.10.2"></script>
+<script src="learn_dict.js?v=4.10.2"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1019,7 +1019,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.10.1';
+window.WG = WG; window.HILINGO_VERSION='4.10.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1495,7 +1495,7 @@ const STR = {
 };
 let LANG='he', S=STR.he, NPLAYERS=2, SOLO=false, MODE='play', LEARN_TARGET='pt', TR='';
 let trLock=false, trSpeaker=-1, trScored=false, trDeaf=false, trTarget='', trAlts=[], trTimer=0, trRestartT=0, trRestarts=0, trFroze=false, trKind='game', bankFilter='all', bankAsk=-1;
-let trPhase='off', trListenUntil=0, trBootTimer=0, micGapUntil=0;
+let trPhase='off', trListenUntil=0, trHardUntil=0, trBootTimer=0, micGapUntil=0, trSessHandled=0;
 // Before any startup call. applyLang() paints a saved solo record, and that
 // reads SOLO_CAP. A const later in the script is still in the temporal dead zone.
 const SOLO_CAP=99*60+59;
@@ -1534,7 +1534,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10.2';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1868,12 +1868,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4101';
+const CAT_CACHE='hilingo-cats-v4102';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.10.1'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.10.2'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -2122,7 +2122,7 @@ function playCrazy(p, raw){
     setMsg(p, '✖ '+(S.reasons[pre.reason]||'')+(pre.reason==='letter'?G.required:''), 'err');
     setHeard(p, S.typed+'"'+String(raw||'').trim()+S.rejected);
     render();
-    if($('#autoMic').checked && !typing) setTimeout(()=>{ if(G&&G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
+    if($('#autoMic').checked && !typing) setTimeout(()=>{ if(challengeOwnsMic()) return; if(G&&G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
     return false;
   }
   G.used.add(pre.word);
@@ -2133,7 +2133,7 @@ function playCrazy(p, raw){
   setMsg(p, S.crazySaid||'', 'good');
   setHeard(p, S.crazyHeard?S.crazyHeard(pre.word):pre.word);
   render();
-  if($('#autoMic').checked && !typing) setTimeout(()=>{ if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
+  if($('#autoMic').checked && !typing) setTimeout(()=>{ if(challengeOwnsMic()) return; if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
   focusInput(p);
   return true;
 }
@@ -2261,7 +2261,7 @@ function submit(p,raw,force=false,src='typed'){
       setMsg(p, m, 'err');
       setHeard(p, (src==='voice'?S.heard:S.typed)+'"'+String(raw||'').trim()+S.rejected);
       render();
-      if($('#autoMic').checked && !typing) setTimeout(()=>{ if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
+      if($('#autoMic').checked && !typing) setTimeout(()=>{ if(challengeOwnsMic()) return; if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
       return false;
     }
     if(!inCategory(cat.kind, pre.word)){
@@ -2282,7 +2282,7 @@ function submit(p,raw,force=false,src='typed'){
     setHeard(p, heardNote[p]);
     if(r.reason==='dict'){ pendingOverride[p]=r.word; $('#ov'+p).classList.remove('hidden'); }
     render(); keepPairInView();
-    if($('#autoMic').checked && !typing) setTimeout(()=>{ if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
+    if($('#autoMic').checked && !typing) setTimeout(()=>{ if(challengeOwnsMic()) return; if(G.turn===p&&!G.over&&!paused&&recFor!==p&&!typing) startRec(p,'auto'); },400);
     focusInput(p);
     return false;
   }
@@ -2900,7 +2900,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.10.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.10.2');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2987,7 +2987,14 @@ function leaveToHome(){
   $('#start').classList.remove('hidden');
   paintSoloBest();
 }
-$('#again').onclick=leaveToHome;
+function playAgain(){
+  const c=$('#confetti'); if(c) c.innerHTML='';
+  stopRec();
+  trLock=false; trPhase='off'; trScored=false;
+  clearTimeout(trTimer); clearTimeout(trRestartT); clearTimeout(trBootTimer); trBootTimer=0;
+  startGame();
+}
+$('#again').onclick=playAgain;
 $('#endClose').onclick=leaveToHome;
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
 $('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
@@ -3031,7 +3038,8 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.10.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
+  e.textContent='HilinGo v4.10.2 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3087,8 +3095,11 @@ document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
   const t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='BUTTON'||t.isContentEditable)) return;
   e.preventDefault(); micToggle(G.turn,'space');
 });
+function challengeOwnsMic(){
+  return !!(trLock || trPhase==='tts' || trPhase==='arming' || trPhase==='listening');
+}
 function startRec(p,how){
-  if(trLock) return;
+  if(challengeOwnsMic()){ diag('skip '+how+', challenge'); return; }
   if(!SR||!G||G.over||paused||p!==G.turn) return;
   const user=userMicHow(how);
   if(user) micHoldAuto=false;
@@ -4141,7 +4152,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10.2';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -4773,21 +4784,42 @@ function openChallengeMic(why){
       scheduleTrRestart(code);
       return;
     }
-    if(code==='aborted') return;
+    if(code==='aborted'){ noteChallengeEnd(sess, 'aborted'); return; }
     scheduleTrRestart(code||'error');
   };
   r.onend=()=>{
     diag('tr end '+tag);
-    if(sess!==recSession) return;
-    rec=null; recFor=null; recCtl=null;
-    micGapUntil=performance.now()+420;
-    lightMic(trSpeaker);
-    if(!trLock||trScored) return;
-    trPhase='arming';
-    scheduleTrRestart('end');
+    noteChallengeEnd(sess, 'end');
   };
   diag('tr start() '+tag+' '+why);
   try{ r.start(); }catch(err){ diag('tr start threw '+(err&&err.message||'')); scheduleTrRestart('throw'); }
+}
+function noteChallengeEnd(sess, why){
+  if(sess!==recSession || trSessHandled===sess) return;
+  trSessHandled=sess;
+  rec=null; recFor=null; recCtl=null;
+  micGapUntil=performance.now()+420;
+  lightMic(trSpeaker);
+  if(!trLock||trScored) return;
+  trPhase='arming';
+  const grace=performance.now()+2500;
+  if(trListenUntil<grace && performance.now()<trHardUntil) trListenUntil=grace;
+  scheduleTrRestart(why);
+}
+function challengeDeadline(){
+  if(!trLock||trScored) return;
+  const waiting=trBootTimer||trRestartT||trPhase==='arming';
+  const fresh=trPhase==='listening' && micArmedAt && performance.now()-micArmedAt<2000 && !trAlts.length;
+  if((waiting||fresh) && performance.now()<trHardUntil){
+    diag('tr defer score');
+    trTimer=setTimeout(challengeDeadline, 400);
+    return;
+  }
+  if(trPhase==='listening' && performance.now()<trListenUntil){
+    trTimer=setTimeout(challengeDeadline, Math.max(400, trListenUntil-performance.now()));
+    return;
+  }
+  scoreTr(trMatch(trAlts, trTarget, TR));
 }
 function scheduleTrRestart(why){
   if(!trLock||trScored||trPhase==='tts') return;
@@ -4839,6 +4871,7 @@ function endTranslation(){
   if(G.over){ trSpeaker=-1; stopRec(false); endScreen(); return; }
   const next=G.turn;
   if($('#autoMic').checked){
+    diag('tr handoff '+((S&&S.speech)||''));
     trSpeaker=next; lightMic(next);
     afterTurnChange();
     trSpeaker=-1;
@@ -4871,12 +4904,13 @@ async function runTranslation(p, word){
   if(!trLock||trScored) return;
   trPhase='arming';
   trListenUntil=performance.now()+7000;
+  trHardUntil=performance.now()+15000;
   trRestarts=0;
   micGapUntil=performance.now()+560;
   lightMic(p);
   armChallengeMic('after-tts');
   clearTimeout(trTimer);
-  trTimer=setTimeout(()=>{ if(trLock&&!trScored) scoreTr(trMatch(trAlts, trTarget, TR)); }, 7000);
+  trTimer=setTimeout(challengeDeadline, 7000);
 }
 function bankPairs(){
   const all=readBank();
@@ -5025,7 +5059,7 @@ $('#crazyBtn').onclick=()=>{
 };
 $('#catPass').onclick=()=>passCategory();
 $('#catYes').onclick=()=>{ if(!catJudge) return; const w=catJudge.word; catJudge=null; submit(G.turn, w, false, 'catyes'); };
-$('#catNo').onclick=()=>{ catJudge=null; if(G) setMsg(G.turn, S.catNo||''); render(); if($('#autoMic').checked && G && !typing) setTimeout(()=>{ if(G&&G.turn!=null&&!G.over&&!paused&&!typing) startRec(G.turn,'auto'); },300); };
+$('#catNo').onclick=()=>{ catJudge=null; if(G) setMsg(G.turn, S.catNo||''); render(); if($('#autoMic').checked && G && !typing) setTimeout(()=>{ if(challengeOwnsMic()) return; if(G&&G.turn!=null&&!G.over&&!paused&&!typing) startRec(G.turn,'auto'); },300); };
 $('#sentNo').onclick=()=>voidSentenceWord();
 function fullLogText(){
   const mic=diagLog.length?diagLog.join('\n')+'\n':'';

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.6 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.10.7 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -114,10 +114,25 @@ try {
   await page.waitForSelector('#trTap.live', { timeout: 8000 });
   const shown = (await page.locator('#trWord').innerText()).trim();
   await page.evaluate(w => { window.__say = w; }, shown);
-  await page.click('#trTap', { force: true });
-  await page.waitForSelector('#trTap.live', { timeout: 4000 });
-  await page.click('#trTap', { force: true });
-  await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length >= 2, { timeout: 8000 });
+  const tapAt = async () => page.evaluate(() => document.getElementById('trTap').click());
+  await tapAt();
+  const returned = await page.waitForSelector('#trTap.live', { timeout: 4000 }).then(() => true, async () => {
+    console.log('  no return', JSON.stringify(await page.evaluate(() => ({
+      langs: window.__langs, lock: trLock, fails: trTapFails,
+      tail: (document.getElementById('diagText').textContent || '').slice(-240),
+    }))));
+    return false;
+  });
+  if (!returned) bad('first tap did not return the button');
+  else {
+    await page.waitForTimeout(500);
+    await tapAt();
+  }
+  const heard2 = await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length >= 2, { timeout: 6000 }).then(() => true, async () => {
+    console.log('  langs', JSON.stringify(await page.evaluate(() => window.__langs)));
+    return false;
+  });
+  if (!heard2) bad('no second Italian start');
   const mid = await page.evaluate(() => window.__langs.slice());
   const firstHe = mid.indexOf('he-IL');
   const secondIt = mid.indexOf('it-IT', mid.indexOf('it-IT') + 1);
@@ -153,6 +168,78 @@ try {
   }));
   if (!home.start || !home.game || !home.end) bad('home ' + JSON.stringify(home));
   else ok('✕ returns to the home screen');
+
+  const iphone = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1',
+  });
+  await iphone.addInitScript(() => {
+    window.__langs = [];
+    window.__aborts = 99;
+    window.__say = '';
+    const synth = {
+      speaking: false,
+      cancel(){ this.speaking = false; }, resume(){}, getVoices(){ return []; },
+      addEventListener(){}, removeEventListener(){},
+      speak(u){ this.speaking = true; setTimeout(() => { try { if (u.onstart) u.onstart(); } catch (_) {} setTimeout(() => { this.speaking = false; try { if (u.onend) u.onend(); } catch (_) {} }, 20); }, 5); }
+    };
+    try { Object.defineProperty(window, 'speechSynthesis', { configurable: true, writable: true, value: synth }); }
+    catch (_) { window.speechSynthesis = synth; }
+    window.SpeechSynthesisUtterance = function (text) { this.text = text; this.onend = null; this.onstart = null; };
+    class FakeSR {
+      constructor(){ this.lang = ''; }
+      start(){
+        window.__langs.push(this.lang);
+        const self = this;
+        if (self.onstart) self.onstart();
+        if (self.onaudiostart) self.onaudiostart();
+        if (this.lang === 'it-IT' && window.__aborts > 0) {
+          window.__aborts--;
+          if (self.onerror) self.onerror({ error: 'aborted', message: '' });
+          if (self.onend) self.onend();
+        }
+      }
+      abort(){ this.onend = null; this.onerror = null; }
+      stop(){ this.abort(); }
+    }
+    window.SpeechRecognition = FakeSR;
+    window.webkitSpeechRecognition = FakeSR;
+    window.Audio = class { play(){ return Promise.resolve(); } pause(){} load(){} addEventListener(){} };
+  });
+  const phone = await iphone.newPage();
+  phone.on('pageerror', e => bad('iphone ' + e.message));
+  await phone.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'domcontentloaded' });
+  const kind = await phone.evaluate(() => ({ ipad: isIPadOS(), touch: navigator.maxTouchPoints }));
+  if (kind.ipad) bad('iPhone was treated as an iPad ' + JSON.stringify(kind));
+  else ok('iPhone stays on the automatic mic');
+  await phone.evaluate(() => { document.getElementById('sound').checked = false; });
+  await phone.click('#trLangs .opt[data-tr="it"]');
+  await phone.click('#go');
+  await phone.waitForSelector('#half0');
+  await phone.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
+  await phone.waitForFunction(() => gameLangOk, { timeout: 3000 });
+  const size0 = await phone.evaluate(() => G.boards[0].size);
+  await phone.fill('#in0', 'כלב');
+  await phone.click('#send0');
+  await phone.waitForFunction(() => window.__langs.includes('it-IT'), { timeout: 15000 });
+  const waited = await phone.evaluate(() => document.getElementById('trTap').classList.contains('live') && !window.__langs.includes('it-IT'));
+  if (waited) bad('iPhone waited for a tap');
+  else ok('iPhone started Italian without a tap');
+  await phone.waitForFunction(() => {
+    const ov = document.getElementById('trOv');
+    return ov.classList.contains('hidden') && !trLock;
+  }, { timeout: 8000 });
+  const afterPhone = await phone.evaluate(() => ({
+    turn: G.turn,
+    size: G.boards[0].size,
+    hidden: document.getElementById('trOv').classList.contains('hidden'),
+  }));
+  if (!afterPhone.hidden || afterPhone.size !== size0 - 1) bad('iphone resume ' + JSON.stringify(afterPhone));
+  else ok('a failed iPhone challenge closes the card and the turn continues');
+  await iphone.close();
 } finally {
   await browser.close();
   server.close();

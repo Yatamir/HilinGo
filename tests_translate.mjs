@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.4 — translation card, hands-free repeat, and the word bank.
+ * HilinGo v4.10.5 — translation card, hands-free repeat, and the word bank.
  *   node tests_translate.mjs
  */
 import { chromium } from 'playwright-core';
@@ -85,7 +85,7 @@ try {
   await page.reload({ waitUntil: 'domcontentloaded' });
   const migrated = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
   if (migrated !== '45') bad('migrate ' + migrated);
-  else ok('updating to v4.10.4 resets a saved level to 45 once');
+  else ok('updating to v4.10.5 resets a saved level to 45 once');
   await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   const keptLevel = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
@@ -149,10 +149,16 @@ try {
   if (won.size !== size0 - 2 || won.mark !== '✅' || won.bank < 1) bad('success ' + JSON.stringify(won));
   else ok('a correct repeat removes one bonus letter and saves the pair');
   await page.waitForFunction(() => document.getElementById('trOv').classList.contains('hidden'));
-  const back = await page.evaluate(() => ({
+  const back = await page.waitForFunction(() => {
+    const on1 = document.getElementById('mic1').classList.contains('on');
+    return on1 && window.__live && window.__live.lang === 'he-IL';
+  }, { timeout: 4000 }).then(() => page.evaluate(() => ({
     on1: document.getElementById('mic1').classList.contains('on'),
     lang: window.__live && window.__live.lang,
-  }));
+  })), async () => page.evaluate(() => ({
+    on1: document.getElementById('mic1').classList.contains('on'),
+    lang: window.__live && window.__live.lang,
+  })));
   if (!back.on1 || back.lang !== 'he-IL') bad('handoff ' + JSON.stringify(back));
   else ok('the mic stays lit and switches back to Hebrew for the next player');
 

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.4 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.5 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -62,7 +62,7 @@ await context.addInitScript(() => {
   catch (_) { window.speechSynthesis = synth; }
   window.SpeechSynthesisUtterance = function (t) { this.text = t; this.onend = null; this.onstart = null; this.onerror = null; };
   class FakeSR {
-    constructor(){ this.lang = ''; }
+    constructor(){ this.lang = ''; window.__built = (window.__built || 0) + 1; }
     start(){
       window.__langs.push(this.lang);
       window.__times.push(performance.now());
@@ -166,16 +166,29 @@ try {
   const failed = await page.evaluate(() => document.getElementById('trOv').classList.contains('bad'));
   if (failed) bad('a dead mic was scored as a miss');
   else ok('a mic that never listens is not a miss');
-  await page.waitForFunction(() => !trLock, { timeout: 4000 });
+  const retryShown = await page.evaluate(() => !document.getElementById('trRetry').classList.contains('hidden'));
+  if (!retryShown) bad('notice has no tap-to-retry mic');
+  else ok('the notice offers a tap to try the mic');
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4105-retry.png' });
+  const savedOnce = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
+  if (savedOnce) bad('Italian was skipped after one challenge');
+  else ok('one failed challenge does not skip the language');
+  const built = await page.evaluate(() => window.__built);
+  if (built !== 1) bad('recognizers created ' + built);
+  else ok('the challenge reused the one game recognizer');
+  await page.waitForFunction(() => !trLock, { timeout: 9000 });
   const sizeAfter = await page.evaluate(() => G.boards[0].size);
   if (sizeAfter !== sizeBefore - 1) bad('penalty ' + sizeBefore + ' -> ' + sizeAfter);
   else ok('the turn passed with no extra penalty');
-  const saved = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
   const starts = await page.evaluate(() => window.__langs.filter(l => l==='it-IT' || l==='it' || l==='it-CH').length);
-  if (saved !== '1') bad('language was not remembered for this launch');
-  else ok('Italian is skipped for this launch only');
   if (starts > 3) bad('too many starts ' + starts);
   else ok('at most 3 recognition starts (' + starts + ')');
+  await page.evaluate(() => { WG.addCustomWord('בית'); });
+  await page.waitForFunction(() => G.turn === 1, { timeout: 4000 });
+  await page.fill('#in1', 'בית');
+  await page.click('#send1');
+  await page.waitForFunction(() => sessionStorage.getItem('hilingo_nospeech_it') === '1', { timeout: 20000 });
+  ok('a second failed challenge skips Italian for this launch');
 
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
@@ -225,7 +238,28 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4104-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4105-listening.png' });
+
+  await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
+  const info = await page.locator('#info').innerText();
+  if (!info.includes('languages:') || !info.toLowerCase().includes('ipad')) bad('mictest info ' + info.slice(0, 120));
+  else ok('mictest shows languages and the user agent');
+  await page.click('#langs button:nth-of-type(1)');
+  await page.waitForFunction(() => document.getElementById('log').textContent.includes('call start() he-IL'));
+  await page.click('#esShort');
+  await page.waitForFunction(() => {
+    const t = document.getElementById('log').textContent;
+    return t.includes('new instance es') && t.includes('call start() es ');
+  });
+  await page.click('#reuse');
+  await page.waitForFunction(() => document.getElementById('log').textContent.includes('new instance for reuse'));
+  await page.click('#reuse');
+  await page.waitForFunction(() => document.getElementById('log').textContent.includes('reuse'));
+  const builtPage = await page.evaluate(() => window.__built);
+  if (builtPage < 2) bad('mictest built ' + builtPage);
+  else ok('mictest fresh buttons make new recognizers and reuse keeps one');
+  await page.click('#copy');
+  ok('mictest has a copy button');
 } finally {
   await browser.close();
   server.close();

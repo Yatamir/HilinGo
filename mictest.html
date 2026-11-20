@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HilinGo mic test</title>
+<style>
+  body{margin:0;font:18px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;background:#f6f2ff;color:#24184a}
+  main{max-width:720px;margin:0 auto;padding:16px 16px 40px}
+  h1{font-size:22px;margin:0 0 8px}
+  p{margin:0 0 12px}
+  .info{font-size:13px;word-break:break-word;background:#fff;border-radius:12px;padding:10px 12px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  button{min-height:48px;padding:10px 14px;border:0;border-radius:12px;background:#6B2CFF;color:#fff;font:inherit;font-weight:700}
+  button.alt{background:#1E88FF}
+  #log{white-space:pre-wrap;background:#1c1433;color:#f4eeff;border-radius:12px;padding:12px;min-height:180px;font:14px/1.45 ui-monospace,monospace}
+  .bar{display:flex;gap:8px;align-items:center;margin:8px 0}
+  #copied{font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <h1>HilinGo mic test</h1>
+  <p>One button starts one recognizer. Nothing here is linked from the game.</p>
+  <div class="info" id="info"></div>
+  <div class="row" id="langs"></div>
+  <div class="row">
+    <button type="button" id="afterTts" class="alt">es-ES after TTS</button>
+    <button type="button" id="reuse" class="alt">reuse same instance, switch lang</button>
+    <button type="button" id="esShort" class="alt">es-ES with lang "es"</button>
+  </div>
+  <div class="bar">
+    <button type="button" id="copy">Copy</button>
+    <button type="button" id="clear" class="alt">Clear</button>
+    <span id="copied"></span>
+  </div>
+  <div id="log"></div>
+</main>
+<script>
+var t0 = performance.now();
+var lines = [];
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var shared = null;
+var sharedLangs = ['he-IL', 'es-ES', 'it-IT', 'en-US'];
+var sharedI = 0;
+var live = null;
+
+function stamp(){ return Math.round(performance.now() - t0); }
+function log(msg){
+  lines.push(stamp() + '  ' + msg);
+  var box = document.getElementById('log');
+  box.textContent = lines.join('\n');
+  box.scrollTop = box.scrollHeight;
+}
+function transcripts(ev){
+  var out = [];
+  var results = ev && ev.results;
+  if(!results) return '';
+  for(var i = 0; i < results.length; i++){
+    var alts = [];
+    for(var j = 0; j < results[i].length; j++) alts.push(results[i][j].transcript);
+    out.push((results[i].isFinal ? 'final' : 'interim') + ' "' + alts.join(' | ') + '"');
+  }
+  return out.join('; ');
+}
+function arm(rec, label){
+  if(live && live !== rec){
+    try{ live.abort(); }catch(err){ log('abort other ' + (err && err.message || err)); }
+  }
+  live = rec;
+  try{
+    rec.lang = label;
+    rec.continuous = false;
+    rec.interimResults = true;
+  }catch(err){ log('config ' + label + ' ' + (err && err.message || err)); }
+  rec.onstart = function(){ log('start ' + rec.lang); };
+  rec.onaudiostart = function(){ log('audiostart ' + rec.lang); };
+  rec.onsoundstart = function(){ log('soundstart ' + rec.lang); };
+  rec.onspeechstart = function(){ log('speechstart ' + rec.lang); };
+  rec.onsoundend = function(){ log('soundend ' + rec.lang); };
+  rec.onaudioend = function(){ log('audioend ' + rec.lang); };
+  rec.onspeechend = function(){ log('speechend ' + rec.lang); };
+  rec.onnomatch = function(){ log('nomatch ' + rec.lang); };
+  rec.onresult = function(ev){ log('result ' + rec.lang + ' ' + transcripts(ev)); };
+  rec.onerror = function(ev){
+    log('error ' + rec.lang + ' ' + ((ev && ev.error) || '') + ((ev && ev.message) ? ' "' + ev.message + '"' : ''));
+  };
+  rec.onend = function(){
+    log('end ' + rec.lang);
+    if(live === rec) live = null;
+  };
+  log('call start() ' + label + ' continuous=false interimResults=true');
+  try{ rec.start(); }
+  catch(err){ log('start() threw ' + label + ' ' + (err && (err.name + ' ' + err.message) || err)); }
+}
+function fresh(label){
+  if(!SR){ log('no SpeechRecognition'); return; }
+  var rec;
+  try{ rec = new SR(); }
+  catch(err){ log('new threw ' + (err && err.message || err)); return; }
+  log('new instance ' + label);
+  arm(rec, label);
+}
+function paintInfo(){
+  var voices = 0;
+  try{ voices = (window.speechSynthesis && speechSynthesis.getVoices()) ? speechSynthesis.getVoices().length : 0; }catch(err){}
+  document.getElementById('info').textContent =
+    'languages: ' + ((navigator.languages && navigator.languages.join(', ')) || navigator.language || '') +
+    '\nvoices: ' + voices +
+    '\nSR: ' + (window.webkitSpeechRecognition ? 'webkitSpeechRecognition' : window.SpeechRecognition ? 'SpeechRecognition' : 'none') +
+    '\n' + navigator.userAgent;
+}
+['he-IL', 'es-ES', 'it-IT', 'en-US'].forEach(function(label){
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = label;
+  b.addEventListener('click', function(){ fresh(label); });
+  document.getElementById('langs').appendChild(b);
+});
+document.getElementById('esShort').addEventListener('click', function(){ fresh('es'); });
+document.getElementById('afterTts').addEventListener('click', function(){
+  if(!window.speechSynthesis){ log('no speechSynthesis'); fresh('es-ES'); return; }
+  try{ speechSynthesis.cancel(); }catch(err){}
+  var u = new SpeechSynthesisUtterance('hola');
+  u.lang = 'es-ES';
+  u.onstart = function(){ log('tts start es-ES "hola"'); };
+  u.onerror = function(ev){ log('tts error ' + ((ev && ev.error) || '')); };
+  u.onend = function(){
+    log('tts end es-ES');
+    setTimeout(function(){ fresh('es-ES'); }, 400);
+  };
+  log('tts speak es-ES "hola"');
+  speechSynthesis.speak(u);
+});
+document.getElementById('reuse').addEventListener('click', function(){
+  if(!SR){ log('no SpeechRecognition'); return; }
+  var label = sharedLangs[sharedI % sharedLangs.length];
+  sharedI++;
+  if(shared) log('reuse');
+  var went = false;
+  var startNext = function(){
+    if(went) return;
+    went = true;
+    if(!shared){
+      try{ shared = new SR(); }
+      catch(err){ log('new threw ' + (err && err.message || err)); return; }
+      log('new instance for reuse');
+    }
+    arm(shared, label);
+  };
+  if(live){
+    log('abort before reuse');
+    var prev = live;
+    prev.onend = function(){
+      log('end ' + (prev.lang || ''));
+      if(live === prev) live = null;
+      setTimeout(startNext, 300);
+    };
+    try{ prev.abort(); }catch(err){ log('abort threw ' + (err && err.message || err)); startNext(); return; }
+    setTimeout(function(){ if(!went){ log('no end after abort'); startNext(); } }, 700);
+    return;
+  }
+  startNext();
+});
+document.getElementById('copy').addEventListener('click', function(){
+  var text = lines.join('\n');
+  var done = function(){ var c = document.getElementById('copied'); c.textContent = 'Copied'; setTimeout(function(){ c.textContent = ''; }, 1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); });
+  else { fallback(text); done(); }
+});
+function fallback(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); }catch(err){}
+  ta.remove();
+}
+document.getElementById('clear').addEventListener('click', function(){ lines = []; document.getElementById('log').textContent = ''; });
+paintInfo();
+try{ speechSynthesis.addEventListener('voiceschanged', paintInfo); }catch(err){}
+log('ready');
+</script>
+</body>
+</html>

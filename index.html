@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.9.1">
+<meta name="hilingo-version" content="4.10">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.9.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.10" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -677,13 +677,13 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="opts" id="modes"><button type="button" class="opt sel" id="modePlay" data-mode="play">משחק</button><button type="button" class="opt" id="modeLearn" data-mode="learn">למידה</button></div>
     </div>
     <div class="card">
-      <div class="opts" id="langs"><span class="optlbl hidden" id="nativeLbl">השפה שלי</span><button class="opt sel" data-lang="he">עברית</button><button class="opt" data-lang="en">English</button><button class="opt" data-lang="nl">Nederlands</button><button class="opt" data-lang="pt">Português</button></div>
+      <div class="opts" id="langs"><span class="optlbl hidden" id="nativeLbl">השפה שלי</span><button class="opt sel" data-lang="he">עברית</button><button class="opt" data-lang="en">English</button><button class="opt" data-lang="nl">Nederlands</button><button class="opt" data-lang="pt">Português</button><button class="opt" data-lang="es">Español</button><button class="opt" data-lang="it">Italiano</button></div>
     </div>
     <div class="card" id="trCardSetup">
-      <div class="opts" id="trLangs"><span class="optlbl" id="trLbl">תרגום:</span><button type="button" class="opt sel" data-tr="">ללא תרגום</button><button type="button" class="opt" data-tr="he">עברית</button><button type="button" class="opt" data-tr="en">English</button><button type="button" class="opt" data-tr="nl">Nederlands</button><button type="button" class="opt" data-tr="pt">Português</button></div>
+      <div class="opts" id="trLangs"><span class="optlbl" id="trLbl">תרגום:</span><button type="button" class="opt sel" data-tr="">ללא תרגום</button><button type="button" class="opt" data-tr="he">עברית</button><button type="button" class="opt" data-tr="en">English</button><button type="button" class="opt" data-tr="nl">Nederlands</button><button type="button" class="opt" data-tr="pt">Português</button><button type="button" class="opt" data-tr="es">Español</button><button type="button" class="opt" data-tr="it">Italiano</button></div>
     </div>
     <div class="card hidden" id="pairCard">
-      <div class="opts" id="learnTargets"><span class="optlbl" id="targetLbl">אני לומד</span><button type="button" class="opt" data-lang="he">עברית</button><button type="button" class="opt" data-lang="en">English</button><button type="button" class="opt" data-lang="nl">Nederlands</button><button type="button" class="opt sel" data-lang="pt">Português</button></div>
+      <div class="opts" id="learnTargets"><span class="optlbl" id="targetLbl">אני לומד</span><button type="button" class="opt" data-lang="he">עברית</button><button type="button" class="opt" data-lang="en">English</button><button type="button" class="opt" data-lang="nl">Nederlands</button><button type="button" class="opt sel" data-lang="pt">Português</button><button type="button" class="opt" data-lang="es">Español</button><button type="button" class="opt" data-lang="it">Italiano</button></div>
     </div>
     <div class="card" id="playersCard">
       <div class="opts"><span class="optlbl" id="pcLbl">מספר שחקנים:</span><button class="opt pc" data-n="solo" id="pcSolo">1</button><button class="opt pc sel" data-n="2">2</button><button class="opt pc" data-n="3">3</button><button class="opt pc" data-n="4">4</button></div>
@@ -709,7 +709,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.9.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.10</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -735,7 +735,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.9.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.10</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -774,10 +774,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.9.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.9.1"></script>
-<script src="cat_hints.js?v=4.9.1"></script>
-<script src="learn_dict.js?v=4.9.1"></script>
+<script src="words.js?v=4.10" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.10"></script>
+<script src="cat_hints.js?v=4.10"></script>
+<script src="learn_dict.js?v=4.10"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -796,8 +796,11 @@ const WG = (()=>{
     en:{ letters:AZ, base:ch=>String(ch).toUpperCase(), dictVar:'EN_WORDS', normalize:latin },
     nl:{ letters:AZ, base:ch=>String(ch).toUpperCase(), dictVar:'NL_WORDS', normalize:latin },
     pt:{ letters:AZ, base:ch=>String(ch).toUpperCase(), dictVar:'PT_WORDS', normalize:latin },
+    es:{ letters:AZ, base:ch=>String(ch).toUpperCase(), dictVar:'ES_WORDS', normalize:latin },
+    it:{ letters:AZ, base:ch=>String(ch).toUpperCase(), dictVar:'IT_WORDS', normalize:latin },
   };
-  // Latin: NFKD (é→e, ë→e, ĳ→ij), drop combining marks, lowercase, first run of a–z
+  // Latin: NFKD folds accents (é→e, ñ→n, ç→c, à→a), drop combining marks, lowercase, first run of a–z.
+  // Spanish Ñ is not its own tile: it plays as N, the same way Portuguese ç plays as C. Italian accents fold too. The board stays A–Z.
   function latin(raw){ if(!raw) return ''; const s=String(raw).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss'); const m=s.match(/[a-z]+/); return m?m[0]:''; }
   let lang='he', L=LANGS.he; const DICTS={}, BUILTIN={};
   // Words the player accepted with "real word" stay on this device only.
@@ -1014,7 +1017,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.9.1';
+window.WG = WG; window.HILINGO_VERSION='4.10';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1027,7 +1030,7 @@ const STR = {
   learnSay:'אמרו מילה', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnClear:'נקה', learnSaid:'אמרתי', learnBack:'חזרה',
   learnDictation:code=>code==='pt'
     ? 'כדי שהמשחק ישמע פורטוגזית, הוסיפו מקלדת פורטוגזית (ברזיל) בהגדרות > כללי > מקלדת > מקלדות, וודאו שהכתבה מהקול פעילה'
-    : 'כדי שהמשחק ישמע '+({nl:'הולנדית',en:'אנגלית',he:'עברית'}[code]||code)+', הוסיפו מקלדת '+({nl:'הולנדית',en:'אנגלית',he:'עברית'}[code]||code)+' בהגדרות > כללי > מקלדת > מקלדות, וודאו שהכתבה מהקול פעילה',
+    : 'כדי שהמשחק ישמע '+({nl:'הולנדית',en:'אנגלית',he:'עברית',es:'ספרדית',it:'איטלקית'}[code]||code)+', הוסיפו מקלדת '+({nl:'הולנדית',en:'אנגלית',he:'עברית',es:'ספרדית',it:'איטלקית'}[code]||code)+' בהגדרות > כללי > מקלדת > מקלדות, וודאו שהכתבה מהקול פעילה',
   learnNoTr:'לא הצלחתי לתרגם, נסו מילה אחרת', learnOk:'יפה!', learnAgain:'אמרו מילה חדשה',
   learnWrong:'לא אותו דבר — נסו שוב', learnSpeak:'השמיעו שוב',
   learnListen:name=>'מקשיב: '+name+'…', learnSpeaking:'משמיע…',
@@ -1077,7 +1080,7 @@ const STR = {
   modePlay:'Play', modeLearn:'Learn', soloBtn:'Player 1', learnGo:"Let's learn!", nativeLbl:'I speak', targetLbl:'I want to learn',
   learnIntro:'Say a word in your language. It appears in the other language, then you say it back.',
   learnSay:'Say a word', learnRepeat:'Now say it', learnSkip:'Skip', learnClear:'Clear', learnSaid:'I said it', learnBack:'Back',
-  learnDictation:code=>'To let the game hear '+({pt:'Portuguese (Brazil)',nl:'Dutch',en:'English',he:'Hebrew'}[code]||code)+', add that keyboard in Settings > General > Keyboard > Keyboards, and make sure dictation is turned on.',
+  learnDictation:code=>'To let the game hear '+({pt:'Portuguese (Brazil)',nl:'Dutch',en:'English',he:'Hebrew',es:'Spanish',it:'Italian'}[code]||code)+', add that keyboard in Settings > General > Keyboard > Keyboards, and make sure dictation is turned on.',
   learnNoTr:"Couldn't translate, try another word", learnOk:'Nice!', learnAgain:'Say a new word',
   learnWrong:'Not quite — try again', learnSpeak:'Hear again',
   learnListen:name=>'Listening in '+name+'…', learnSpeaking:'Speaking…',
@@ -1127,7 +1130,7 @@ const STR = {
   modePlay:'Spelen', modeLearn:'Leren', soloBtn:'Solo', learnGo:'Laten we leren!', nativeLbl:'Ik spreek', targetLbl:'Ik wil leren',
   learnIntro:'Zeg een woord in jouw taal. Het verschijnt in de andere taal, en dan zeg je het na.',
   learnSay:'Zeg een woord', learnRepeat:'Zeg het na', learnSkip:'Overslaan', learnClear:'Wissen', learnSaid:'Ik zei het', learnBack:'Terug',
-  learnDictation:code=>'Om '+({pt:'Portugees (Brazilië)',nl:'Nederlands',en:'Engels',he:'Hebreeuws'}[code]||code)+' te laten verstaan, voeg dat toetsenbord toe via Instellingen > Algemeen > Toetsenbord > Toetsenborden, en zet dicteren aan.',
+  learnDictation:code=>'Om '+({pt:'Portugees (Brazilië)',nl:'Nederlands',en:'Engels',he:'Hebreeuws',es:'Spaans',it:'Italiaans'}[code]||code)+' te laten verstaan, voeg dat toetsenbord toe via Instellingen > Algemeen > Toetsenbord > Toetsenborden, en zet dicteren aan.',
   learnNoTr:'Vertalen lukt niet, probeer een ander woord', learnOk:'Mooi!', learnAgain:'Zeg een nieuw woord',
   learnWrong:'Niet hetzelfde — probeer opnieuw', learnSpeak:'Nog eens horen',
   learnListen:name=>'Luistert in '+name+'…', learnSpeaking:'Spreekt…',
@@ -1177,7 +1180,7 @@ const STR = {
   modePlay:'Jogar', modeLearn:'Aprender', soloBtn:'Solo', learnGo:'Vamos aprender!', nativeLbl:'Eu falo', targetLbl:'Quero aprender',
   learnIntro:'Diga uma palavra no seu idioma. Ela aparece no outro idioma e você repete.',
   learnSay:'Diga uma palavra', learnRepeat:'Agora repita', learnSkip:'Pular', learnClear:'Limpar', learnSaid:'Eu disse', learnBack:'Voltar',
-  learnDictation:code=>'Para o jogo ouvir '+({pt:'português (Brasil)',nl:'holandês',en:'inglês',he:'hebraico'}[code]||code)+', adicione esse teclado em Ajustes > Geral > Teclado > Teclados e ative o Ditado.',
+  learnDictation:code=>'Para o jogo ouvir '+({pt:'português (Brasil)',nl:'holandês',en:'inglês',he:'hebraico',es:'espanhol',it:'italiano'}[code]||code)+', adicione esse teclado em Ajustes > Geral > Teclado > Teclados e ative o Ditado.',
   learnNoTr:'Não consegui traduzir, tente outra palavra', learnOk:'Legal!', learnAgain:'Diga uma palavra nova',
   learnWrong:'Não foi essa — tente de novo', learnSpeak:'Ouvir de novo',
   learnListen:name=>'Ouvindo em '+name+'…', learnSpeaking:'Falando…',
@@ -1221,6 +1224,272 @@ const STR = {
    'language-not-supported':'Este idioma não é suportado no reconhecimento de voz – adicione-o em Ajustes do Sistema → Teclado → Ditação → Idiomas.',
    'bad-grammar':'Erro no reconhecimento de voz – tente de novo.'},
  },
+ es:{ dir:'ltr', speech:"es-ES", title:'HilinGo', tagline:"Un juego de cadena de palabras", arrow:' → ', yourTurn:"\" · ¡tu turno!\"",
+  player:i=>"Jugador "+i, playerAria:i=>"Nombre del jugador "+i,
+  intro:"Cada jugador dice una palabra que empieza con la última letra de la anterior. La primera letra de tu palabra se tacha de tu tablero. Quien vacía el tablero primero, gana.",
+  players:"Jugadores:", lvl:{45:"Fácil · 45 segundos",30:"Medio · 30 segundos",15:"Difícil · 15 segundos"}, autoMic:"Encender el micrófono solo en cada turno", sound:"Sonidos", go:"¡A jugar!",
+  modePlay:"Jugar",
+  modeLearn:"Aprender",
+  soloBtn:"Solo",
+  learnGo:"¡A aprender!",
+  nativeLbl:"Yo hablo",
+  targetLbl:"Quiero aprender",
+  learnIntro:"Di una palabra en tu idioma. Aparece en el otro idioma y la repites.",
+  learnSay:"Di una palabra",
+  learnRepeat:"Ahora repítela",
+  learnSkip:"Saltar",
+  learnClear:"Borrar",
+  learnSaid:"He dicho",
+  learnBack:"Volver",
+  learnDictation:code=>'Para que el juego oiga '+({pt:'portugués (Brasil)',nl:'neerlandés',en:'inglés',he:'hebreo',es:'español',it:'italiano'}[code]||code)+', añade ese teclado en Ajustes > General > Teclado > Teclados y activa el Dictado.',
+  learnNoTr:"No pude traducirla, prueba con otra palabra",
+  learnOk:"¡Bien!",
+  learnAgain:"Di una palabra nueva",
+  learnWrong:"No era esa — inténtalo otra vez",
+  learnSpeak:"Escuchar otra vez",
+  learnSpeaking:"Hablando…",
+  learnWordsNote:"Guardadas solo en este aparato, para este par de idiomas.",
+  learnWordsEmpty:"Todavía no hay palabras.",
+  loading:"Cargando diccionario…",
+  dictFail:"El diccionario no se cargó",
+  rules:"<h3>Cómo se juega 🎲</h3><ul><li>Cada uno dice una palabra que empieza con la última letra de la anterior.</li><li>La primera letra de tu palabra se tacha de tu tablero.</li><li>Quien vacía el tablero primero, gana. 🏆</li><li>Un jugador: tú contra el reloj.</li><li>Dos, tres o cuatro: por turnos, en orden.</li><li>Aprender: dices una palabra en tu idioma, la oyes y la ves en el otro, la repites y ganas un ✅. Se guarda en Mis palabras.</li></ul><h3>Reglas 📜</h3><ul><li>Mayúsculas y acentos no cuentan. La eñe se juega como n, igual que la cedilla portuguesa.</li><li>No se puede repetir una palabra.</li><li>¿Se acabó el tiempo? Pasa el turno y la letra sigue.</li><li>Si todos fallan esa letra seguida, el siguiente elige una letra libre.</li><li>Seis fallos seguidos (dos jugadores) o dos vueltas enteras (tres o cuatro) terminan el juego. Gana quien tenga menos letras.</li><li><span class=\"rules-hint\">💡 Pista</span> Hasta 3 pistas por turno, solo de palabras que nadie dijo. ¿Hay categoría? La pista es de ese tipo. Con pista no se tacha letra. ¿Dos turnos seguidos con pista? Vuelve la última letra tachada.</li><li>Antes de tu palabra toca <span class=\"rules-sent\">Frase</span>. El botón se enciende y luego dices la palabra. Esa es la palabra 1 de 5. Consejo: elige una difícil de continuar.</li><li>Los siguientes siguen la frase y empiezan con la última letra.</li><li>Las palabras de la frase se ponen verdes. No hay flechas entre ellas.</li><li>El siguiente puede tocar <span class=\"rules-no\">No tiene sentido</span>. Esa palabra sale, la letra vuelve, sin punto ni castigo, y el turno regresa.</li><li>🪄 ¿Atascados en la frase? Hay que decir Hili. La frase se cancela. Vuelven dos letras de castigo si ya estaban tachadas.</li><li>Hili nunca vale como palabra normal.</li><li>🎉 ¿Cinco palabras? Confeti. Cada palabra es 1 punto y cada punto tacha otra letra al azar. Los puntos se ven al final. Si el bonus vacía un tablero, ese jugador gana.</li><li>Antes de tu palabra también puedes encender <span class=\"rules-cat ctry\">País</span> <span class=\"rules-cat city\">Ciudad</span> <span class=\"rules-cat anim\">Animal</span> <span class=\"rules-cat plant\">Planta</span>. ¿Cambiaste de idea? Toca otro botón apagado. El reto pasa al siguiente: una palabra de ese tipo, con la última letra.</li><li>El juego mira una lista. ¿No está seguro? Pregunta y se toca ✓ o ✗.</li><li>¿No hay palabra? Toca <span class=\"rules-pass\">Paso</span> o deja que se acabe el tiempo. El turno pasa sin castigo. Sin bonus. Solo una palabra. No junto con una frase.</li><li>Una vez por turno, antes de tu palabra, toca <span class=\"rules-crazy\">🤪</span> para ti. Di una palabra graciosa con la letra buena. Sin puntos, sin tachar, y el turno sigue tuyo. El reloj corre. Hili tampoco vale aquí.</li></ul><h3>Consejos 🌟</h3><ul><li>🌐 Traducción: antes de jugar eliges un idioma, o sin traducción. Tras una palabra buena el reloj se para, ves y oyes la palabra en el otro idioma, y el micrófono sigue encendido y escucha solo. ¿Acertaste? Se tacha una letra extra. ¿Fallaste? Una X blanca sobre rojo y pasa el turno. El par se guarda en el banco.</li><li>📚 Mi banco de palabras está en la pantalla de inicio. Cada par traducido se guarda en este aparato, para todos los jugadores. Toca el altavoz para oírla otra vez. Practicar escucha solo y recibes un ✅ o una X. También puedes borrar un par.</li><li>😜 Travesura secreta, solo con 2 a 4 jugadores: si eres el siguiente, toca dos veces el centro de tu tablero. Quien juega recibe un efecto callado y al azar. Una vez cada 20 segundos. No en solitario ni en Aprender.</li><li>🙈 ¿No es tu turno? Toca el ojo en la esquina de tu tablero. Se tapa 10 segundos con tu color y una cuenta grande. Una vez por turno, y el ojo descansa hasta el siguiente. Cuando llega tu turno, el tablero vuelve enseguida.</li><li><span class=\"rules-mic\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"2.5\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M6.2 11.2a5.8 5.8 0 0 0 11.6 0\"/><path d=\"M12 17v3.2\"/></svg></span> El micrófono se enciende solo cada turno. ¿Se quedó pillado tras un aviso o al salir a otra app? Vuelve y se recupera. O toca <span class=\"rules-mic\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"2.5\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M6.2 11.2a5.8 5.8 0 0 0 11.6 0\"/><path d=\"M12 17v3.2\"/></svg></span>.</li><li>⏱️ En solitario el reloj suma. Mi New record se guarda solo si terminas de verdad, y solo en este aparato.</li></ul>",
+  speechOk:"El reconocimiento de voz está listo 🎤 (permite el micrófono). También puedes escribir.",
+  speechNo:"Este navegador no reconoce la voz — escribe las palabras. Para hablar, Chrome es el más recomendado.",
+  micHint:" Si el micrófono no va, toca 🎤 en el juego.",
+  override:"Es una palabra de verdad — aceptarla igual",
+  micTitle:"Habla",
+  inputPh:"Escribe una palabra",
+  send:"Enviar",
+  endBtn:"Terminar juego",
+  pause:"Pausa",
+  resume:"Seguir",
+  again:"Juego nuevo",
+  trLbl:"Traducción:",
+  trNone:"Sin traducción",
+  bankBtn:"Mi banco de palabras",
+  trSay:"Di la palabra",
+  trOk:"¡Bien!",
+  trNo:"Esta vez no",
+  bankTitle:"Mi banco de palabras",
+  bankEmpty:"Todavía no hay parejas. Juega con traducción y aparecerán aquí.",
+  bankAll:"Todo",
+  bankGo:"Practicar",
+  bankAsk:"¿Borrar?",
+  savedToast:"Palabra guardada solo en este aparato",
+  myWords:"Mis palabras",
+  myWordsNote:"Guardadas solo en este aparato, para el idioma actual.",
+  myWordsEmpty:"Todavía no hay palabras.",
+  myWordsAsk:"¿Borrar?",
+  myWordsYes:"Sí",
+  myWordsNo:"No",
+  myWordsClose:"Cerrar",
+  myWordsDeleteAria:"Borrar palabra",
+  micOff:"Micrófono apagado",
+  typing:"⌨️ Modo teclado — el micrófono está apagado este turno (toca 🎤 para hablar)",
+  sentBtn:"Frase",
+  sentGo:"¡La frase empezó! Sigue.",
+  sentNo:"No tiene sentido",
+  magic:"Hili",
+  catPass:"Paso",
+  catPassed:"Pasaste. Sin castigo.",
+  catNo:"Prueba otra palabra",
+  catCheck:"Un momento…",
+  crazyOn:"🤪 ¡Di una palabra graciosa! El reloj sigue.",
+  crazySaid:"🤪 Sin punto y sin tachar. ¡Ahora una palabra de verdad!",
+  needWord:"Di una palabra primero 😊",
+  busyRound:"Termina esta primero 😊",
+  crazyOnce:"Ya lo usaste este turno 😊",
+  dictHint:" — si es una palabra de verdad, toca el botón de abajo",
+  heard:"Oí: ",
+  typed:"Escrito: ",
+  rejected:"\" — no vale",
+  accepted:"✔ Vale: ",
+  timeUp:"⏰ Se acabó el tiempo",
+  freed2:"Los dos se atascaron — ¡letra libre!",
+  freedN:"Todos se atascaron — ¡letra libre!",
+  draw:"¡Empate! 🤝",
+  endEmpty:"¡Tablero vacío! ",
+  endMisses:"Demasiados fallos seguidos. ",
+  endManual:"El juego terminó. ",
+  letters:"letras",
+  words:"palabras",
+  srNA:"No hay reconocimiento de voz — escribe la palabra",
+  listening:"Escuchando…",
+  notHeard:"No oí una palabra — inténtalo otra vez",
+  noPerm:"Sin permiso para el micrófono — escribe la palabra",
+  micBlocked:"Micrófono bloqueado",
+  noSpeech:"No oí voz — escucho otra vez…",
+  micErr:"Error del micrófono: ",
+  micStopped:"El micrófono se paró — toca 🎤 para hablar, o escribe",
+  cantStart:"No pude encender el micrófono — toca 🎤",
+  micRestart:"Toca para encender el micrófono otra vez",
+  ptt:"Toca y habla",
+  pttOn:"Escuchando… ⏹",
+  tapToTalk:"Toca 🎤 (o Enter en la caja vacía) y di la palabra",
+  tapAgain:"No oí nada — toca otra vez 🎤 y habla",
+  deaf:"El micrófono se abrió, pero el sonido no llega. Prueba: cierra Safari del todo y ábrelo otra vez · apaga Sonidos en la pantalla inicial · mira Ajustes del sistema → Sonido → Entrada.",
+  hint:"💡 Pista",
+  hintTitle:"Pista: una frase corta de una palabra con la letra buena (hasta 3 por turno). Con pista no se tacha letra.",
+  hintNone:"No quedan pistas para esta letra",
+  hintNoCat:"No hay una palabra así con esta letra. Puedes pasar",
+  veil:"Esconder tablero",
+  hintNoDel:"<span class='rules-hint'>💡 Pista</span> usada — este turno no se tachó letra",
+  catName:{"country":"País","city":"Ciudad","animal":"Animal","plant":"Planta"},
+  reasons:{"empty":"No oí una palabra — inténtalo otra vez","short":"Palabra demasiado corta — inténtalo otra vez","letter":"La palabra tiene que empezar por ","used":"Esa palabra ya se dijo — prueba otra","dict":"No está en el diccionario","magic":"Hili es la palabra mágica, no una palabra del juego"},
+  errs:{"not-allowed":"Safari bloquea el micrófono. Safari → Ajustes → Sitios → Micrófono → HOST → Permitir, y recarga la página.","service-not-allowed":"El reconocimiento de voz está apagado. Ajustes del sistema → Teclado → Dictado → Activado. Luego cierra Safari y ábrelo otra vez.","audio-capture":"No hay micrófono, u otra app lo está usando. Mira Ajustes del sistema → Sonido → Entrada.","network":"No llego al servicio de voz — revisa internet e inténtalo otra vez.","no-speech":"No oí voz — toca otra vez 🎤 y habla enseguida.","language-not-supported":"Este idioma no está en el dictado — añádelo en Ajustes → Teclado → Dictado → Idiomas.","bad-grammar":"Error de voz — inténtalo otra vez."},
+  learnListen:name=>'Escuchando en '+name+'…',
+  left:n=>`quedan ${n} letras`,
+  noteGone:l=>`La ${l} ya está tachada – di una palabra con ${l}, no se tacha nada`,
+  statusNeed:(n,l,gone)=>`Le toca a <b>${n}</b> – una palabra con <span class="need">${l}</span>`+(gone?' <small>(ya tachada – no se tacha nada)</small>':''),
+  statusFree:n=>`Le toca a <b>${n}</b> – ¡cualquier palabra!`,
+  catNeed:(name,l)=>`Ahora: ${name} que empiece por ${l}`,
+  catAsk:w=>`${w} — ¿entra en la categoría?`,
+  crazyHeard:w=>`🤪 ${w}`,
+  sentPenalty:n=>`¡Hili! Volvieron ${n} letras`,
+  sentBonus:(name,n)=>`¡Bonus de la frase! Se tacharon ${n} letras más`,
+  sentEndPts:(name,n)=>`${name}: ${n} punto${n===1?'':'s'} de frase`,
+  trBonus:l=>`✔ ¡Bonus de traducción! Se tachó la ${l}`,
+  okRemoved:l=>`✔ ¡Se tachó la ${l}!`,
+  okKept:l=>`✔ La ${l} ya estaba tachada – no se tachó nada, pasa el turno`,
+  cont:l=>`¡Tu turno! Seguimos con la ${l}`,
+  drawN:names=>`¡Empate entre ${names.join(' y ')}! 🤝`,
+  won:n=>`🏆 ¡Gana ${n}!`,
+  hintTag:n=>`Pista ${n}/3 · en este turno no se tacha letra`,
+  hintRestored:l=>`<span class='rules-hint'>💡 Pista</span> dos turnos seguidos – la ${l} volvió al tablero`,
+ },
+ it:{ dir:'ltr', speech:"it-IT", title:'HilinGo', tagline:"Un gioco di parole a catena", arrow:' → ', yourTurn:"\" · tocca a te!\"",
+  player:i=>"Giocatore "+i, playerAria:i=>"Nome del giocatore "+i,
+  intro:"Ogni giocatore dice una parola che inizia con l'ultima lettera di quella prima. La prima lettera della tua parola si cancella dal tabellone. Chi svuota il tabellone per primo vince.",
+  players:"Giocatori:", lvl:{45:"Facile · 45 secondi",30:"Medio · 30 secondi",15:"Difficile · 15 secondi"}, autoMic:"Accendere il microfono da solo a ogni turno", sound:"Suoni", go:"Si gioca!",
+  modePlay:"Gioca",
+  modeLearn:"Impara",
+  soloBtn:"Solo",
+  learnGo:"Si impara!",
+  nativeLbl:"Io parlo",
+  targetLbl:"Voglio imparare",
+  learnIntro:"Di' una parola nella tua lingua. Appare nell'altra lingua e la ripeti.",
+  learnSay:"Di' una parola",
+  learnRepeat:"Adesso ripetila",
+  learnSkip:"Salta",
+  learnClear:"Cancella",
+  learnSaid:"Ho detto",
+  learnBack:"Indietro",
+  learnDictation:code=>'Per far sentire al gioco il '+({pt:'portoghese (Brasile)',nl:'olandese',en:'inglese',he:'ebraico',es:'spagnolo',it:'italiano'}[code]||code)+', aggiungi quella tastiera in Impostazioni > Generali > Tastiera > Tastiere e attiva la Dettatura.',
+  learnNoTr:"Non sono riuscito a tradurla, prova un'altra parola",
+  learnOk:"Bene!",
+  learnAgain:"Di' una parola nuova",
+  learnWrong:"Non era quella — riprova",
+  learnSpeak:"Ascolta di nuovo",
+  learnSpeaking:"Sto parlando…",
+  learnWordsNote:"Salvate solo su questo apparecchio, per questa coppia di lingue.",
+  learnWordsEmpty:"Ancora nessuna parola.",
+  loading:"Carico il dizionario…",
+  dictFail:"Il dizionario non si è caricato",
+  rules:"<h3>Come si gioca 🎲</h3><ul><li>Ognuno dice una parola che inizia con l'ultima lettera di quella prima.</li><li>La prima lettera della tua parola si cancella dal tuo tabellone.</li><li>Chi svuota il tabellone per primo vince. 🏆</li><li>Un giocatore: tu contro l'orologio.</li><li>Due, tre o quattro: a turno, in ordine.</li><li>Impara: dici una parola nella tua lingua, la senti e la vedi nell'altra, la ripeti e prendi un ✅. Resta in Le mie parole.</li></ul><h3>Regole 📜</h3><ul><li>Maiuscole e accenti non contano.</li><li>Non si può ripetere una parola.</li><li>Tempo scaduto? Il turno passa e la lettera resta.</li><li>Se tutti sbagliano quella lettera di fila, il prossimo sceglie una lettera libera.</li><li>Sei errori di fila (due giocatori) o due giri interi (tre o quattro) chiudono la partita. Vince chi ha meno lettere.</li><li><span class=\"rules-hint\">💡 Indizio</span> Fino a 3 indizi a turno, solo per parole che nessuno ha detto. C è una categoria? L'indizio è di quel tipo. Con l indizio non si cancella una lettera. Due turni di fila con indizio? Torna l'ultima lettera cancellata.</li><li>Prima della parola tocchi <span class=\"rules-sent\">Frase</span>. Il bottone si accende e poi dici la parola. Quella è la parola 1 di 5. Consiglio: scegline una difficile da continuare.</li><li>I prossimi continuano la frase e iniziano ancora con l'ultima lettera.</li><li>Le parole della frase diventano verdi. Non ci sono frecce in mezzo.</li><li>Il prossimo può toccare <span class=\"rules-no\">Non ha senso</span>. Quella parola esce, la lettera torna, senza punto e senza punizione, e il turno torna indietro.</li><li>🪄 Bloccati nella frase? Devi dire Hili. La frase si annulla. Tornano due lettere di punizione se erano già cancellate.</li><li>Hili non vale mai come parola normale.</li><li>🎉 Cinque parole? Coriandoli. Ogni parola vale 1 punto e ogni punto cancella un'altra lettera a caso. I punti si vedono alla fine. Se il bonus svuota un tabellone, quel giocatore vince.</li><li>Prima della parola puoi anche accendere <span class=\"rules-cat ctry\">Paese</span> <span class=\"rules-cat city\">Città</span> <span class=\"rules-cat anim\">Animale</span> <span class=\"rules-cat plant\">Pianta</span>. Hai cambiato idea? Tocca un altro bottone spento. La sfida va al prossimo: una parola di quel tipo, con l'ultima lettera.</li><li>Il gioco guarda una lista. Non è sicuro? Chiede e si tocca ✓ o ✗.</li><li>Nessuna parola? Tocca <span class=\"rules-pass\">Passo</span> o lascia finire il tempo. Il turno passa senza punizione. Niente bonus. Solo una parola. Non insieme a una frase.</li><li>Una volta a turno, prima della parola, tocca <span class=\"rules-crazy\">🤪</span> per te. Di' una parola buffa con la lettera giusta. Niente punti, niente cancellazione, e il turno resta tuo. L orologio corre. Hili non vale neanche qui.</li></ul><h3>Consigli 🌟</h3><ul><li>🌐 Traduzione: prima di giocare scegli una lingua, oppure nessuna. Dopo una parola buona l'orologio si ferma, vedi e senti la parola nell'altra lingua, e il microfono resta acceso e ascolta da solo. Giusto? Si cancella una lettera in più. Sbagliato? Una X bianca sul rosso e il turno passa. La coppia resta nella banca.</li><li>📚 La mia banca delle parole è nella schermata iniziale. Ogni coppia tradotta si salva su questo apparecchio, per tutti i giocatori. Tocca l'altoparlante per sentirla di nuovo. Esercitati ascolta da solo e ricevi un ✅ o una X. Puoi anche cancellare una coppia.</li><li>😜 Scherzo segreto, solo con 2-4 giocatori: se sei il prossimo, tocca due volte il centro del tuo tabellone. Chi sta giocando riceve un effetto silenzioso a caso. Una volta ogni 20 secondi. Non in solitario e non in Impara.</li><li>🙈 Non è il tuo turno? Tocca l'occhio nell'angolo del tuo tabellone. Si copre per 10 secondi col tuo colore e un conto grande. Una volta a turno, poi l'occhio riposa fino al prossimo. Quando tocca a te, il tabellone torna subito.</li><li><span class=\"rules-mic\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"2.5\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M6.2 11.2a5.8 5.8 0 0 0 11.6 0\"/><path d=\"M12 17v3.2\"/></svg></span> Il microfono si accende da solo a ogni turno. Si è bloccato dopo un avviso o un'altra app? Torna e si riprende. Oppure tocca <span class=\"rules-mic\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"2.5\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M6.2 11.2a5.8 5.8 0 0 0 11.6 0\"/><path d=\"M12 17v3.2\"/></svg></span>.</li><li>⏱️ In solitario l'orologio sale. My New record si salva solo se finisci davvero, e solo su questo apparecchio.</li></ul>",
+  speechOk:"Il riconoscimento vocale è pronto 🎤 (consenti il microfono). Puoi anche scrivere.",
+  speechNo:"Questo browser non riconosce la voce — scrivi le parole. Per parlare, Chrome è il più adatto.",
+  micHint:" Se il microfono non va, tocca 🎤 nel gioco.",
+  override:"È una parola vera — accettala lo stesso",
+  micTitle:"Parla",
+  inputPh:"Scrivi una parola",
+  send:"Invia",
+  endBtn:"Finisci il gioco",
+  pause:"Pausa",
+  resume:"Avanti",
+  again:"Gioco nuovo",
+  trLbl:"Traduzione:",
+  trNone:"Nessuna traduzione",
+  bankBtn:"La mia banca delle parole",
+  trSay:"Di' la parola",
+  trOk:"Bene!",
+  trNo:"Non questa volta",
+  bankTitle:"La mia banca delle parole",
+  bankEmpty:"Ancora nessuna coppia. Gioca con la traduzione e arrivano qui.",
+  bankAll:"Tutto",
+  bankGo:"Esercitati",
+  bankAsk:"Cancellare?",
+  savedToast:"Parola salvata solo su questo apparecchio",
+  myWords:"Le mie parole",
+  myWordsNote:"Salvate solo su questo apparecchio, per la lingua di adesso.",
+  myWordsEmpty:"Ancora nessuna parola.",
+  myWordsAsk:"Cancellare?",
+  myWordsYes:"Sì",
+  myWordsNo:"No",
+  myWordsClose:"Chiudi",
+  myWordsDeleteAria:"Cancella parola",
+  micOff:"Microfono spento",
+  typing:"⌨️ Modalità tastiera — il microfono è spento in questo turno (tocca 🎤 per parlare)",
+  sentBtn:"Frase",
+  sentGo:"La frase è iniziata! Continua.",
+  sentNo:"Non ha senso",
+  magic:"Hili",
+  catPass:"Passo",
+  catPassed:"Hai passato. Nessuna punizione.",
+  catNo:"Prova un'altra parola",
+  catCheck:"Un attimo…",
+  crazyOn:"🤪 Di' una parola buffa! L'orologio continua.",
+  crazySaid:"🤪 Niente punto e niente cancellazione. Adesso una parola vera!",
+  needWord:"Di' prima una parola 😊",
+  busyRound:"Finisci questa prima 😊",
+  crazyOnce:"Già usato in questo turno 😊",
+  dictHint:" — se è una parola vera, tocca il bottone qui sotto",
+  heard:"Ho sentito: ",
+  typed:"Scritto: ",
+  rejected:"\" — non vale",
+  accepted:"✔ Va bene: ",
+  timeUp:"⏰ Tempo scaduto",
+  freed2:"Siete bloccati tutti e due — lettera libera!",
+  freedN:"Siete bloccati tutti — lettera libera!",
+  draw:"Pareggio! 🤝",
+  endEmpty:"Tabellone vuoto! ",
+  endMisses:"Troppi errori di fila. ",
+  endManual:"Il gioco è finito. ",
+  letters:"lettere",
+  words:"parole",
+  srNA:"Niente riconoscimento vocale — scrivi la parola",
+  listening:"Ascolto…",
+  notHeard:"Non ho sentito una parola — riprova",
+  noPerm:"Niente permesso per il microfono — scrivi la parola",
+  micBlocked:"Microfono bloccato",
+  noSpeech:"Non ho sentito voce — ascolto di nuovo…",
+  micErr:"Errore del microfono: ",
+  micStopped:"Il microfono si è fermato — tocca 🎤 per parlare, oppure scrivi",
+  cantStart:"Non riesco ad accendere il microfono — tocca 🎤",
+  micRestart:"Tocca per riaccendere il microfono",
+  ptt:"Tocca e parla",
+  pttOn:"Ascolto… ⏹",
+  tapToTalk:"Tocca 🎤 (o Invio nella casella vuota) e di' la parola",
+  tapAgain:"Non ho sentito niente — tocca di nuovo 🎤 e parla",
+  deaf:"Il microfono si è aperto, ma il suono non arriva. Prova: chiudi Safari del tutto e riaprilo · spegni Suoni nella schermata iniziale · controlla Impostazioni di sistema → Suono → Ingresso.",
+  hint:"💡 Indizio",
+  hintTitle:"Indizio: una frase corta per una parola con la lettera giusta (fino a 3 a turno). Con un indizio non si cancella una lettera.",
+  hintNone:"Non ci sono più indizi per questa lettera",
+  hintNoCat:"Non c’è una parola così con questa lettera. Puoi passare",
+  veil:"Nascondi tabellone",
+  hintNoDel:"<span class='rules-hint'>💡 Indizio</span> usato — in questo turno non si cancella una lettera",
+  catName:{"country":"Paese","city":"Città","animal":"Animale","plant":"Pianta"},
+  reasons:{"empty":"Nessuna parola sentita — riprova","short":"Parola troppo corta — riprova","letter":"La parola deve iniziare con ","used":"Quella parola è già stata detta — provane un’altra","dict":"Non è nel dizionario","magic":"Hili è la parola magica, non una parola del gioco"},
+  errs:{"not-allowed":"Safari blocca il microfono. Safari → Impostazioni → Siti → Microfono → HOST → Consenti, e ricarica la pagina.","service-not-allowed":"Il riconoscimento vocale è spento. Impostazioni di sistema → Tastiera → Dettatura → Attivata. Poi chiudi Safari e riaprilo.","audio-capture":"Nessun microfono, oppure un’altra app lo sta usando. Controlla Impostazioni di sistema → Suono → Ingresso.","network":"Non raggiungo il servizio vocale — controlla internet e riprova.","no-speech":"Nessuna voce — tocca di nuovo 🎤 e parla subito.","language-not-supported":"Questa lingua non è nella dettatura — aggiungila in Impostazioni → Tastiera → Dettatura → Lingue.","bad-grammar":"Errore della voce — riprova."},
+  learnListen:name=>'Ascolto in '+name+'…',
+  left:n=>`restano ${n} lettere`,
+  noteGone:l=>`La ${l} è già cancellata – di' una parola con ${l}, non si cancella niente`,
+  statusNeed:(n,l,gone)=>`Tocca a <b>${n}</b> – una parola con <span class="need">${l}</span>`+(gone?' <small>(già cancellata – non si cancella niente)</small>':''),
+  statusFree:n=>`Tocca a <b>${n}</b> – qualsiasi parola!`,
+  catNeed:(name,l)=>`Adesso: ${name} che inizia con ${l}`,
+  catAsk:w=>`${w} — entra nella categoria?`,
+  crazyHeard:w=>`🤪 ${w}`,
+  sentPenalty:n=>`Hili! Sono tornate ${n} lettere`,
+  sentBonus:(name,n)=>`Bonus della frase! Cancellate ${n} lettere in più`,
+  sentEndPts:(name,n)=>`${name}: ${n} punt${n===1?'o':'i'} frase`,
+  trBonus:l=>`✔ Bonus traduzione! Cancellata la ${l}`,
+  okRemoved:l=>`✔ Cancellata la ${l}!`,
+  okKept:l=>`✔ La ${l} era già cancellata – niente di nuovo, il turno passa`,
+  cont:l=>`Tocca a te! Si continua con la ${l}`,
+  drawN:names=>`Pareggio tra ${names.join(' e ')}! 🤝`,
+  won:n=>`🏆 Vince ${n}!`,
+  hintTag:n=>`Indizio ${n}/3 · in questo turno non si cancella una lettera`,
+  hintRestored:l=>`<span class='rules-hint'>💡 Indizio</span> per due turni di fila – la ${l} è tornata sul tabellone`,
+ },
 };
 let LANG='he', S=STR.he, NPLAYERS=2, SOLO=false, MODE='play', LEARN_TARGET='pt', TR='';
 let trLock=false, trSpeaker=-1, trScored=false, trDeaf=false, trTarget='', trAlts=[], trTimer=0, trRestartT=0, trRestarts=0, trFroze=false, trKind='game', bankFilter='all', bankAsk=-1;
@@ -1255,14 +1524,14 @@ const others = p => range(G.boards.length).filter(q=>q!==p);
 const defName = i => S.player(i+1);
 const playerName = i => { const v=($('#n'+(i+1)).value||'').trim(); return v || defName(i); };
 
-// lazy dictionaries for en / nl / pt (words_en.js / words_nl.js / words_pt.js); Hebrew words.js is loaded up front
+// lazy dictionaries for en / nl / pt / es / it; Hebrew words.js is loaded up front
 const dictLoading={};
 function ensureDict(code){
   if(code==='he' || WG.hasDict(code)) return Promise.resolve(true);
-  const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS'}[code];
+  const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.9.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1519,7 +1788,9 @@ function fallbackCatHint(lang, kind, w){
     he:{country:n=>`מדינה בעולם. בשם שלה יש ${n} אותיות`, city:n=>`עיר בעולם. בשם שלה יש ${n} אותיות`, animal:n=>`חיה. בשם שלה יש ${n} אותיות`, plant:n=>`צמח. בשם שלה יש ${n} אותיות`},
     en:{country:n=>`A country. Its name has ${n} letters`, city:n=>`A city. Its name has ${n} letters`, animal:n=>`An animal. Its name has ${n} letters`, plant:n=>`A plant. Its name has ${n} letters`},
     nl:{country:n=>`Een land. De naam heeft ${n} letters`, city:n=>`Een stad. De naam heeft ${n} letters`, animal:n=>`Een dier. De naam heeft ${n} letters`, plant:n=>`Een plant. De naam heeft ${n} letters`},
-    pt:{country:n=>`Um país. O nome tem ${n} letras`, city:n=>`Uma cidade. O nome tem ${n} letras`, animal:n=>`Um animal. O nome tem ${n} letras`, plant:n=>`Uma planta. O nome tem ${n} letras`}
+    pt:{country:n=>`Um país. O nome tem ${n} letras`, city:n=>`Uma cidade. O nome tem ${n} letras`, animal:n=>`Um animal. O nome tem ${n} letras`, plant:n=>`Uma planta. O nome tem ${n} letras`},
+    es:{country:n=>`Un país. El nombre tiene ${n} letras`, city:n=>`Una ciudad. El nombre tiene ${n} letras`, animal:n=>`Un animal. El nombre tiene ${n} letras`, plant:n=>`Una planta. El nombre tiene ${n} letras`},
+    it:{country:n=>`Un paese. Il nome ha ${n} lettere`, city:n=>`Una città. Il nome ha ${n} lettere`, animal:n=>`Un animale. Il nome ha ${n} lettere`, plant:n=>`Una pianta. Il nome ha ${n} lettere`}
   };
   const table=F[lang]||F.en;
   return (table[kind]||table.country)(n);
@@ -1594,12 +1865,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v491';
+const CAT_CACHE='hilingo-cats-v410';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.9.1'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.10'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -2625,7 +2896,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.9.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.10');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2735,7 +3006,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.9.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.10 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3071,10 +3342,10 @@ $('#micRestart').onclick=()=>{
 
 /* ======================= LEARN MODE (v3.6) =======================
    One learner, no timer, no letter deletion, no turns. Play mode never enters this. */
-const LEARN_ORDER=['en','he','pt','nl'];
-const LEARN_NAME={he:'עברית',en:'English',nl:'Nederlands',pt:'Português'};
-const SPEECH_TAG={he:'he-IL',en:'en-US',nl:'nl-NL',pt:'pt-BR'};
-const MM_TAG={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
+const LEARN_ORDER=['en','he','pt','nl','es','it'];
+const LEARN_NAME={he:'עברית',en:'English',nl:'Nederlands',pt:'Português',es:'Español',it:'Italiano'};
+const SPEECH_TAG={he:'he-IL',en:'en-US',nl:'nl-NL',pt:'pt-BR',es:'es-ES',it:'it-IT'};
+const MM_TAG={he:'he',en:'en',nl:'nl',pt:'pt-BR',es:'es',it:'it'};
 const HE_FINALS={'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
 let learnPair=null, learnTyping=false, pendingLearnDelete=null, learnIndex=null;
 
@@ -3123,6 +3394,8 @@ const LEARN_ARTICLES={
   en:['the','a','an'],
   nl:['de','het','een','n'],
   pt:['o','a','os','as','um','uma'],
+  es:['el','la','los','las','un','una'],
+  it:['il','lo','la','i','gli','le','un','uno','una'],
   he:[]
 };
 function stripArticles(code, folded){
@@ -3155,10 +3428,11 @@ function learnMatch(alts, targetText){
   }
   return false;
 }
-const BASIC_GLOSS=new Set('one two three four five six seven eight nine ten home house dog cat fish book water heart eye red blue green yellow black white orange pink purple sun window bird horse door chair table bed mom dad mother father brother sister boy girl bread milk hand foot eat drink sleep run'.split(' '));
+const BASIC_GLOSS=new Set('one two three four five six seven eight nine ten home house dog cat fish book water heart eye red blue green yellow black white orange pink purple sun window bird horse door chair table bed mom dad mother father brother sister boy girl bread milk hand foot eat drink sleep run friend ball happy hello yes no love good cake small little big'.split(' '));
 function ensureLearnIndex(){
   if(learnIndex) return learnIndex;
-  const idx={en:new Map(),he:new Map(),pt:new Map(),nl:new Map()};
+  const idx={};
+  LEARN_ORDER.forEach(code=>{ idx[code]=new Map(); });
   const rows=window.LEARN_DICT||[];
   rows.forEach((row,n)=>{
     LEARN_ORDER.forEach((code,i)=>{
@@ -3170,6 +3444,59 @@ function ensureLearnIndex(){
   });
   learnIndex=idx;
   return idx;
+}
+// Surface form, then a broken plural, then a regular ending, then one or two prefixes (ה ו ב ל מ ש כ).
+// Exact rows win, so הולכת stays "walking" and בתים stays "houses" instead of "daughter".
+function heCandidates(raw){
+  const w=foldLearn('he', raw);
+  if(!w) return [];
+  const out=[];
+  const add=s=>{
+    s=foldLearn('he', s);
+    if(!s || s.length<2 || out.indexOf(s)>=0) return;
+    out.push(s);
+  };
+  add(w);
+  const broken={
+    'בתים':'בית','ילדים':'ילד','ילדות':'ילדה','אנשים':'איש','נשים':'אשה','ערים':'עיר',
+    'כלבים':'כלב','חתולים':'חתול','חברים':'חבר','ספרים':'ספר','ימים':'יום','אחים':'אח','אחיות':'אחות'
+  };
+  if(broken[w]) add(broken[w]);
+  if(/ות$/.test(w) && w.length>=5) add(w.slice(0,-2));
+  if(/ים$/.test(w) && w.length>=5) add(w.slice(0,-2));
+  if(/נו$/.test(w) && w.length>=4) add(w.slice(0,-2));
+  if(/תה$/.test(w) && w.length>=4) add(w.slice(0,-2)+'ה');
+  if(/ת$/.test(w) && w.length>=4) add(w.slice(0,-1));
+  if(/ה$/.test(w) && w.length>=3) add(w.slice(0,-1));
+  const prefs='הובלמשכ';
+  const base=out.slice();
+  for(const stem of base){
+    if(stem.length>=4 && prefs.indexOf(stem[0])>=0){
+      add(stem.slice(1));
+      const mid=stem.slice(1);
+      if(mid.length>=4 && prefs.indexOf(mid[0])>=0) add(mid.slice(1));
+    }
+  }
+  return out;
+}
+function shapeHe(surface, key, text, dst){
+  const w=foldLearn('he', surface);
+  if(!w || w===key || !text) return text;
+  const prefs='הובלמשכ';
+  let pref='';
+  if(w.length===key.length+1 && w.slice(1)===key && prefs.indexOf(w[0])>=0) pref=w[0];
+  if(!pref) return text;
+  if(String(text).trim().split(/\s+/).length!==1) return text;
+  const lead={
+    en:{'ה':'the ','ל':'to ','ב':'in ','מ':'from ','כ':'as ','ו':'','ש':''},
+    nl:{'ה':'de ','ל':'naar ','ב':'in ','מ':'van ','כ':'als ','ו':'','ש':''},
+    pt:{'ה':'o ','ל':'para ','ב':'em ','מ':'de ','כ':'como ','ו':'','ש':''},
+    es:{'ה':'el ','ל':'a ','ב':'en ','מ':'de ','כ':'como ','ו':'','ש':''},
+    it:{'ה':'il ','ל':'a ','ב':'in ','מ':'da ','כ':'come ','ו':'','ש':''}
+  };
+  const p=lead[dst]&&lead[dst][pref];
+  if(p==null) return text;
+  return (p+text).trim();
 }
 function bestSense(list, dst){
   const i=LEARN_ORDER.indexOf(dst);
@@ -3185,52 +3512,89 @@ function bestSense(list, dst){
   return ranked[0]&&ranked[0].row;
 }
 function dictTranslate(src, dst, raw){
-  const key=foldLearn(src, raw);
-  if(!key) return null;
-  const list=ensureLearnIndex()[src] && ensureLearnIndex()[src].get(key);
-  if(!list||!list.length) return null;
+  const idx=ensureLearnIndex();
   const i=LEARN_ORDER.indexOf(dst);
-  if(i<0) return null;
-  const row=bestSense(list, dst);
-  return row ? (row[i]||null) : null;
+  if(i<0 || !idx[src]) return null;
+  const keys=src==='he' ? heCandidates(raw) : [foldLearn(src, raw)];
+  for(const key of keys){
+    if(!key) continue;
+    const list=idx[src].get(key);
+    if(!list||!list.length) continue;
+    const row=bestSense(list, dst);
+    const text=row&&row[i];
+    if(!text) continue;
+    return src==='he' ? shapeHe(raw, key, text, dst) : text;
+  }
+  return null;
 }
-function cleanRemote(t){
-  t=String(t||'').split(';')[0].trim();
-  if(!t || /MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH/i.test(t)) return '';
+const TR_JUNK=new Set('undercarriage wayfarer wanderer nee eater pancreatica beth'.split(' '));
+function saneRemote(t, dst){
+  t=String(t||'').split(/[;|]/)[0].trim();
+  if(!t || t.length>40 || /[0-9]/.test(t) || /[.!?;:]/.test(t)) return '';
+  if(/MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH|http/i.test(t)) return '';
+  const folded=foldLearn(dst, t);
+  if(!folded) return '';
+  const words=folded.split(' ').filter(Boolean);
+  if(!words.length || words.length>3 || words.some(w=>w.length>16 || TR_JUNK.has(w))) return '';
   return t;
 }
-function pickRemote(data, q, src, dst){
-  const cands=[];
-  const add=(t, quality, match, uses)=>{
-    t=cleanRemote(t);
-    if(!t) return;
-    if(foldLearn(dst, t) && foldLearn(dst, t)===foldLearn(dst, q) && foldLearn(src, t)===foldLearn(src, q)) return;
-    const words=t.split(/\s+/).filter(Boolean);
-    const single=words.length===1 ? 200 : 0;
-    const score=single+(Number(quality)||0)+(Number(match)||0)*40+Math.min(Number(uses)||0, 50);
-    cands.push({t, score});
-  };
-  const rd=data&&data.responseData||{};
-  add(rd.translatedText, 60, rd.match, 1);
-  (data&&data.matches||[]).forEach(m=>add(m.translation||m['translation'], m.quality, m.match, m['usage-count']));
-  if(!cands.length) return null;
-  cands.sort((a,b)=>b.score-a.score);
-  return cands[0].t;
+function pickGtx(data, dst){
+  let best='', bestF=0;
+  (data&&data[1]||[]).forEach(block=>{
+    (block&&block[2]||[]).forEach(entry=>{
+      const word=entry&&entry[0];
+      const freq=typeof (entry&&entry[3])==='number' ? entry[3] : 0;
+      if(freq>bestF){ bestF=freq; best=word; }
+    });
+  });
+  // A frequent dictionary sense (dog 0.48) beats a vague primary. A weak sense (wayfarer 0.06) does not.
+  if(best && bestF>=0.2){
+    const sense=saneRemote(best, dst);
+    if(sense && foldLearn(dst, sense).split(' ').length===1) return sense;
+  }
+  const primary=saneRemote(((data&&data[0])||[]).map(part=>part&&part[0]||'').join(''), dst);
+  return primary||'';
 }
-async function remoteTranslate(src, dst, text){
-  const q=String(text||'').trim();
-  if(!q || q.length>80) return null;
-  const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(q)+'&langpair='+encodeURIComponent(MM_TAG[src]+'|'+MM_TAG[dst]);
+async function googleTranslate(src, dst, text){
+  const sl=MM_TAG[src]||src;
+  const tl=TTS_TL[dst]||dst;
+  const url='https://translate.googleapis.com/translate_a/single?client=gtx&sl='+encodeURIComponent(sl)+'&tl='+encodeURIComponent(tl)+'&dt=t&dt=bd&q='+encodeURIComponent(text);
   const ctrl=new AbortController();
   const timer=setTimeout(()=>ctrl.abort(), 8000);
   try{
     const res=await fetch(url, {signal:ctrl.signal});
-    if(!res || !res.ok) return null;
+    if(!res || !res.ok) throw new Error('gtx');
     const data=await res.json();
-    if(!data || (data.responseStatus!=null && Number(data.responseStatus)!==200)) return null;
-    return pickRemote(data, q, src, dst);
-  }catch(_){ return null; }
+    return pickGtx(data, dst);
+  }finally{ clearTimeout(timer); }
+}
+async function myMemoryTranslate(src, dst, text){
+  const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+encodeURIComponent((MM_TAG[src]||src)+'|'+(MM_TAG[dst]||dst));
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(), 8000);
+  try{
+    const res=await fetch(url, {signal:ctrl.signal});
+    if(!res || !res.ok) return '';
+    const data=await res.json();
+    const raw=data&&data.responseData&&data.responseData.translatedText;
+    const t=saneRemote(raw, dst);
+    if(!t || foldLearn(dst, t).split(' ').length!==1) return '';
+    const q=Number(data.responseData.match||0);
+    if(q && q<0.8) return '';
+    return t;
+  }catch(_){ return ''; }
   finally{ clearTimeout(timer); }
+}
+async function remoteTranslate(src, dst, text){
+  const q=String(text||'').trim();
+  if(!q || q.length>80) return '';
+  try{
+    const g=await googleTranslate(src, dst, q);
+    if(g) return g;
+    return '';
+  }catch(_){
+    return myMemoryTranslate(src, dst, q);
+  }
 }
 function learnStoreKey(){ return 'hilingo_learn_'+LANG+'_'+LEARN_TARGET; }
 function readLearnWords(){
@@ -3697,7 +4061,7 @@ function armIntro(){
   }, 0);
   learnLog('intro armed '+Math.round(ms)+'ms');
 }
-const TTS_TL={he:'he',en:'en',nl:'nl',pt:'pt-BR'};
+const TTS_TL={he:'he',en:'en',nl:'nl',pt:'pt-BR',es:'es',it:'it'};
 function ttsSlug(text){
   let h=14695981039346656037n;
   const bytes=new TextEncoder().encode(String(text||''));
@@ -3708,7 +4072,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.9.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -4178,7 +4542,7 @@ function renderLearnWords(){
     ul.appendChild(li);
   });
 }
-try{ const savedTr=localStorage.getItem('hilingo_trlang')||''; if(/^(he|en|nl|pt)$/.test(savedTr)) TR=savedTr; }catch(_){}
+try{ const savedTr=localStorage.getItem('hilingo_trlang')||''; if(/^(he|en|nl|pt|es|it)$/.test(savedTr)) TR=savedTr; }catch(_){}
 paintTrPicker();
 function lightMic(p){ const m=$('#mic'+p); if(m) m.classList.add('on'); }
 function paintTrPicker(){
@@ -4201,7 +4565,7 @@ document.querySelectorAll('#trLangs .opt').forEach(b=>b.onclick=()=>{
   try{ localStorage.setItem('hilingo_trlang', TR); }catch(_){}
   paintTrPicker();
 });
-const TR_CACHE_KEY='hilingo_tr_cache_v2';
+const TR_CACHE_KEY='hilingo_tr_cache_v3';
 function trCacheGet(k){ try{ return (JSON.parse(localStorage.getItem(TR_CACHE_KEY)||'{}'))[k]||''; }catch(_){ return ''; } }
 function trCacheSet(k,v){
   try{
@@ -4243,7 +4607,7 @@ function trMatch(alts, target, lang){
   return false;
 }
 async function translateWord(word, src, dst){
-  const key=src+'|'+dst+'|'+word;
+  const key=src+'|'+dst+'|'+foldLearn(src, word);
   const hit=trCacheGet(key);
   if(hit) return hit;
   const local=dictTranslate(src, dst, word);
@@ -4251,6 +4615,20 @@ async function translateWord(word, src, dst){
   const remote=await remoteTranslate(src, dst, word);
   if(remote){ trCacheSet(key, remote); return remote; }
   return '';
+}
+function scrubBank(){
+  try{
+    localStorage.removeItem('hilingo_tr_cache_v2');
+    if(localStorage.getItem('hilingo_bank_v410')==='1') return;
+    const next=[];
+    readBank().forEach(item=>{
+      const local=dictTranslate(item.src, item.dst, item.from);
+      if(!local) return;
+      next.push({src:item.src, dst:item.dst, from:item.from, to:local});
+    });
+    writeBank(next);
+    localStorage.setItem('hilingo_bank_v410','1');
+  }catch(_){}
 }
 function showTrFace(from, word, ask, mark){
   const ov=$('#trOv'); if(!ov) return;
@@ -4632,6 +5010,7 @@ $('#learnIn').addEventListener('keydown', e=>{
 });
 syncTargetButtons();
 paintSoloBest();
+scrubBank();
 window.__hilingoFinish=reason=>{ if(!G||G.over) return false; WG.finish(G, reason==='empty'?G.turn:null, reason||'empty'); endScreen(); return G.reason; };
 
 </script>

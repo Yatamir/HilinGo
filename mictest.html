@@ -23,6 +23,9 @@
   <h1>HilinGo mic test</h1>
   <p>One button starts one recognizer. Nothing here is linked from the game.</p>
   <div class="info" id="info"></div>
+  <h2>Isolate error 7</h2>
+  <p>Press these in order. Reload the page before button 6.</p>
+  <div class="row" id="isolate"></div>
   <div class="row" id="langs"></div>
   <div class="row">
     <button type="button" id="afterTts" class="alt">es-ES after TTS</button>
@@ -112,14 +115,14 @@ function displayMode(){
   }catch(err){}
   return 'browser';
 }
+var synthTouched = false;
 function paintInfo(){
-  var voices = 0;
-  try{ voices = (window.speechSynthesis && speechSynthesis.getVoices()) ? speechSynthesis.getVoices().length : 0; }catch(err){}
   document.getElementById('info').textContent =
     'display-mode: ' + displayMode() +
     '\nlanguages: ' + ((navigator.languages && navigator.languages.join(', ')) || navigator.language || '') +
-    '\nvoices: ' + voices +
+    '\nspeechSynthesis: ' + (synthTouched ? 'already used' : 'not touched yet') +
     '\nSR: ' + (window.webkitSpeechRecognition ? 'webkitSpeechRecognition' : window.SpeechRecognition ? 'SpeechRecognition' : 'none') +
+    '\ncontinuous=false interimResults=true on every fresh start' +
     '\n' + navigator.userAgent;
 }
 function stopLive(why){
@@ -132,6 +135,94 @@ function stopLive(why){
     prev.abort();
   }catch(err){ log('abort threw ' + (err && err.message || err)); }
 }
+function markSynth(){ synthTouched = true; paintInfo(); }
+function freshIt(){ fresh('it-IT'); }
+var heStopped = false;
+var tts5ready = false;
+var tts6ready = false;
+[
+  ['1. tap fresh it-IT', function(){ fresh('it-IT'); }],
+  ['2. tap fresh es-ES', function(){ fresh('es-ES'); }],
+  ['3. tap fresh en-US', function(){ fresh('en-US'); }],
+  ['4. he-IL stop, then tap fresh it-IT', function(){
+    if(!heStopped){
+      if(!SR){ log('no SpeechRecognition'); return; }
+      var rec;
+      try{ rec = new SR(); }catch(err){ log('new threw ' + (err && err.message || err)); return; }
+      log('4 start he-IL, will stop and wait for end');
+      arm(rec, 'he-IL', function(r){
+        var started = false;
+        var stopNow = function(){
+          if(started) return;
+          started = true;
+          log('4 stop he-IL, waiting for onend');
+          r.onend = function(){
+            log('4 end he-IL');
+            if(live === r) live = null;
+            heStopped = true;
+            log('4 tap this button again for fresh it-IT');
+          };
+          try{ r.stop(); }catch(err){ log('4 stop threw ' + (err && err.message || err)); }
+        };
+        var base = r.onaudiostart;
+        r.onaudiostart = function(){ if(base) base(); stopNow(); };
+        var baseStart = r.onstart;
+        r.onstart = function(){ if(baseStart) baseStart(); setTimeout(stopNow, 300); };
+      });
+      return;
+    }
+    log('4 tap fresh it-IT after he-IL onend');
+    freshIt();
+  }],
+  ['5. TTS it-IT, then tap fresh it-IT', function(){
+    if(!tts5ready){
+      markSynth();
+      if(!window.speechSynthesis){ log('no speechSynthesis'); return; }
+      try{ speechSynthesis.cancel(); }catch(err){}
+      try{ speechSynthesis.resume(); }catch(err){}
+      var u = new SpeechSynthesisUtterance('uno');
+      u.lang = 'it-IT';
+      u.onstart = function(){ log('5 tts start it-IT "uno"'); };
+      u.onerror = function(ev){ log('5 tts error ' + ((ev && ev.error) || '') + ((ev && ev.message) ? ' "' + ev.message + '"' : '')); };
+      u.onend = function(){ tts5ready = true; log('5 tts end — tap this button again for fresh it-IT'); };
+      log('5 tts speak it-IT "uno" inside tap');
+      speechSynthesis.speak(u);
+      return;
+    }
+    log('5 tap fresh it-IT after tts end');
+    freshIt();
+  }],
+  ['6. TTS it-IT, 1.5s gap, synth untouched, then tap fresh it-IT', function(){
+    if(synthTouched && !tts6ready){
+      log('6 speechSynthesis was already used. Reload the page, then press only this button.');
+      return;
+    }
+    if(!tts6ready){
+      markSynth();
+      if(!window.speechSynthesis){ log('no speechSynthesis'); return; }
+      var u6 = new SpeechSynthesisUtterance('uno');
+      u6.lang = 'it-IT';
+      u6.onstart = function(){ log('6 tts start it-IT "uno" (first use of speechSynthesis)'); };
+      u6.onerror = function(ev){ log('6 tts error ' + ((ev && ev.error) || '') + ((ev && ev.message) ? ' "' + ev.message + '"' : '')); };
+      u6.onend = function(){
+        log('6 tts end, waiting 1.5s');
+        setTimeout(function(){ tts6ready = true; log('6 gap done — tap this button again for fresh it-IT'); }, 1500);
+      };
+      log('6 tts speak it-IT "uno"');
+      speechSynthesis.speak(u6);
+      return;
+    }
+    log('6 tap fresh it-IT after 1.5s gap');
+    freshIt();
+  }]
+].forEach(function(item){
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'alt';
+  b.textContent = item[0];
+  b.addEventListener('click', item[1]);
+  document.getElementById('isolate').appendChild(b);
+});
 ['he-IL', 'es-ES', 'it-IT', 'en-US'].forEach(function(label){
   var b = document.createElement('button');
   b.type = 'button';
@@ -236,8 +327,7 @@ function fallback(text){
 }
 document.getElementById('clear').addEventListener('click', function(){ lines = []; document.getElementById('log').textContent = ''; });
 paintInfo();
-try{ speechSynthesis.addEventListener('voiceschanged', paintInfo); }catch(err){}
-log('ready');
+log('ready. speechSynthesis has not been called.');
 </script>
 </body>
 </html>

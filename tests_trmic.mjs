@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.8 — the translation mic keeps restarting, and the results screen can close.
+ * HilinGo v4.10.9 — the translation mic keeps restarting, and the results screen can close.
  *   node tests_trmic.mjs
  */
 import { chromium } from 'playwright-core';

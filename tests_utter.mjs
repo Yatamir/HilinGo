@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.8 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.9 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -150,7 +150,7 @@ try {
   const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (beforeTap) bad('Italian started before the tap ' + beforeTap);
   else ok('iPad waits for a tap before opening Italian');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4108-tap.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4109-tap.png' });
   const hit = await page.evaluate(() => {
     const b = document.getElementById('trTap');
     const r = b.getBoundingClientRect();
@@ -248,15 +248,15 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4108-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4109-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();
   if (!info.includes('display-mode:') || !info.includes('languages:') || !info.toLowerCase().includes('ipad')) bad('mictest info ' + info.slice(0, 160));
   else ok('mictest shows display-mode, languages, and the user agent');
   const buttons = await page.locator('button').allInnerTexts();
-  if (!buttons.some(t => t.includes('TTS then es-ES')) || !buttons.some(t => t.includes('he-IL running'))) bad('mictest buttons ' + buttons.join(' | '));
-  else ok('mictest has the game-like TTS and switch buttons');
+  if (!buttons.some(t => t.includes('1. tap fresh it-IT')) || !buttons.some(t => t.includes('4. he-IL stop')) || !buttons.some(t => t.includes('6. TTS it-IT'))) bad('mictest buttons ' + buttons.join(' | '));
+  else ok('mictest has the six isolate buttons');
   await page.click('#langs button:nth-of-type(1)');
   await page.waitForFunction(() => document.getElementById('log').textContent.includes('call start() he-IL'));
   await page.click('#esShort');

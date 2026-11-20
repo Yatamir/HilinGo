@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10 — translation card, hands-free repeat, and the word bank.
+ * HilinGo v4.10.1 — translation card, hands-free repeat, and the word bank.
  *   node tests_translate.mjs
  */
 import { chromium } from 'playwright-core';
@@ -85,7 +85,7 @@ try {
   await page.reload({ waitUntil: 'domcontentloaded' });
   const migrated = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
   if (migrated !== '45') bad('migrate ' + migrated);
-  else ok('updating to v4.10 resets a saved level to 45 once');
+  else ok('updating to v4.10.1 resets a saved level to 45 once');
   await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   const keptLevel = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
@@ -170,6 +170,10 @@ try {
   await page.evaluate(() => { if (window.__utt && window.__utt.onend) window.__utt.onend(); });
   await page.waitForFunction(() => trDeaf === false);
   await fire('zzzznotaword', true);
+  const stillOpen = await page.evaluate(() => trLock && !trScored && !document.getElementById('trOv').classList.contains('bad'));
+  if (!stillOpen) bad('a wrong guess ended the challenge early');
+  else ok('a wrong guess keeps the mic listening');
+  await page.evaluate(() => { if (trLock && !trScored) scoreTr(false); });
   await page.waitForSelector('#trOv.bad');
   const missed = await page.evaluate(() => ({
     size: G.boards[0].size,

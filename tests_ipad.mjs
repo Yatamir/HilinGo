@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.7 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.10.8 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -222,9 +222,13 @@ try {
   await phone.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await phone.waitForFunction(() => gameLangOk, { timeout: 3000 });
   const size0 = await phone.evaluate(() => G.boards[0].size);
+  const mark = await phone.evaluate(() => window.__langs.length);
   await phone.fill('#in0', 'כלב');
   await phone.click('#send0');
   await phone.waitForFunction(() => window.__langs.includes('it-IT'), { timeout: 15000 });
+  const added = await phone.evaluate(start => window.__langs.slice(start), mark);
+  if (added[0] !== 'it-IT') bad('iPhone started ' + added.join(',') + ' instead of it-IT');
+  else ok('after speech the challenge starts it-IT');
   const waited = await phone.evaluate(() => document.getElementById('trTap').classList.contains('live') && !window.__langs.includes('it-IT'));
   if (waited) bad('iPhone waited for a tap');
   else ok('iPhone started Italian without a tap');

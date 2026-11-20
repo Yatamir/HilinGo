@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.9 — translation card, hands-free repeat, and the word bank.
+ * HilinGo v4.9.1 — translation card, hands-free repeat, and the word bank.
  *   node tests_translate.mjs
  */
 import { chromium } from 'playwright-core';
@@ -36,11 +36,14 @@ const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-san
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 await context.addInitScript(() => {
   window.__srs = [];
-  window.speechSynthesis = {
+  const synth = {
     cancel(){}, resume(){}, getVoices(){ return []; },
-    speak(u){ window.__utt = u; }
+    addEventListener(){}, removeEventListener(){},
+    speak(u){ window.__utt = u; setTimeout(()=>{ try{ if(u.onstart) u.onstart(); }catch(_){} }, 5); }
   };
-  window.SpeechSynthesisUtterance = function(text){ this.text = text; this.lang = ''; this.onend = null; this.onerror = null; };
+  try { Object.defineProperty(window, 'speechSynthesis', { configurable: true, writable: true, value: synth }); }
+  catch (_) { window.speechSynthesis = synth; }
+  window.SpeechSynthesisUtterance = function(text){ this.text = text; this.lang = ''; this.onend = null; this.onerror = null; this.onstart = null; };
   class FakeSR {
     constructor(){ this.lang = ''; window.__srs.push(this); }
     start(){ this.started = true; window.__live = this; if (this.onstart) this.onstart(); }
@@ -72,6 +75,23 @@ function fire(transcript, final) {
 
 try {
   await boot();
+  const easy = await page.evaluate(() => ({
+    sel: document.querySelector('.lvl.sel').dataset.s,
+    seconds,
+  }));
+  if (easy.sel !== '45' || easy.seconds !== 45) bad('default level ' + JSON.stringify(easy));
+  else ok('easy 45 seconds is selected');
+  await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); localStorage.removeItem('hilingo_level_v491'); });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const migrated = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
+  if (migrated !== '45') bad('migrate ' + migrated);
+  else ok('updating to v4.9.1 resets a saved level to 45 once');
+  await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const keptLevel = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
+  if (keptLevel !== '15') bad('kept level ' + keptLevel);
+  else ok('a later level choice is kept');
+  await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '45'); document.querySelector('.lvl[data-s="45"]').click(); });
   const setup = await page.evaluate(() => ({
     none: document.querySelector('#trLangs .opt[data-tr=""]').classList.contains('sel'),
     label: document.getElementById('trLbl').textContent,
@@ -102,8 +122,8 @@ try {
     left: G.timeLeft,
     turn: G.turn,
   }));
-  if (!card.word || !card.on || !card.deaf || card.lang !== 'en-US' || card.turn !== 1) bad('card ' + JSON.stringify(card));
-  else ok('card shows ' + card.word + ' while the mic stays on in English and stays deaf');
+  if (!card.word || !card.on || !card.deaf || card.turn !== 1) bad('card ' + JSON.stringify(card));
+  else ok('card shows ' + card.word + ' while the mic light stays on and recognition is quiet for speech');
   await fire('חלון', true);
   const still = await page.evaluate(() => trDeaf && !trScored && !document.getElementById('trOv').classList.contains('bad'));
   if (!still) bad('a result during speech was scored');
@@ -112,6 +132,7 @@ try {
   const held = await page.evaluate(() => G.timeLeft);
   if (held < card.left - 0.2) bad('clock moved ' + card.left + ' -> ' + held);
   else ok('the clock stays paused on the translation card');
+  await page.waitForFunction(() => window.__utt && window.__utt.text && window.__utt.text !== ' ');
   await page.evaluate(() => { if (window.__utt && window.__utt.onend) window.__utt.onend(); });
   await page.waitForFunction(() => trDeaf === false);
   const stillOn = await page.evaluate(() => document.getElementById('mic0').classList.contains('on'));
@@ -145,6 +166,7 @@ try {
   await page.fill('#in0', 'אבא');
   await page.click('#send0');
   await page.waitForSelector('#trOv:not(.hidden)');
+  await page.waitForFunction(() => window.__utt && window.__utt.text && window.__utt.text !== ' ');
   await page.evaluate(() => { if (window.__utt && window.__utt.onend) window.__utt.onend(); });
   await page.waitForFunction(() => trDeaf === false);
   await fire('zzzznotaword', true);

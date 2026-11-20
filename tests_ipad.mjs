@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.5 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.10.6 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -111,9 +111,12 @@ try {
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
-  await page.waitForSelector('#trOv:not(.hidden)', { timeout: 8000 });
+  await page.waitForSelector('#trTap.live', { timeout: 8000 });
   const shown = (await page.locator('#trWord').innerText()).trim();
   await page.evaluate(w => { window.__say = w; }, shown);
+  await page.click('#trTap', { force: true });
+  await page.waitForSelector('#trTap.live', { timeout: 4000 });
+  await page.click('#trTap', { force: true });
   await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length >= 2, { timeout: 8000 });
   const mid = await page.evaluate(() => window.__langs.slice());
   const firstHe = mid.indexOf('he-IL');

@@ -26,6 +26,8 @@
   <div class="row" id="langs"></div>
   <div class="row">
     <button type="button" id="afterTts" class="alt">es-ES after TTS</button>
+    <button type="button" id="ttsAuto" class="alt">TTS then es-ES (auto, no gesture)</button>
+    <button type="button" id="heThenEs" class="alt">he-IL running then switch to es-ES</button>
     <button type="button" id="reuse" class="alt">reuse same instance, switch lang</button>
     <button type="button" id="esShort" class="alt">es-ES with lang "es"</button>
   </div>
@@ -63,7 +65,7 @@ function transcripts(ev){
   }
   return out.join('; ');
 }
-function arm(rec, label){
+function arm(rec, label, beforeStart){
   if(live && live !== rec){
     try{ live.abort(); }catch(err){ log('abort other ' + (err && err.message || err)); }
   }
@@ -89,6 +91,7 @@ function arm(rec, label){
     log('end ' + rec.lang);
     if(live === rec) live = null;
   };
+  if(beforeStart) beforeStart(rec);
   log('call start() ' + label + ' continuous=false interimResults=true');
   try{ rec.start(); }
   catch(err){ log('start() threw ' + label + ' ' + (err && (err.name + ' ' + err.message) || err)); }
@@ -101,14 +104,33 @@ function fresh(label){
   log('new instance ' + label);
   arm(rec, label);
 }
+function displayMode(){
+  try{
+    if(navigator.standalone) return 'standalone';
+    if(window.matchMedia && matchMedia('(display-mode: standalone)').matches) return 'standalone';
+    if(window.matchMedia && matchMedia('(display-mode: fullscreen)').matches) return 'fullscreen';
+  }catch(err){}
+  return 'browser';
+}
 function paintInfo(){
   var voices = 0;
   try{ voices = (window.speechSynthesis && speechSynthesis.getVoices()) ? speechSynthesis.getVoices().length : 0; }catch(err){}
   document.getElementById('info').textContent =
-    'languages: ' + ((navigator.languages && navigator.languages.join(', ')) || navigator.language || '') +
+    'display-mode: ' + displayMode() +
+    '\nlanguages: ' + ((navigator.languages && navigator.languages.join(', ')) || navigator.language || '') +
     '\nvoices: ' + voices +
     '\nSR: ' + (window.webkitSpeechRecognition ? 'webkitSpeechRecognition' : window.SpeechRecognition ? 'SpeechRecognition' : 'none') +
     '\n' + navigator.userAgent;
+}
+function stopLive(why){
+  if(!live) return;
+  var prev = live;
+  live = null;
+  log('abort live ' + (prev.lang || '') + ' before ' + why);
+  try{
+    prev.onend = function(){ log('end ' + (prev.lang || '') + ' cleared'); };
+    prev.abort();
+  }catch(err){ log('abort threw ' + (err && err.message || err)); }
 }
 ['he-IL', 'es-ES', 'it-IT', 'en-US'].forEach(function(label){
   var b = document.createElement('button');
@@ -118,19 +140,55 @@ function paintInfo(){
   document.getElementById('langs').appendChild(b);
 });
 document.getElementById('esShort').addEventListener('click', function(){ fresh('es'); });
-document.getElementById('afterTts').addEventListener('click', function(){
-  if(!window.speechSynthesis){ log('no speechSynthesis'); fresh('es-ES'); return; }
+function speakThen(label, outsideNote){
+  stopLive(label);
+  if(!window.speechSynthesis){ log('no speechSynthesis'); return; }
   try{ speechSynthesis.cancel(); }catch(err){}
+  try{ speechSynthesis.resume(); }catch(err){}
   var u = new SpeechSynthesisUtterance('hola');
   u.lang = 'es-ES';
-  u.onstart = function(){ log('tts start es-ES "hola"'); };
-  u.onerror = function(ev){ log('tts error ' + ((ev && ev.error) || '')); };
+  var heard = false;
+  u.onstart = function(){ heard = true; log('tts start es-ES "hola" inside tap'); };
+  u.onerror = function(ev){
+    log('tts error ' + ((ev && ev.error) || '') + ((ev && ev.message) ? ' "' + ev.message + '"' : ''));
+  };
   u.onend = function(){
     log('tts end es-ES');
-    setTimeout(function(){ fresh('es-ES'); }, 400);
+    setTimeout(function(){
+      log(outsideNote);
+      fresh('es-ES');
+    }, 400);
   };
-  log('tts speak es-ES "hola"');
+  log('tts speak es-ES "hola" inside tap');
   speechSynthesis.speak(u);
+  setTimeout(function(){ if(!heard) log('tts did not start'); }, 1500);
+}
+document.getElementById('afterTts').addEventListener('click', function(){
+  speakThen('es-ES after TTS', 'recognition after tts onend');
+});
+document.getElementById('ttsAuto').addEventListener('click', function(){
+  speakThen('TTS then es-ES auto', 'auto es-ES outside gesture');
+});
+document.getElementById('heThenEs').addEventListener('click', function(){
+  if(!SR){ log('no SpeechRecognition'); return; }
+  var rec;
+  try{ rec = new SR(); }
+  catch(err){ log('new threw ' + (err && err.message || err)); return; }
+  log('new instance he-IL, switch later outside the tap');
+  var switched = false;
+  arm(rec, 'he-IL', function(r){
+    var base = r.onaudiostart;
+    r.onaudiostart = function(){
+      if(base) base();
+      if(switched) return;
+      switched = true;
+      setTimeout(function(){
+        log('switch he-IL to es-ES outside the tap');
+        try{ r.abort(); }catch(err){ log('abort he-IL ' + (err && err.message || err)); }
+        setTimeout(function(){ fresh('es-ES'); }, 400);
+      }, 700);
+    };
+  });
 });
 document.getElementById('reuse').addEventListener('click', function(){
   if(!SR){ log('no SpeechRecognition'); return; }

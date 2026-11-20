@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.7 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.8 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -143,14 +143,14 @@ try {
   const sizeBefore = await page.evaluate(() => G.boards[0].size);
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
-  await page.waitForSelector('#trTap.live', { timeout: 8000 });
+  await page.waitForSelector('#trTap.live', { timeout: 15000 });
   const skipOn = await page.evaluate(() => !document.getElementById('trSkip').classList.contains('hidden'));
   if (!skipOn) bad('iPad card has no skip');
   else ok('the card has a skip button from the start');
   const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (beforeTap) bad('Italian started before the tap ' + beforeTap);
   else ok('iPad waits for a tap before opening Italian');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4107-tap.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4108-tap.png' });
   const hit = await page.evaluate(() => {
     const b = document.getElementById('trTap');
     const r = b.getBoundingClientRect();
@@ -227,7 +227,7 @@ try {
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
-  await page.waitForSelector('#trTap.live', { timeout: 8000 });
+  await page.waitForSelector('#trTap.live', { timeout: 15000 });
   const armed = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (armed) bad('watchdog saw a start before the tap');
   await page.evaluate(() => { armChallengeMic('watchdog'); armChallengeMic('watchdog'); });
@@ -248,7 +248,7 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4107-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4108-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();

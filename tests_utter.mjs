@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.5 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.6 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -143,52 +143,29 @@ try {
   const sizeBefore = await page.evaluate(() => G.boards[0].size);
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
-  await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length >= 2, { timeout: 8000 });
-  const gaps = await page.evaluate(() => {
-    const ix = [];
-    window.__langs.forEach((l, i) => { if (l === 'it-IT') ix.push(window.__times[i]); });
-    return ix.slice(0, 3).map((t, i, a) => i ? Math.round(t - a[i - 1]) : 0);
-  });
-  console.log('  it-IT gaps', gaps.join(',') || 'one start');
-  ok('it-IT attempts stayed single-file');
-  const heMid = await page.evaluate(() => {
-    const langs = window.__langs;
-    const first = langs.findIndex(l => l === 'it-IT' || l === 'it' || l === 'it-CH');
-    const last = Math.max(langs.lastIndexOf('it-IT'), langs.lastIndexOf('it'), langs.lastIndexOf('it-CH'));
-    return langs.slice(first, last).includes('he-IL');
-  });
-  if (heMid) bad('handed off to Hebrew while still retrying Italian');
-  else ok('no Hebrew handoff during the Italian retries');
-  await page.waitForFunction(() => {
-    const ask = document.getElementById('trAsk').textContent || '';
-    return ask.includes('איטלקית') || ask.includes('מיקרופון') || ask.includes('Mic');
-  }, { timeout: 20000 });
-  const failed = await page.evaluate(() => document.getElementById('trOv').classList.contains('bad'));
-  if (failed) bad('a dead mic was scored as a miss');
-  else ok('a mic that never listens is not a miss');
-  const retryShown = await page.evaluate(() => !document.getElementById('trRetry').classList.contains('hidden'));
-  if (!retryShown) bad('notice has no tap-to-retry mic');
-  else ok('the notice offers a tap to try the mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4105-retry.png' });
+  await page.waitForSelector('#trTap.live', { timeout: 8000 });
+  const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
+  if (beforeTap) bad('Italian started before the tap ' + beforeTap);
+  else ok('iPad waits for a tap before opening Italian');
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4106-tap.png' });
+  await page.click('#trTap', { force: true });
+  await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length === 1, { timeout: 4000 });
+  await page.waitForSelector('#trTap.live', { timeout: 4000 });
+  const starts = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT' || l === 'it' || l === 'it-CH').length);
+  if (starts !== 1) bad('abort started again without a tap ' + starts);
+  else ok('an abort does not start again until the next tap');
+  const failed = await page.evaluate(() => document.getElementById('trOv').classList.contains('bad') || !trLock);
+  if (failed) bad('a dead mic ended the turn');
+  else ok('a mic that aborts is not a miss');
   const savedOnce = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
-  if (savedOnce) bad('Italian was skipped after one challenge');
-  else ok('one failed challenge does not skip the language');
+  if (savedOnce) bad('Italian was skipped after one tap');
+  else ok('one aborted tap does not skip the language');
   const built = await page.evaluate(() => window.__built);
   if (built !== 1) bad('recognizers created ' + built);
-  else ok('the challenge reused the one game recognizer');
-  await page.waitForFunction(() => !trLock, { timeout: 9000 });
+  else ok('the tap reused the one game recognizer');
   const sizeAfter = await page.evaluate(() => G.boards[0].size);
   if (sizeAfter !== sizeBefore - 1) bad('penalty ' + sizeBefore + ' -> ' + sizeAfter);
-  else ok('the turn passed with no extra penalty');
-  const starts = await page.evaluate(() => window.__langs.filter(l => l==='it-IT' || l==='it' || l==='it-CH').length);
-  if (starts > 3) bad('too many starts ' + starts);
-  else ok('at most 3 recognition starts (' + starts + ')');
-  await page.evaluate(() => { WG.addCustomWord('בית'); });
-  await page.waitForFunction(() => G.turn === 1, { timeout: 4000 });
-  await page.fill('#in1', 'בית');
-  await page.click('#send1');
-  await page.waitForFunction(() => sessionStorage.getItem('hilingo_nospeech_it') === '1', { timeout: 20000 });
-  ok('a second failed challenge skips Italian for this launch');
+  else ok('no extra penalty while waiting for another tap');
 
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
@@ -220,8 +197,11 @@ try {
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
-  await page.waitForFunction(() => trPhase === 'arming' || trRestartT, { timeout: 4000 });
+  await page.waitForSelector('#trTap.live', { timeout: 8000 });
+  const armed = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
+  if (armed) bad('watchdog saw a start before the tap');
   await page.evaluate(() => { armChallengeMic('watchdog'); armChallengeMic('watchdog'); });
+  await page.click('#trTap', { force: true });
   await page.waitForSelector('#trOv:not(.hidden)');
   const shown = (await page.locator('#trWord').innerText()).trim();
   await page.evaluate(w => { window.__say = w; }, shown);
@@ -238,12 +218,15 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4105-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4106-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();
-  if (!info.includes('languages:') || !info.toLowerCase().includes('ipad')) bad('mictest info ' + info.slice(0, 120));
-  else ok('mictest shows languages and the user agent');
+  if (!info.includes('display-mode:') || !info.includes('languages:') || !info.toLowerCase().includes('ipad')) bad('mictest info ' + info.slice(0, 160));
+  else ok('mictest shows display-mode, languages, and the user agent');
+  const buttons = await page.locator('button').allInnerTexts();
+  if (!buttons.some(t => t.includes('TTS then es-ES')) || !buttons.some(t => t.includes('he-IL running'))) bad('mictest buttons ' + buttons.join(' | '));
+  else ok('mictest has the game-like TTS and switch buttons');
   await page.click('#langs button:nth-of-type(1)');
   await page.waitForFunction(() => document.getElementById('log').textContent.includes('call start() he-IL'));
   await page.click('#esShort');

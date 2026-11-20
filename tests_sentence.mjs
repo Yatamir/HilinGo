@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.5 — a five-word sentence on top of the letter chain.
+ * HilinGo v4.10.6 — a five-word sentence on top of the letter chain.
  *   node tests_sentence.mjs
  */
 import { chromium } from 'playwright-core';

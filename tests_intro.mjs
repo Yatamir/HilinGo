@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.6 — Hili's intro plays once when a game starts, and the mic waits.
+ * HilinGo v4.10.7 — Hili's intro plays once when a game starts, and the mic waits.
  *   npm install playwright-core
  *   node tests_intro.mjs
  * Audio and speech recognition are mocked. The real clip is not decoded.
@@ -129,8 +129,8 @@ try {
     let s = await snap(page);
     if (s.loads < 1 || s.preload !== 'auto' || !/hilingo\.mp3(\?v=4\.10\.4)?$/.test(s.src)) bad('preload ' + JSON.stringify(s));
     else ok('preloaded audio/hilingo.mp3');
-    if (s.ver !== '4.10.6' || s.version !== '4.10.6') bad('version ' + s.ver + ' / ' + s.version);
-    else ok('version 4.10.6');
+    if (s.ver !== '4.10.7' || s.version !== '4.10.7') bad('version ' + s.ver + ' / ' + s.version);
+    else ok('version 4.10.7');
 
     await page.click('#go');
     s = await snap(page);

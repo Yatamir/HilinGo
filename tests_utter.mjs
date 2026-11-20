@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.6 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.10.7 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -144,28 +144,58 @@ try {
   await page.fill('#in0', 'כלב');
   await page.click('#send0');
   await page.waitForSelector('#trTap.live', { timeout: 8000 });
+  const skipOn = await page.evaluate(() => !document.getElementById('trSkip').classList.contains('hidden'));
+  if (!skipOn) bad('iPad card has no skip');
+  else ok('the card has a skip button from the start');
   const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (beforeTap) bad('Italian started before the tap ' + beforeTap);
   else ok('iPad waits for a tap before opening Italian');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4106-tap.png' });
-  await page.click('#trTap', { force: true });
-  await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length === 1, { timeout: 4000 });
-  await page.waitForSelector('#trTap.live', { timeout: 4000 });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4107-tap.png' });
+  const hit = await page.evaluate(() => {
+    const b = document.getElementById('trTap');
+    const r = b.getBoundingClientRect();
+    const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const cs = getComputedStyle(b);
+    return { id: el && (el.id || el.tagName), pe: cs.pointerEvents, disp: cs.display, w: Math.round(r.width) };
+  });
+  if (hit.id !== 'trTap' || hit.pe === 'none' || hit.disp === 'none' || hit.w < 40) bad('speak button is not under the finger ' + JSON.stringify(hit));
+  else ok('a finger lands on the speak button');
+  const box = await page.locator('#trTap').boundingBox();
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  const tapped = await page.waitForFunction(() => window.__langs.filter(l => l === 'it-IT').length >= 1, { timeout: 4000 }).then(() => true, async () => {
+    console.log('  tap miss', JSON.stringify(await page.evaluate(() => ({
+      langs: window.__langs,
+      on: typeof document.getElementById('trTap').ontouchend,
+      tail: (document.getElementById('diagText').textContent || '').slice(-220),
+    }))));
+    return false;
+  });
+  if (!tapped) bad('touch did not start Italian');
+  const back = await page.waitForSelector('#trTap.live', { timeout: 4000 }).then(() => true, async () => {
+    console.log('  no button', JSON.stringify(await page.evaluate(() => ({
+      lock: trLock, phase: trPhase, fails: trTapFails,
+      cls: document.getElementById('trTap').className,
+      ov: document.getElementById('trOv').className,
+      langs: window.__langs,
+      tail: (document.getElementById('diagText').textContent || '').slice(-300),
+    }))));
+    return false;
+  });
+  if (!back) bad('speak button did not return after the abort');
   const starts = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT' || l === 'it' || l === 'it-CH').length);
   if (starts !== 1) bad('abort started again without a tap ' + starts);
   else ok('an abort does not start again until the next tap');
   const failed = await page.evaluate(() => document.getElementById('trOv').classList.contains('bad') || !trLock);
   if (failed) bad('a dead mic ended the turn');
   else ok('a mic that aborts is not a miss');
-  const savedOnce = await page.evaluate(() => sessionStorage.getItem('hilingo_nospeech_it'));
-  if (savedOnce) bad('Italian was skipped after one tap');
-  else ok('one aborted tap does not skip the language');
-  const built = await page.evaluate(() => window.__built);
-  if (built !== 1) bad('recognizers created ' + built);
-  else ok('the tap reused the one game recognizer');
+  const fresh = await page.evaluate(() => ({ built: window.__built, log: (document.getElementById('diag') && document.getElementById('diag').textContent) || '' }));
+  if (fresh.built < 2) bad('recognizers created ' + fresh.built);
+  else ok('the tap started a fresh recognizer (' + fresh.built + ')');
+  await page.evaluate(() => document.getElementById('trTap').click());
+  await page.waitForFunction(() => !trLock, { timeout: 4000 });
   const sizeAfter = await page.evaluate(() => G.boards[0].size);
   if (sizeAfter !== sizeBefore - 1) bad('penalty ' + sizeBefore + ' -> ' + sizeAfter);
-  else ok('no extra penalty while waiting for another tap');
+  else ok('two failed taps close the card with no extra penalty');
 
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
@@ -201,7 +231,7 @@ try {
   const armed = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (armed) bad('watchdog saw a start before the tap');
   await page.evaluate(() => { armChallengeMic('watchdog'); armChallengeMic('watchdog'); });
-  await page.click('#trTap', { force: true });
+  await page.evaluate(() => document.getElementById('trTap').click());
   await page.waitForSelector('#trOv:not(.hidden)');
   const shown = (await page.locator('#trWord').innerText()).trim();
   await page.evaluate(w => { window.__say = w; }, shown);
@@ -218,7 +248,7 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4106-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4107-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();

@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.10">
+<meta name="hilingo-version" content="4.10.1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.10" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.10.1" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -373,6 +373,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   .tiles.waving{filter:none}
 }
 #endbox{position:relative;z-index:1;background:#fff;border-radius:28px;padding:28px 36px 32px;text-align:center;max-width:min(92%,520px);box-shadow:0 24px 60px rgba(42,33,82,.25);border:3px solid #F3EEFF}
+.modal-x{position:absolute;top:8px;inset-inline-end:8px;z-index:2;width:44px;height:44px;border-radius:14px;background:#fff;color:#8A2030;font-size:22px;font-weight:800;line-height:1;box-shadow:0 2px 0 #E6E0F8}
+.modal-x:active{transform:translateY(1px)}
 #endbox h2{font-size:clamp(28px,5vw,40px);margin:8px 0 6px}
 #endbox p{font-size:18px;color:var(--muted)}
 #podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:14px 0 8px;flex-wrap:wrap}
@@ -709,7 +711,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.10</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.10.1</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -735,7 +737,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.10</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.10.1</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -760,7 +762,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 </section>
 <div id="learnDbg" class="hidden" dir="ltr"><div class="dbgbar"><button type="button" id="dbgCopy"><svg class="ico-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="12" height="12" rx="2.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="8.5" y="8.5" width="12" height="12" rx="2.5" fill="#4060E0" stroke="#fff" stroke-width="2"/></svg>העתק הכל / Copy all</button><button type="button" id="dbgClear">Clear log</button><button type="button" id="dbgPt">Test pt-BR mic</button><span id="dbgCopied" class="hidden">הועתק</span></div><pre id="learnDbgText"></pre></div>
 
-<div id="endov" class="hidden"><div id="confetti" aria-hidden="true"></div><div id="endbox"><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endSent" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
+<div id="endov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle"><div id="confetti" aria-hidden="true"></div><div id="endbox"><button type="button" id="endClose" class="modal-x" aria-label="סגור">✕</button><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endSent" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
 <div id="trOv" class="hidden" role="dialog" aria-live="assertive"><div id="trCard"><p id="trFrom"></p><p id="trWord"></p><p id="trAsk"></p><p id="trMark" class="hidden"></p></div></div>
 <div id="bankov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="bankTitle"><div id="bankbox"><h2 id="bankTitle">בנק המילים שלי</h2><p id="bankNote"></p><div id="bankFilter"></div><ul id="bankList"></ul><p id="bankEmpty" class="hidden"></p><button type="button" class="big" id="bankClose">סגור</button></div></div>
@@ -774,10 +776,10 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.10" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.10"></script>
-<script src="cat_hints.js?v=4.10"></script>
-<script src="learn_dict.js?v=4.10"></script>
+<script src="words.js?v=4.10.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.10.1"></script>
+<script src="cat_hints.js?v=4.10.1"></script>
+<script src="learn_dict.js?v=4.10.1"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1017,7 +1019,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.10';
+window.WG = WG; window.HILINGO_VERSION='4.10.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1493,6 +1495,7 @@ const STR = {
 };
 let LANG='he', S=STR.he, NPLAYERS=2, SOLO=false, MODE='play', LEARN_TARGET='pt', TR='';
 let trLock=false, trSpeaker=-1, trScored=false, trDeaf=false, trTarget='', trAlts=[], trTimer=0, trRestartT=0, trRestarts=0, trFroze=false, trKind='game', bankFilter='all', bankAsk=-1;
+let trPhase='off', trListenUntil=0, trBootTimer=0, micGapUntil=0;
 // Before any startup call. applyLang() paints a saved solo record, and that
 // reads SOLO_CAP. A const later in the script is still in the temporal dead zone.
 const SOLO_CAP=99*60+59;
@@ -1531,7 +1534,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10.1';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1865,12 +1868,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v410';
+const CAT_CACHE='hilingo-cats-v4101';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.10'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.10.1'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -2869,6 +2872,7 @@ function endScreen(){
   $('#endText').textContent = (G.reason==='empty'?S.endEmpty:G.reason==='misses'?S.endMisses:S.endManual)+
     G.names.map((nm,i)=>`${nm}: ${G.boards[i].size} ${S.letters}`).join(' · ')+` · ${G.history.filter(h=>h.word).length} ${S.words}`;
   clearFx(); paintPodium(); burstConfetti();
+  const xc=$('#endClose'); if(xc) xc.setAttribute('aria-label', (S&&S.myWordsClose)||'Close');
   $('#endov').classList.remove('hidden'); beep(523,.15);setTimeout(()=>beep(659,.15),150);setTimeout(()=>beep(784,.3),300);
 }
 function paintPodium(){
@@ -2896,7 +2900,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.10');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.10.1');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -2974,9 +2978,30 @@ $('#wordsList').onclick=e=>{
   if(t.classList.contains('mw-x')){ pendingDelete=w; renderMyWords(); }
   else if(t.classList.contains('mw-yes')){ WG.removeCustomWord(w, LANG); pendingDelete=null; renderMyWords(); }
 };
-$('#again').onclick=()=>{ const c=$('#confetti'); if(c) c.innerHTML=''; stopSoloClock(false); $('#game').classList.remove('solo'); $('#endov').classList.add('hidden'); $('#game').classList.add('hidden'); $('#start').classList.remove('hidden'); paintSoloBest(); };
+function leaveToHome(){
+  const c=$('#confetti'); if(c) c.innerHTML='';
+  stopSoloClock(false);
+  $('#game').classList.remove('solo');
+  $('#endov').classList.add('hidden');
+  $('#game').classList.add('hidden');
+  $('#start').classList.remove('hidden');
+  paintSoloBest();
+}
+$('#again').onclick=leaveToHome;
+$('#endClose').onclick=leaveToHome;
 $('#endBtn').onclick=()=>{ if(G&&!G.over){ WG.finish(G,null,'manual'); endScreen(); } };
 $('#diagBtn').onclick=()=>{ $('#diag').classList.toggle('hidden'); drawDiag(); };
+function bindVerDiag(id){
+  const b=document.getElementById(id); if(!b) return;
+  let timer=0, held=false;
+  b.addEventListener('pointerdown', ()=>{ held=false; clearTimeout(timer); timer=setTimeout(()=>{ held=true; $('#diag').classList.remove('hidden'); drawDiag(); diag('log open'); }, 650); });
+  b.addEventListener('pointerup', ev=>{ clearTimeout(timer); if(held){ ev.preventDefault(); ev.stopPropagation(); } });
+  b.addEventListener('pointerleave', ()=>clearTimeout(timer));
+  b.addEventListener('pointercancel', ()=>clearTimeout(timer));
+  b.addEventListener('contextmenu', ev=>{ ev.preventDefault(); $('#diag').classList.remove('hidden'); drawDiag(); });
+}
+bindVerDiag('verLblStart');
+bindVerDiag('verLblLearn');
 function paintPause(){
   const b=$('#pauseBtn'); if(!b) return;
   b.classList.toggle('is-paused', !!paused);
@@ -3006,7 +3031,7 @@ let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false
 function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>40) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
-  e.textContent='HilinGo v4.10 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.10.1 · mic log ['+(PTT?'tap-to-talk':'auto')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3316,8 +3341,11 @@ window.addEventListener('resize', syncViewport);
 syncViewport();
 setInterval(()=>{
   if(trLock){
-    if(trScored||micHoldAuto) return;
-    if(recFor===null || (!micSawStart && micArmedAt && performance.now()-micArmedAt>3000)) scheduleTrRestart('watchdog');
+    if(trScored||trPhase==='tts'||trPhase==='off') return;
+    if(trRestartT||trBootTimer) return;
+    if(performance.now()>trListenUntil) return;
+    if(trPhase==='listening' && micSawStart && rec) return;
+    if(!micSawStart && micArmedAt && performance.now()-micArmedAt>2500) armChallengeMic('watchdog');
     return;
   }
   if(!G||G.over||paused||typing||!$('#autoMic').checked) return;
@@ -3428,7 +3456,7 @@ function learnMatch(alts, targetText){
   }
   return false;
 }
-const BASIC_GLOSS=new Set('one two three four five six seven eight nine ten home house dog cat fish book water heart eye red blue green yellow black white orange pink purple sun window bird horse door chair table bed mom dad mother father brother sister boy girl bread milk hand foot eat drink sleep run friend ball happy hello yes no love good cake small little big'.split(' '));
+const BASIC_GLOSS=new Set('one two three four five six seven eight nine ten home house dog cat fish book water heart eye red blue green yellow black white orange pink purple sun window bird horse door chair table bed mom dad mother father brother sister boy girl bread milk hand foot eat drink sleep run friend ball happy hello yes no love good cake small little big goat mouth first saturday'.split(' '));
 function ensureLearnIndex(){
   if(learnIndex) return learnIndex;
   const idx={};
@@ -3469,8 +3497,9 @@ function heCandidates(raw){
   if(/ת$/.test(w) && w.length>=4) add(w.slice(0,-1));
   if(/ה$/.test(w) && w.length>=3) add(w.slice(0,-1));
   const prefs='הובלמשכ';
+  // הלכו ends in ו. Stripping ה would turn it into לכו ("go") and then "the go".
   const base=out.slice();
-  for(const stem of base){
+  if(!(/ו$/.test(w) && w.length>=4)) for(const stem of base){
     if(stem.length>=4 && prefs.indexOf(stem[0])>=0){
       add(stem.slice(1));
       const mid=stem.slice(1);
@@ -3511,23 +3540,41 @@ function bestSense(list, dst){
   });
   return ranked[0]&&ranked[0].row;
 }
+const HE_SKIP=new Set('תמיר הרד נור נועם יוסי מיכל נועה איתי עידו יובל שירה ליאור מאיה תמר אורי רועי גיא נטע דניאל יונתן אביגיל עומר יעל רותם ליאם אריאל ניר עמית רן גלעד אסף יותם אלון ענבר ליהי אגם אלה נויה ארי יואב מתן עילי הראל רוני'.split(' '));
+const PROPER_TR=new Set('israel israele francia italia spagna espana giappone japon cina china egitto egipto grecia francia japón'.split(' ').map(w=>w.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase()));
+const PLACE_HE=new Set('ישראל צרפת איטליה ספרד יפן סין מצרים יוון'.split(' '));
+function heSkip(raw){
+  const w=foldLearn('he', raw);
+  return !!(w && HE_SKIP.has(w));
+}
+function presentTr(text, proper){
+  if(!text) return '';
+  return String(text).split(/(\s+)/).map(p=>{
+    if(!p || /^\s+$/.test(p)) return p;
+    const f=p.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(proper || PROPER_TR.has(f)) return p.charAt(0).toLocaleUpperCase()+p.slice(1);
+    return p.charAt(0).toLocaleLowerCase()+p.slice(1);
+  }).join('');
+}
 function dictTranslate(src, dst, raw){
+  if(src==='he' && heSkip(raw)) return null;
   const idx=ensureLearnIndex();
   const i=LEARN_ORDER.indexOf(dst);
   if(i<0 || !idx[src]) return null;
   const keys=src==='he' ? heCandidates(raw) : [foldLearn(src, raw)];
   for(const key of keys){
-    if(!key) continue;
+    if(!key || HE_SKIP.has(key)) continue;
     const list=idx[src].get(key);
     if(!list||!list.length) continue;
     const row=bestSense(list, dst);
     const text=row&&row[i];
     if(!text) continue;
-    return src==='he' ? shapeHe(raw, key, text, dst) : text;
+    const shaped=src==='he' ? shapeHe(raw, key, text, dst) : text;
+    return presentTr(shaped, PLACE_HE.has(foldLearn('he', raw)) || PLACE_HE.has(key));
   }
   return null;
 }
-const TR_JUNK=new Set('undercarriage wayfarer wanderer nee eater pancreatica beth'.split(' '));
+const TR_JUNK=new Set('undercarriage wayfarer wanderer nee eater pancreatica beth ritz scaricamento bagliore download unloading'.split(' '));
 function saneRemote(t, dst){
   t=String(t||'').split(/[;|]/)[0].trim();
   if(!t || t.length>40 || /[0-9]/.test(t) || /[.!?;:]/.test(t)) return '';
@@ -3585,15 +3632,37 @@ async function myMemoryTranslate(src, dst, text){
   }catch(_){ return ''; }
   finally{ clearTimeout(timer); }
 }
+function junkTr(t, dst){
+  const s=saneRemote(t, dst);
+  if(!s) return '';
+  const words=foldLearn(dst, s).split(' ').filter(Boolean);
+  if(words.some(w=>TR_JUNK.has(w))) return '';
+  return s;
+}
 async function remoteTranslate(src, dst, text){
   const q=String(text||'').trim();
   if(!q || q.length>80) return '';
+  if(src==='he' && heSkip(q)) return '';
+  const proper=PLACE_HE.has(foldLearn('he', q));
   try{
-    const g=await googleTranslate(src, dst, q);
-    if(g) return g;
+    if(src==='he' && dst!=='en' && dst!=='he'){
+      let en=dictTranslate('he','en', q)||'';
+      if(!en){ try{ en=junkTr(await googleTranslate('he','en', q), 'en'); }catch(_){ en=''; } }
+      if(en){
+        const via=junkTr(await googleTranslate('en', dst, en), dst);
+        if(via) return presentTr(via, proper);
+      }
+      const direct=junkTr(await googleTranslate('he', dst, q), dst);
+      if(direct && foldLearn(dst, direct).split(' ').length===1) return presentTr(direct, proper);
+      return '';
+    }
+    const g=junkTr(await googleTranslate(src, dst, q), dst);
+    if(g) return presentTr(g, proper);
     return '';
   }catch(_){
-    return myMemoryTranslate(src, dst, q);
+    const mem=await myMemoryTranslate(src, dst, q);
+    const clean=junkTr(mem, dst);
+    return clean ? presentTr(clean, proper) : '';
   }
 }
 function learnStoreKey(){ return 'hilingo_learn_'+LANG+'_'+LEARN_TARGET; }
@@ -4072,7 +4141,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10.1';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -4565,7 +4634,7 @@ document.querySelectorAll('#trLangs .opt').forEach(b=>b.onclick=()=>{
   try{ localStorage.setItem('hilingo_trlang', TR); }catch(_){}
   paintTrPicker();
 });
-const TR_CACHE_KEY='hilingo_tr_cache_v3';
+const TR_CACHE_KEY='hilingo_tr_cache_v4';
 function trCacheGet(k){ try{ return (JSON.parse(localStorage.getItem(TR_CACHE_KEY)||'{}'))[k]||''; }catch(_){ return ''; } }
 function trCacheSet(k,v){
   try{
@@ -4582,9 +4651,11 @@ function readBank(){
 }
 function writeBank(a){ try{ localStorage.setItem('hilingo_bank', JSON.stringify(a.slice(0,500))); }catch(_){} }
 function addBank(src,dst,from,to){
-  const key=src+'|'+dst+'|'+foldLearn(src,from)+'|'+foldLearn(dst,to);
+  if(!to || (src==='he' && heSkip(from))) return;
+  const shown=presentTr(to, PLACE_HE.has(foldLearn('he', from)));
+  const key=src+'|'+dst+'|'+foldLearn(src,from)+'|'+foldLearn(dst,shown);
   const arr=readBank().filter(x=>(x.src+'|'+x.dst+'|'+foldLearn(x.src,x.from)+'|'+foldLearn(x.dst,x.to))!==key);
-  arr.unshift({src,dst,from,to});
+  arr.unshift({src,dst,from,to:shown});
   writeBank(arr);
 }
 function trMatch(alts, target, lang){
@@ -4607,6 +4678,7 @@ function trMatch(alts, target, lang){
   return false;
 }
 async function translateWord(word, src, dst){
+  if(src==='he' && heSkip(word)) return '';
   const key=src+'|'+dst+'|'+foldLearn(src, word);
   const hit=trCacheGet(key);
   if(hit) return hit;
@@ -4616,18 +4688,27 @@ async function translateWord(word, src, dst){
   if(remote){ trCacheSet(key, remote); return remote; }
   return '';
 }
+function bankJunk(item){
+  const to=foldLearn(item.dst, item.to);
+  if(!to) return true;
+  return to.split(' ').some(w=>TR_JUNK.has(w));
+}
 function scrubBank(){
   try{
     localStorage.removeItem('hilingo_tr_cache_v2');
-    if(localStorage.getItem('hilingo_bank_v410')==='1') return;
+    localStorage.removeItem('hilingo_tr_cache_v3');
+    if(localStorage.getItem('hilingo_bank_v4101')==='1') return;
     const next=[];
     readBank().forEach(item=>{
+      if((item.src==='he' && heSkip(item.from)) || (item.dst==='he' && heSkip(item.to))) return;
       const local=dictTranslate(item.src, item.dst, item.from);
-      if(!local) return;
-      next.push({src:item.src, dst:item.dst, from:item.from, to:local});
+      if(local){ next.push({src:item.src, dst:item.dst, from:item.from, to:local}); return; }
+      const romance=item.src==='es'||item.src==='it'||item.dst==='es'||item.dst==='it';
+      if(romance || bankJunk(item)) return;
+      next.push(item);
     });
     writeBank(next);
-    localStorage.setItem('hilingo_bank_v410','1');
+    localStorage.setItem('hilingo_bank_v4101','1');
   }catch(_){}
 }
 function showTrFace(from, word, ask, mark){
@@ -4641,60 +4722,89 @@ function showTrFace(from, word, ask, mark){
   ov.classList.remove('hidden');
 }
 function hideTrFace(){ const ov=$('#trOv'); if(ov){ ov.classList.add('hidden'); ov.classList.remove('good','bad'); } }
-function scheduleTrRestart(why){
-  if(!trLock||trScored||micHoldAuto) return;
-  if(trRestarts>=3){ diag('tr restart cap'); return; }
-  trRestarts++;
-  clearTimeout(trRestartT);
-  diag('tr restart '+why);
-  trRestartT=setTimeout(()=>{ trRestartT=0; if(trLock&&!trScored&&!micHoldAuto) startTrListen(); }, 400);
-}
-function startTrListen(){
-  if(!trLock||trScored||!SR||trSpeaker<0) return;
-  if(micHoldAuto){ lightMic(trSpeaker); return; }
-  lightMic(trSpeaker);
+function trLangTag(){ return (typeof SPEECH_TAG!=='undefined' && SPEECH_TAG[TR])||'en-US'; }
+// Challenge mic: tts -> arming -> listening, then restart until the window ends.
+// One recognizer at a time. iOS drops continuous sessions and hates start() right after abort or speech.
+function armChallengeMic(why){
+  if(!trLock||trScored||!SR||trSpeaker<0||trPhase==='tts') return;
+  if(performance.now()>trListenUntil) return;
+  if(trRestarts>=10){ diag('tr cap '+why); return; }
+  if(trPhase==='listening' && micSawStart && rec) return;
+  clearTimeout(trBootTimer); trBootTimer=0;
   stopRec(true);
+  trPhase='arming';
+  const wait=Math.max(480, micGapUntil-performance.now());
+  diag('tr arm '+why+' '+wait+'ms '+trLangTag());
+  trBootTimer=setTimeout(()=>{ trBootTimer=0; openChallengeMic(why); }, wait);
+}
+function openChallengeMic(why){
+  if(!trLock||trScored||!SR||trSpeaker<0) return;
+  if(performance.now()>trListenUntil) return;
   const sess=++recSession;
-  const tag=(typeof SPEECH_TAG!=='undefined' && SPEECH_TAG[TR])||'en-US';
+  const tag=trLangTag();
   let r;
-  try{ r=new SR(); }catch(err){ diag('tr new '+err.message); lightMic(trSpeaker); scheduleTrRestart('new'); return; }
-  r.lang=tag; r.interimResults=true; r.maxAlternatives=5; r.continuous=true;
+  try{ r=new SR(); }catch(err){ diag('tr new '+err.message); scheduleTrRestart('new'); return; }
+  r.lang=tag; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
   rec=r; recFor=trSpeaker; micSawStart=false; micArmedAt=performance.now(); lastStartUser=false;
   lightMic(trSpeaker);
+  trPhase='listening';
   const live=()=>sess===recSession && trLock && !trScored;
-  r.onstart=()=>{ diag('tr start '+tag); micSawStart=true; trRestarts=0; lightMic(trSpeaker); };
+  r.onaudiostart=()=>{ diag('tr audiostart '+tag); if(sess===recSession) micSawStart=true; };
+  r.onstart=()=>{
+    diag('tr onstart '+tag+' '+why);
+    if(sess!==recSession) return;
+    micSawStart=true; trRestarts=0; trDeaf=false; lightMic(trSpeaker);
+  };
   r.onresult=e=>{
     if(!live()||trDeaf){ diag('tr deaf'); return; }
     const alts=allAlts(e.results);
-    if(alts.length) trAlts=alts;
-    if(trMatch(alts, trTarget, TR)){ scoreTr(true); return; }
-    const last=e.results[e.results.length-1];
-    if(last&&last.isFinal) scoreTr(false);
+    if(!alts.length) return;
+    trAlts=alts; lastResultAt=performance.now();
+    diag('tr hear "'+alts[0]+'" '+tag);
+    if(trMatch(alts, trTarget, TR)) scoreTr(true);
   };
   r.onerror=e=>{
     if(sess!==recSession) return;
     const code=e&&e.error||'';
-    diag('tr error '+code);
+    diag('tr error '+code+' '+tag);
     if(code==='not-allowed'||code==='service-not-allowed'){
-      micHoldAuto=true; lightMic(trSpeaker); showRestartChip(trSpeaker); return;
+      trRestarts++;
+      if(trRestarts>=3){ micHoldAuto=true; lightMic(trSpeaker); showRestartChip(trSpeaker); trPhase='off'; return; }
+      scheduleTrRestart(code);
+      return;
     }
-    if(code==='aborted'||code==='no-speech') return;
-    scheduleTrRestart(code);
+    if(code==='aborted') return;
+    scheduleTrRestart(code||'error');
   };
   r.onend=()=>{
+    diag('tr end '+tag);
     if(sess!==recSession) return;
     rec=null; recFor=null; recCtl=null;
+    micGapUntil=performance.now()+420;
     lightMic(trSpeaker);
-    if(!trLock||trScored||micHoldAuto) return;
+    if(!trLock||trScored) return;
+    trPhase='arming';
     scheduleTrRestart('end');
   };
-  diag('tr start() '+tag);
-  try{ r.start(); }catch(err){ diag('tr start threw'); lightMic(trSpeaker); scheduleTrRestart('throw'); }
+  diag('tr start() '+tag+' '+why);
+  try{ r.start(); }catch(err){ diag('tr start threw '+(err&&err.message||'')); scheduleTrRestart('throw'); }
 }
+function scheduleTrRestart(why){
+  if(!trLock||trScored||trPhase==='tts') return;
+  if(performance.now()>trListenUntil) return;
+  if(trRestarts>=10){ diag('tr cap '+why); return; }
+  trRestarts++;
+  const delay=Math.min(1500, 280+trRestarts*180);
+  clearTimeout(trRestartT);
+  diag('tr retry '+why+' #'+trRestarts+' in '+delay);
+  trRestartT=setTimeout(()=>{ trRestartT=0; armChallengeMic(why); }, delay);
+}
+function startTrListen(){ armChallengeMic('listen'); }
 function scoreTr(ok){
   if(!trLock||trScored) return;
   trScored=true;
-  clearTimeout(trTimer); clearTimeout(trRestartT);
+  trPhase='off';
+  clearTimeout(trTimer); clearTimeout(trRestartT); clearTimeout(trBootTimer); trBootTimer=0;
   const ov=$('#trOv');
   if(trKind==='bank'){
     showTrFace('', '', ok?(S.trOk||''):(S.trNo||''), ok?'✅':'X');
@@ -4721,8 +4831,9 @@ function scoreTr(ok){
 function endTranslation(){
   hideTrFace();
   const thaw=trFroze; trFroze=false;
-  trLock=false; trDeaf=false; trScored=false; trRestarts=0; trKind='game';
-  clearTimeout(trTimer); clearTimeout(trRestartT);
+  trLock=false; trDeaf=false; trScored=false; trRestarts=0; trKind='game'; trPhase='off';
+  micHoldAuto=false;
+  clearTimeout(trTimer); clearTimeout(trRestartT); clearTimeout(trBootTimer); trBootTimer=0;
   if(thaw) thawSolo();
   if(!G){ trSpeaker=-1; stopRec(false); return; }
   if(G.over){ trSpeaker=-1; stopRec(false); endScreen(); return; }
@@ -4739,7 +4850,7 @@ function endTranslation(){
 }
 async function runTranslation(p, word){
   trKind='game'; trLock=true; trDeaf=true; trScored=false; trRestarts=0; trAlts=[]; trTarget='';
-  trSpeaker=p; lightMic(p); micHoldAuto=false;
+  trPhase='tts'; trSpeaker=p; lightMic(p); micHoldAuto=false; hideRestartChip();
   if(SOLO && typeof soloRunning!=='undefined' && soloRunning && !soloFrozen){ freezeSolo(); trFroze=true; }
   let text='';
   try{ text=await translateWord(word, LANG, TR); }catch(_){ text=''; }
@@ -4758,11 +4869,14 @@ async function runTranslation(p, word){
   try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
   try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
   if(!trLock||trScored) return;
-  trDeaf=false;
+  trPhase='arming';
+  trListenUntil=performance.now()+7000;
+  trRestarts=0;
+  micGapUntil=performance.now()+560;
   lightMic(p);
-  startTrListen();
+  armChallengeMic('after-tts');
   clearTimeout(trTimer);
-  trTimer=setTimeout(()=>{ if(trLock&&!trScored) scoreTr(trMatch(trAlts, trTarget, TR)); }, 5000);
+  trTimer=setTimeout(()=>{ if(trLock&&!trScored) scoreTr(trMatch(trAlts, trTarget, TR)); }, 7000);
 }
 function bankPairs(){
   const all=readBank();

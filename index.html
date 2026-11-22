@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.11.4">
+<meta name="hilingo-version" content="4.11.5">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.11.4" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.11.5" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -747,7 +747,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.11.4</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.11.5</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -773,7 +773,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.11.4</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.11.5</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -812,11 +812,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.11.4"></script>
-<script src="words.js?v=4.11.4" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.11.4"></script>
-<script src="cat_hints.js?v=4.11.4"></script>
-<script src="learn_dict.js?v=4.11.4"></script>
+<script src="config.js?v=4.11.5"></script>
+<script src="words.js?v=4.11.5" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.11.5"></script>
+<script src="cat_hints.js?v=4.11.5"></script>
+<script src="learn_dict.js?v=4.11.5"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1093,7 +1093,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.11.4';
+window.WG = WG; window.HILINGO_VERSION='4.11.5';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1638,7 +1638,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.4';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.5';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -2002,12 +2002,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4114';
+const CAT_CACHE='hilingo-cats-v4115';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.11.4'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.11.5'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3033,7 +3033,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.11.4');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.11.5');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3181,7 +3181,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.11.4 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.11.5 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3218,13 +3218,20 @@ function mergeAlts(prev, next){
   out.sort((a,b)=>b.length-a.length);
   return out;
 }
+function tokenCount(raw){
+  return String(raw||'').trim().split(/[\s,.!?;:"'״׳\-–—()[\]\/]+/).filter(Boolean).length;
+}
 function firstValid(alts){
   const list=(alts||[]).slice().sort((a,b)=>String(b).length-String(a).length);
-  const oneWord=!!(sent || cat || arm==='sentence');
+  const singleTurn=!!(sent || cat || arm==='sentence');
+  if(!singleTurn && list.some(a=>tokenCount(a)>1)){
+    const phrase=list.filter(a=>tokenCount(a)>1).sort((a,b)=>String(b).length-String(a).length)[0];
+    const whole=WG.check(G, phrase);
+    return whole.ok ? whole.word : phrase;
+  }
   for(const a of list){
     const whole=WG.check(G, a);
     if(whole.ok) return whole.word;
-    if(!oneWord) continue;
     for(const w of String(a).split(/[\s,.!?;:"'״׳\-–—()[\]\/]+/)){
       if(!w) continue;
       const r=WG.check(G, w);
@@ -3321,6 +3328,7 @@ function startRec(p,how){
     if(!live()) return;
     done=true; clearTimeout(stableT); clearTimeout(deafT);
     const pick=pickWord(alts);
+    diag('commit '+(pick||alts[0]||'')+' reason='+(why||'pause'));
     stopRec();                      // abort this session so its onend won't restart anything
     if(!pick){ setHeard(p,$('#autoMic').checked?S.listening:(PTT?S.tapAgain:S.notHeard)); restartLater(p); return; }
     setHeard(p,S.heard+alts[0]+(why?' ('+why+')':''));
@@ -3338,12 +3346,12 @@ function startRec(p,how){
     try{ r.stop(); }catch(_){ stopRec(); setHeard(p,S.micOff); } } };
   const L=n=>()=>{ diag(n); };
   if(!micIsAuto()){
-    deafT=setTimeout(()=>{ if(!live()||sawSound) return; diag('tap silence'); done=true; stopRec(); setHeard(p, S.tapAgain||S.tapToTalk||''); }, 5000);
+    deafT=setTimeout(()=>{ if(!live()||sawSound||lastAlts) return; diag('tap silence'); done=true; stopRec(); setHeard(p, S.tapAgain||S.tapToTalk||''); }, 5000);
   }
   r.onaudiostart=()=>{ diag('audiostart'); if(sess!==recSession) return; clearTimeout(deafT);
     setTimeout(()=>{ if(!killed){ gameLangOk=true; gameDeaf=0; diag('game live '+r.lang); } }, 400);
     if(!micIsAuto()){
-      deafT=setTimeout(()=>{ if(!live()||sawSound) return; diag('tap silence'); done=true; stopRec(); setHeard(p, S.tapAgain||S.tapToTalk||''); }, 5000);
+      deafT=setTimeout(()=>{ if(!live()||sawSound||lastAlts) return; diag('tap silence'); done=true; stopRec(); setHeard(p, S.tapAgain||S.tapToTalk||''); }, 5000);
       return;
     }
     deafT=setTimeout(()=>{ if(challengeOwnsMic()){ diag('skip no-sound, challenge'); return; } if(!live()||sawSound) return; diag('no sound '+DEAF_MS/1000+'s');
@@ -3369,15 +3377,18 @@ function startRec(p,how){
     let finalSeen=false;
     for(let i=0;i<e.results.length;i++){ if(e.results[i].isFinal) finalSeen=true; }
     const alts=allAlts(e.results);
-    diag('result'+(finalSeen?'(final)':'')+' "'+(alts[0]||'')+'"');
+    diag('res '+(finalSeen?'final':'interim')+' '+(alts[0]||''));
     if(!alts.length) return;
     lastAlts=mergeAlts(lastAlts, alts); emptyEnds=0;
     const shown=firstValid(lastAlts)||lastAlts[0];
     showWord(p,shown,'interim'); setHeard(p,S.heard+shown+' …');
-    // Safari may mark a short prefix final. Wait until the utterance is quiet,
-    // then keep the longest transcript (דינוזאור, not די).
+    // Safari may mark a short prefix final, and often never sends isFinal at all.
+    // Keep the latest full transcript and commit it once the speech has paused.
     clearTimeout(stableT);
-    stableT=setTimeout(()=>{ if(live()) finalize(lastAlts, finalSeen?'final':'stable'); }, UTTER_MS);
+    const multi=lastAlts.some(a=>tokenCount(a)>1);
+    const wait=multi?1200:UTTER_MS;
+    const why=finalSeen?'final':'pause';
+    stableT=setTimeout(()=>{ if(live()) finalize(lastAlts, why); }, wait);
   };
   r.onerror=e=>{
     const code=e&&e.error||'error';
@@ -4217,7 +4228,7 @@ function wireSession(r, side, tag, isRetry){
     if(side==='target') enterIdleTarget(false);
     else enterIdleNative(false);
   }
-  function take(alts){
+  function take(alts, why){
     if(!live()) return;
     closed=true;
     clearTimeout(learnListenTimer);
@@ -4227,14 +4238,10 @@ function wireSession(r, side, tag, isRetry){
     micOff();
     learnSession++;
     learnAbort(r, 'result');
-    let raw=(alts&&alts[0])||'';
-    if(side!=='target'){
-      for(const a of alts||[]){ if(displayLearn(LANG, a)){ raw=a; break; } }
-    }
-    if(side!=='target'){
-      const full=bestLearnRaw(alts, LANG);
-      if(full) raw=full;
-    }
+    const code=side==='target'?LEARN_TARGET:LANG;
+    const full=bestLearnRaw(alts, code);
+    const raw=full||(alts&&alts[0])||'';
+    diag('commit '+((side==='target'?raw:displayLearn(code, raw))||raw)+' reason='+(why||'pause'));
     learnLog('result "'+raw+'"');
     if(side==='target') acceptRepeat(alts);
     else acceptNative(raw);
@@ -4251,22 +4258,18 @@ function wireSession(r, side, tag, isRetry){
     if(!alts.length) return;
     lastAlts=alts;
     armTimeout();
-    const shown=side==='target' ? alts[0] : (displayLearn(LANG, bestLearnRaw(alts, LANG))||alts[0]);
+    const shown=side==='target' ? (bestLearnRaw(alts, LEARN_TARGET)||alts[0]) : (displayLearn(LANG, bestLearnRaw(alts, LANG))||alts[0]);
+    diag('res '+(finalSeen?'final':'interim')+' '+shown);
     setLearnWord('own', shown, 'interim');
     setLearnHeard(S.heard+shown);
     clearTimeout(stableT);
-    if(side==='target' && learnPair && learnMatch(alts, learnPair.t)){ take(alts); return; }
-    if(finalSeen){
-      if(side==='target') take(alts);
-      else if(displayLearn(LANG, bestLearnRaw(alts, LANG)||alts[0])) take(alts);
-      return;
-    }
-    if(side!=='target') return;
-    stableT=setTimeout(()=>{
+    if(side==='target' && learnPair && learnMatch(alts, learnPair.t)){ take(alts, 'final'); return; }
+    const commit=why=>{
       if(!live()||!lastAlts) return;
-      learnLog('stable interim');
-      take(lastAlts);
-    }, STABLE_MS);
+      take(lastAlts, why);
+    };
+    if(finalSeen){ commit('final'); return; }
+    stableT=setTimeout(()=>commit('pause'), 1200);
   };
   r.onerror=ev=>{
     if(!live()) return;
@@ -4313,8 +4316,8 @@ function wireSession(r, side, tag, isRetry){
     if(!live()) return;
     if(quickRetry) return;
     if(lastAlts){
-      if(side==='target') take(lastAlts);
-      else if(displayLearn(LANG, lastAlts[0])) take(lastAlts);
+      const code=side==='target'?LEARN_TARGET:LANG;
+      if(side==='target' || displayLearn(code, bestLearnRaw(lastAlts, code)||lastAlts[0])) take(lastAlts, 'end');
       else endSession(false);
       return;
     }
@@ -4440,7 +4443,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.4';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.5';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.4 — phrases chain from the last word, and learning translates the whole sentence.
+ * HilinGo v4.11.5 — phrases chain from the last word, and learning translates the whole sentence.
  *   node tests_phrase.mjs
  */
 import { chromium } from 'playwright-core';
@@ -126,6 +126,42 @@ try {
   const nlWant = ['what time is it', 'where is the bathroom', 'I like ice cream'];
   if (nl.some((row, i) => row.other !== nlWant[i] || !row.saved)) bad('nl learn ' + JSON.stringify(nl));
   else ok('Dutch sentences translate');
+
+  const ctx = await browser.newContext();
+  await ctx.addInitScript(() => {
+    class FakeSR {
+      start(){
+        const self = this;
+        setTimeout(() => {
+          if (self.onstart) self.onstart();
+          if (self.onaudiostart) self.onaudiostart();
+          const item = { isFinal: false, length: 1, 0: { transcript: 'כלב' } };
+          if (self.onresult) self.onresult({ results: { length: 1, 0: item } });
+        }, 20);
+      }
+      abort(){}
+      stop(){ if (this.onend) this.onend(); }
+    }
+    window.SpeechRecognition = FakeSR;
+    window.webkitSpeechRecognition = FakeSR;
+    window.speechSynthesis = { cancel(){}, resume(){}, speak(){}, getVoices(){ return []; }, addEventListener(){} };
+    window.SpeechSynthesisUtterance = function () {};
+  });
+  const mic = await ctx.newPage();
+  mic.on('pageerror', e => bad('mic ' + e.message));
+  await mic.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await mic.evaluate(() => { document.getElementById('sound').checked = false; document.getElementById('micAuto').click(); WG.addCustomWord('כלב'); });
+  await mic.click('#go');
+  await mic.waitForSelector('#half0');
+  await mic.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+  const committed = await mic.waitForFunction(() => {
+    const log = (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '';
+    return /commit .+ reason=pause/.test(log) && /res interim כלב/.test(log);
+  }, { timeout: 4000 }).then(() => true, () => false);
+  const log = await mic.evaluate(() => (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '');
+  if (!committed) bad('interim was not committed ' + log.slice(-240));
+  else ok('an interim word is committed without isFinal');
+  await ctx.close();
 } finally {
   await browser.close();
   server.close();

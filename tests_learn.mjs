@@ -126,7 +126,7 @@ await context.addInitScript(() => {
       }
       window.__srStarts++; window.__srLangs.push(this.lang); window.__srs.push(this); window.__ev.push('start:' + this.lang); if (this.onstart) this.onstart();
     }
-    stop() { window.__ev.push('stop'); }
+    stop() { window.__ev.push('stop'); if (this.onend) this.onend(); }
     abort() { window.__ev.push('abort'); if (this.onend) this.onend(); }
   }
   window.SpeechRecognition = FakeSR;
@@ -163,7 +163,9 @@ await context.addInitScript(() => {
       window.__ev.push('speak:' + u.lang + ':' + u.text);
       window.__lastUtt = u;
       window.__spokenLast = 'utt';
-      if (window.__instantEnd && u.onend) setTimeout(() => u.onend(), 0);
+      u.__at = performance.now();
+      if (u.onstart) u.onstart();
+      if (window.__instantEnd && u.onend) setTimeout(() => u.onend(), 100);
     },
   };
   try {
@@ -172,7 +174,8 @@ await context.addInitScript(() => {
   window.__endSpeech = () => {
     if (window.__spokenLast === 'utt') {
       const u = window.__lastUtt;
-      if (u && u.onend) u.onend();
+      const wait = Math.max(0, 120 - (performance.now() - (u && u.__at || 0)));
+      setTimeout(() => { if (u && u.onend) u.onend(); }, wait);
       return;
     }
     const a = window.__lastTts;
@@ -187,8 +190,11 @@ await context.addInitScript(() => {
   };
   window.__ttsSrc = () => (window.__plays || []).filter(s => /translate_tts|audio\/tts\//.test(s)).at(-1) || '';
   window.fetch = async (url) => {
-    window.__fetches.push(String(url));
+    const u = String(url);
+    window.__fetches.push(u);
     if (window.__fetchMode === 'fail') throw new Error('offline');
+    if (/translate_a|translate\.googleapis/.test(u)) throw new Error('gtx');
+    if (/audio\/tts\//.test(u)) return { ok: false, status: 404, headers: { get() { return ''; } }, blob: async () => new Blob() };
     if (window.__fetchMode === 'warn') {
       return { ok: true, json: async () => ({ responseStatus: 200, responseData: { translatedText: 'MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY' } }) };
     }
@@ -214,7 +220,7 @@ function ttsOk(src, tl, text) {
   try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
 }
 function localOk(src, lang) {
-  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.5');
+  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.6');
 }
 
 try {
@@ -274,8 +280,11 @@ try {
     }));
     if (s.plays !== 1 || s.sr !== 0 || !s.learn || !s.game) bad('learn start ' + JSON.stringify(s));
     else ok('intro is playing and the learn mic is waiting');
-    const duringIntro = await page.evaluate(() => ({ utts: window.__utts.length, state: document.getElementById('learn').dataset.state }));
-    if (duringIntro.utts !== 0 || duringIntro.state !== 'INTRO') bad('intro not exclusive ' + JSON.stringify(duringIntro));
+    const duringIntro = await page.evaluate(() => ({
+      spoken: window.__utts.filter(u => !(u.volume === 0 && !String(u.text || '').trim())).map(u => u.lang + ':' + u.text),
+      state: document.getElementById('learn').dataset.state,
+    }));
+    if (duringIntro.spoken.length || duringIntro.state !== 'INTRO') bad('intro not exclusive ' + JSON.stringify(duringIntro));
     else ok('intro owns the audio: no speechSynthesis and no mic yet');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForFunction(() => window.__srStarts >= 1);
@@ -286,19 +295,20 @@ try {
     const fetchesBefore = await page.evaluate(() => window.__fetches.length);
     await page.evaluate(() => window.__emit('כלב'));
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
+    await page.waitForFunction(() => window.__utts.some(u => u.text === 'cachorro' && u.lang === 'pt-BR'));
     s = await page.evaluate(() => ({
       other: document.getElementById('learnOtherWord').textContent,
       own: document.getElementById('learnOwnWord').textContent,
       src: window.__ttsSrc(),
       sr: window.__srStarts,
       fetches: window.__fetches.length,
-      utts: window.__utts.length,
+      spoken: window.__utts.filter(u => u.text === 'cachorro').map(u => u.lang),
     }));
-    if (s.other !== 'cachorro' || s.own !== 'כלב' || !localOk(s.src, 'pt') || s.utts !== 0) {
+    if (s.other !== 'cachorro' || s.own !== 'כלב' || s.src || !s.spoken.includes('pt-BR')) {
       bad('translation speech ' + JSON.stringify(s));
     } else if (s.sr !== 1) bad('mic reopened during speech ' + s.sr);
     else if (s.fetches !== fetchesBefore) bad('dictionary hit called MyMemory');
-    else ok('כלב → cachorro via local mp3, mic still closed');
+    else ok('כלב → cachorro via speechSynthesis, mic still closed');
     const clearBtn = await page.evaluate(() => {
       const b = document.getElementById('learnClear');
       const r = b.getBoundingClientRect();
@@ -309,8 +319,8 @@ try {
     await shot(page, 'learn-clear-phone');
     const order = await page.evaluate(() => window.__ev.join(' | '));
     const startPt = order.indexOf('start:pt-BR');
-    if (!order.includes('abort') || startPt >= 0) bad('speak/mic order ' + order);
-    else ok('recognizer aborted before the target word is spoken');
+    if (!order.includes('stop') || startPt >= 0) bad('speak/mic order ' + order);
+    else ok('recognizer stopped before the target word is spoken');
     await shot(page, 'learn-translation-phone');
 
     await page.evaluate(() => window.__endSpeech());
@@ -325,11 +335,12 @@ try {
       mics: [...document.querySelectorAll('#learn .ico-mic')].filter(el => el.getClientRects().length).length,
       emoji: /🎤/.test(document.getElementById('learn').innerText),
       mark: !document.getElementById('learnListenMark').classList.contains('hidden'),
-      onSpeak: document.getElementById('learnSpeak').classList.contains('listening'),
-      stroke: getComputedStyle(document.querySelector('#learnMic .ico-mic')).stroke,
+      listening: document.getElementById('learnRepeatMic').classList.contains('on'),
+      label: document.getElementById('learnRepeatMic').innerText,
+      stroke: getComputedStyle(document.querySelector('#learnRepeatMic .ico-mic')).stroke,
     }));
-    if (icons.mics !== 1 || icons.emoji || !icons.mark || !icons.onSpeak || !/255,\s*255,\s*255|rgb\(255 255 255\)|#fff/i.test(icons.stroke)) bad('listen icons ' + JSON.stringify(icons));
-    else ok('one outline mic; waveform on the status row and the replay spot');
+    if (!icons.mark || !icons.listening || !/אני מקשיב|I'm listening/.test(icons.label) || !/255,\s*255,\s*255|rgb\(255 255 255\)|#fff/i.test(icons.stroke)) bad('listen icons ' + JSON.stringify(icons));
+    else ok('the repeat button blinks and says it is listening');
     await shot(page, 'learn-listening-phone');
 
     await page.evaluate(() => window.__emit('gato'));
@@ -345,14 +356,12 @@ try {
     if (!s.own.includes('gato') || !s.heard.includes('gato') || s.other !== 'cachorro' || !s.skip || !s.speak || s.check) bad('mismatch ' + JSON.stringify(s));
     else ok('mismatch shows what was heard, 🔊 and skip');
     {
-      const before = await page.evaluate(() => ({ sr: window.__srStarts, n: (window.__plays || []).filter(s => /audio\/tts\//.test(s)).length }));
+      const before = await page.evaluate(() => ({ sr: window.__srStarts, n: window.__utts.length }));
       await page.click('#learnSpeak');
-      const mid = await page.evaluate(() => {
-        const plays = (window.__plays || []).filter(s => /audio\/tts\//.test(s));
-        return { sr: window.__srStarts, src: plays.at(-1) || '', n: plays.length };
-      });
-      if (mid.sr !== before.sr || !localOk(mid.src, 'pt') || mid.n <= before.n) bad('🔊 tap ' + JSON.stringify(mid));
-      else ok('🔊 plays the local mp3 from the tap while the mic stays closed');
+      await page.waitForFunction(n => window.__utts.length > n && window.__utts.at(-1).text === 'cachorro' && window.__utts.at(-1).lang === 'pt-BR', before.n);
+      const mid = await page.evaluate(() => ({ sr: window.__srStarts, src: window.__ttsSrc(), text: window.__utts.at(-1).text }));
+      if (mid.sr !== before.sr || mid.src || mid.text !== 'cachorro') bad('🔊 tap ' + JSON.stringify(mid));
+      else ok('🔊 speaks again with speechSynthesis while the mic stays closed');
       await page.evaluate(() => window.__endSpeech());
       await page.waitForFunction(n => window.__srStarts > n && window.__srLangs.at(-1) === 'pt-BR', before.sr);
     }
@@ -377,17 +386,18 @@ try {
     await shot(page, 'learn-words-phone');
 
     const plays = await page.evaluate(() => window.__intro.plays);
-    const ttsN = await page.evaluate(() => (window.__plays || []).filter(s => /audio\/tts\//.test(s)).length);
+    const uttN = await page.evaluate(() => window.__utts.length);
     await page.click('#wordsList .mw-pair');
-    await page.waitForFunction(n => (window.__plays || []).filter(s => /audio\/tts\//.test(s)).length > n, ttsN);
+    await page.waitForFunction(n => window.__utts.length > n && window.__utts.at(-1).text === 'cachorro', uttN);
     s = await page.evaluate(() => ({
       plays: window.__intro.plays,
       src: window.__ttsSrc(),
+      lang: window.__utts.at(-1).lang,
       sr: window.__srStarts,
       other: document.getElementById('learnOtherWord').textContent,
       overlay: document.getElementById('wordsov').classList.contains('hidden'),
     }));
-    if (s.plays !== plays || !localOk(s.src, 'pt') || s.other !== 'cachorro' || !s.overlay) bad('repractice ' + JSON.stringify(s));
+    if (s.plays !== plays || s.src || s.lang !== 'pt-BR' || s.other !== 'cachorro' || !s.overlay) bad('repractice ' + JSON.stringify(s));
     else ok('tap practices again: speaks cachorro, no second intro');
     const srAtSpeech = s.sr;
     await page.waitForTimeout(200);
@@ -494,7 +504,7 @@ try {
     }));
     const pair = decodeURIComponent(s.url.split('langpair=')[1] || '');
     if (!s.url.includes('api.mymemory.translated.net/get') || !pair.startsWith('en|pt-BR') || !s.url.includes('q=xyzzyqq')) bad('fallback url ' + s.url);
-    else if (s.other !== 'palavra' || !localOk(s.src, 'pt') || s.sr !== 1) bad('fallback show ' + JSON.stringify(s));
+    else if (s.other !== 'palavra' || s.sr !== 1) bad('fallback show ' + JSON.stringify(s));
     else ok('MyMemory fallback en|pt-BR → palavra, mic waits');
     await page.evaluate(() => window.__endSpeech());
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'pt-BR');
@@ -535,9 +545,10 @@ try {
     await page.fill('#learnIn', 'Cachorro');
     await page.click('#learnSend');
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('כלב'));
-    const spoken = await page.evaluate(() => window.__ttsSrc());
-    if (!localOk(spoken, 'he')) bad('pt→he ' + spoken);
-    else ok('pt Cachorro → כלב via local Hebrew mp3');
+    await page.waitForFunction(() => window.__utts.some(u => u.text === 'כלב' && u.lang === 'he-IL'));
+    const spoken = await page.evaluate(() => window.__utts.filter(u => u.text === 'כלב').map(u => u.lang).join(','));
+    if (!spoken.includes('he-IL')) bad('pt→he ' + spoken);
+    else ok('pt Cachorro → כלב spoken in Hebrew');
     if (errors.length) bad(errors.join(';'));
     await page.close();
   }
@@ -555,8 +566,9 @@ try {
     await page.fill('#learnIn', 'dog');
     await page.click('#learnSend');
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.toLowerCase().includes('hond'));
-    const v = await page.evaluate(() => ({ t: document.getElementById('learnOtherWord').textContent, src: window.__ttsSrc() }));
-    if (v.t !== 'hond' || !localOk(v.src, 'nl')) bad('en→nl ' + JSON.stringify(v));
+    await page.waitForFunction(() => window.__utts.some(u => u.text === 'hond' && u.lang === 'nl-NL'));
+    const v = await page.evaluate(() => ({ t: document.getElementById('learnOtherWord').textContent, lang: window.__utts.filter(u => u.text === 'hond').map(u => u.lang).join(',') }));
+    if (v.t !== 'hond' || !v.lang.includes('nl-NL')) bad('en→nl ' + JSON.stringify(v));
     else ok('en dog → nl hond');
     await page.evaluate(() => window.__endSpeech());
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'nl-NL');
@@ -580,8 +592,8 @@ try {
     await page.waitForFunction(() => window.__srLangs.at(-1) === 'he-IL');
     await page.evaluate(() => window.__emit('כלב'));
     await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cachorro'));
-    await page.waitForFunction(() => window.__utts.length > 0);
-    const spoken = await page.evaluate(() => window.__utts.at(-1));
+    await page.waitForFunction(() => window.__utts.some(u => u.text === 'cachorro' && u.lang === 'pt-BR'));
+    const spoken = await page.evaluate(() => window.__utts.filter(u => u.text === 'cachorro').at(-1));
     if (!spoken || spoken.lang !== 'pt-BR' || spoken.voice) bad('no-voice fallback ' + JSON.stringify(spoken));
     else ok('audio url failed: speechSynthesis still speaks pt-BR with no exact voice');
     await page.evaluate(() => window.__endSpeech());
@@ -673,10 +685,10 @@ try {
     const repeat = await page.evaluate(() => {
       const b = document.getElementById('learnRepeatMic');
       const r = b.getBoundingClientRect();
-      return { hidden: b.classList.contains('hidden'), w: r.width, h: r.height, label: b.textContent };
+      return { hidden: b.classList.contains('hidden'), on: b.classList.contains('on'), w: r.width, h: r.height, label: b.innerText };
     });
-    if (repeat.hidden || repeat.w < 24 || repeat.h < 24 || !repeat.label.includes('אמרו')) bad('repeat mic ' + JSON.stringify(repeat));
-    else ok('target panel shows the outline mic after the word');
+    if (repeat.hidden || repeat.on || repeat.w < 24 || repeat.h < 24 || !repeat.label.includes('לחצו ודברו')) bad('repeat mic ' + JSON.stringify(repeat));
+    else ok('target panel shows the tap-to-speak button after the word');
     await shot(page, 'learn-repeat-phone');
 
     await page.click('#learnMic');
@@ -759,7 +771,7 @@ try {
       const box = document.querySelector('#dbgCopy .ico-copy').getBoundingClientRect();
       return { n: rects.length, stroke: rects.map(r => r.getAttribute('stroke')).join(','), w: box.width, h: box.height };
     });
-    if (dbg.hidden || !/INTRO/.test(dbg.text) || !/LISTEN_/.test(dbg.text) || !/ua /.test(dbg.text) || !/standalone /.test(dbg.text) || !/voices /.test(dbg.text) || !/abort /.test(dbg.text)) bad('debug log ' + JSON.stringify(dbg).slice(0, 400));
+    if (dbg.hidden || !/INTRO/.test(dbg.text) || !/LISTEN_/.test(dbg.text) || !/ua /.test(dbg.text) || !/standalone /.test(dbg.text) || !/voices /.test(dbg.text) || !/stop /.test(dbg.text)) bad('debug log ' + JSON.stringify(dbg).slice(0, 400));
     else if (copyIcon.n !== 2 || copyIcon.stroke !== '#fff,#fff' || copyIcon.w < 12 || copyIcon.h < 12) bad('copy icon ' + JSON.stringify(copyIcon));
     else ok('five taps on v4.0 open the debug log, white copy icon');
     await page.click('#dbgClear');

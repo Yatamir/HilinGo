@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.1 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.11.2 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -83,6 +83,59 @@ await context.addInitScript(() => {
 });
 const page = await context.newPage();
 page.on('pageerror', e => bad('page ' + e.message));
+
+async function checkSplit(p, tag){
+  await p.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'domcontentloaded' });
+  await p.click('#micTap');
+  await p.evaluate(() => {
+    document.getElementById('sound').checked = false;
+    window.__aborts = 0;
+    window.__speaks = [];
+    const s = window.speechSynthesis;
+    if (s && !s.__wrapped) {
+      const orig = s.speak.bind(s);
+      s.speak = u => { window.__speaks.push(String(u && u.text || '')); return orig(u); };
+      s.__wrapped = true;
+    }
+  });
+  await p.click('#trLangs .opt[data-tr="it"]');
+  await p.click('#go');
+  await p.waitForSelector('#half0');
+  await p.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
+  await p.fill('#in0', 'כלב');
+  await p.click('#send0');
+  await p.waitForSelector('#trTap.live', { timeout: 8000 });
+  const ghost = await p.evaluate(() => {
+    window.__speaks = [];
+    window.__langs = window.__langs.filter(l => l !== 'it-IT');
+    const tap = document.getElementById('trTap');
+    const replay = document.getElementById('trReplay');
+    const opts = { bubbles: true, cancelable: true, pointerId: 1 };
+    tap.dispatchEvent(new PointerEvent('pointerdown', opts));
+    tap.dispatchEvent(new PointerEvent('pointerup', opts));
+    replay.dispatchEvent(new MouseEvent('click', opts));
+    const log = (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '';
+    return {
+      it: window.__langs.filter(l => l === 'it-IT').length,
+      speaks: window.__speaks.filter(t => t.trim()),
+      mic: log.includes('tr mic tap'),
+      replay: log.includes('tr replay tap'),
+    };
+  });
+  if (ghost.it < 1 || ghost.speaks.length || !ghost.mic || ghost.replay) bad(tag + ' ghost ' + JSON.stringify(ghost));
+  else ok(tag + ' mic tap listens and a leftover click does not speak');
+  await p.evaluate(() => {
+    window.__speaks = [];
+    const replay = document.getElementById('trReplay');
+    const opts = { bubbles: true, cancelable: true, pointerId: 1 };
+    replay.dispatchEvent(new PointerEvent('pointerdown', opts));
+    replay.dispatchEvent(new PointerEvent('pointerup', opts));
+  });
+  const heard = await p.waitForFunction(() => window.__speaks.some(t => t && t.trim() && t.trim() !== ' '), { timeout: 3000 }).then(() => true, () => false);
+  const replayLog = await p.evaluate(() => (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '');
+  if (!heard || !replayLog.includes('tr replay tap')) bad(tag + ' replay ' + JSON.stringify({ heard, log: replayLog.slice(-180) }));
+  else ok(tag + ' שמע שוב speaks from its own button');
+}
 
 try {
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
@@ -284,6 +337,11 @@ try {
   }));
   if (!afterPhone.hidden || afterPhone.size !== size0 - 1) bad('iphone resume ' + JSON.stringify(afterPhone));
   else ok('a failed iPhone challenge closes the card and the turn continues');
+
+  await checkSplit(page, 'iPad');
+  const phone2 = await iphone.newPage();
+  phone2.on('pageerror', e => bad('iphone split ' + e.message));
+  await checkSplit(phone2, 'iPhone');
   await iphone.close();
 } finally {
   await browser.close();

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HilinGo · קודים</title>
+<style>
+  body{margin:0;font:18px/1.4 -apple-system,BlinkMacSystemFont,"Rubik",sans-serif;background:#F4EEFF;color:#2A2152}
+  main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+  h1{margin:0 0 8px;font-size:28px}
+  p{margin:0 0 12px;color:#6B6490}
+  label{display:block;font-weight:800;margin:10px 0 4px}
+  input{width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;border-radius:14px;border:3px solid #E4D4FF}
+  button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:12px 16px;background:#6B2CFF;color:#fff;min-height:48px}
+  button.ghost{background:#fff;color:#6B2CFF;box-shadow:0 2px 0 #E4D4FF}
+  button.warn{background:#8A2030}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .card{background:#fff;border-radius:20px;padding:14px;margin:10px 0;box-shadow:0 8px 24px rgba(42,33,82,.08)}
+  .code{font-size:28px;font-weight:800;letter-spacing:.08em;direction:ltr;text-align:right}
+  .muted{color:#6B6490;font-size:15px}
+  .err{color:#8A2030;font-weight:800}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>קודים ל-HilinGo</h1>
+  <p id="need" class="err hidden">צריך למלא כתובת ומפתח anon ב-config.js.</p>
+  <section id="login">
+    <label for="email">אימייל</label>
+    <input id="email" type="email" autocomplete="username">
+    <label for="pass">סיסמה</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <p id="loginMsg" class="err"></p>
+    <div class="row"><button type="button" id="signin">כניסה</button></div>
+  </section>
+  <section id="app" class="hidden">
+    <label for="label">שם (למי הקוד)</label>
+    <input id="label" placeholder="למשל: נועה">
+    <div class="row"><button type="button" id="create">קוד חדש</button></div>
+    <div id="fresh" class="card hidden">
+      <div class="code" id="freshCode"></div>
+      <p id="freshText"></p>
+      <button type="button" class="ghost" id="copy">העתקה</button>
+    </div>
+    <div id="list"></div>
+  </section>
+</main>
+<script src="config.js"></script>
+<script>
+var cfg = window.HILINGO_SUPABASE || {};
+var url = String(cfg.url || '').replace(/\/$/, '');
+var key = String(cfg.anonKey || '').trim();
+var token = '';
+var SITE = 'https://yatamir.github.io/HilinGo/';
+if (!url || !key) document.getElementById('need').classList.remove('hidden');
+
+function shareText(code){
+  return 'HilinGo\n' + SITE + '\nהקוד שלכם: ' + code;
+}
+async function rpc(name, body){
+  var res = await fetch(url + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body || {})
+  });
+  var data = await res.json().catch(function(){ return null; });
+  if (!res.ok) throw new Error((data && (data.message || data.error)) || 'שגיאה');
+  return data;
+}
+function when(v){
+  if (!v) return '';
+  try { return new Date(v).toLocaleString('he-IL'); } catch (e) { return v; }
+}
+function statusOf(row){
+  if (row.revoked) return 'מבוטל';
+  if (!row.device_id) return 'עוד לא הופעל';
+  return 'פעיל';
+}
+function render(rows){
+  var box = document.getElementById('list');
+  box.innerHTML = '';
+  (rows || []).forEach(function(row){
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      '<div class="code"></div>' +
+      '<div class="muted"></div>' +
+      '<div class="muted"></div>' +
+      '<div class="row"></div>';
+    card.querySelector('.code').textContent = row.code;
+    card.querySelectorAll('.muted')[0].textContent = (row.label || 'בלי שם') + ' · ' + statusOf(row);
+    card.querySelectorAll('.muted')[1].textContent = 'הופעל: ' + (when(row.activated_at) || '—') + ' · נראה: ' + (when(row.last_seen) || '—');
+    var rowBtns = card.querySelector('.row');
+    [['ביטול', 'admin_revoke_code', 'warn'], ['שחרור', 'admin_release_code', 'ghost'], ['מחיקה', 'admin_delete_code', 'warn']].forEach(function(spec){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = spec[2];
+      b.textContent = spec[0];
+      b.addEventListener('click', function(){ act(spec[1], row.code); });
+      rowBtns.appendChild(b);
+    });
+    var copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'ghost';
+    copy.textContent = 'העתקה';
+    copy.addEventListener('click', function(){ copyText(shareText(row.code)); });
+    rowBtns.appendChild(copy);
+    box.appendChild(card);
+  });
+}
+async function load(){
+  var rows = await rpc('admin_list_codes', {});
+  render(Array.isArray(rows) ? rows : []);
+}
+async function act(name, code){
+  await rpc(name, { p_code: code });
+  await load();
+}
+function copyText(text){
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function(){});
+  else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  }
+}
+document.getElementById('signin').addEventListener('click', async function(){
+  var msg = document.getElementById('loginMsg');
+  msg.textContent = '';
+  if (!url || !key) { msg.textContent = 'config.js ריק.'; return; }
+  try {
+    var res = await fetch(url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { apikey: key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('email').value.trim(), password: document.getElementById('pass').value })
+    });
+    var data = await res.json();
+    if (!res.ok) { msg.textContent = 'הכניסה לא הצליחה.'; return; }
+    token = data.access_token;
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    await load();
+  } catch (e) {
+    msg.textContent = 'אין רשת, או שהכתובת לא נכונה.';
+  }
+});
+document.getElementById('create').addEventListener('click', async function(){
+  var made = await rpc('admin_create_code', { p_label: document.getElementById('label').value });
+  var box = document.getElementById('fresh');
+  box.classList.remove('hidden');
+  document.getElementById('freshCode').textContent = made.code;
+  document.getElementById('freshText').textContent = shareText(made.code);
+  document.getElementById('label').value = '';
+  await load();
+});
+document.getElementById('copy').addEventListener('click', function(){
+  copyText(document.getElementById('freshText').textContent);
+});
+</script>
+</body>
+</html>

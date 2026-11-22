@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.10.9">
+<meta name="hilingo-version" content="4.11.0">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.10.9" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.11.0" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -667,6 +667,15 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .ico-copy{width:14px;height:14px;min-width:14px;min-height:14px;display:block;flex:0 0 14px}
 #dbgCopied{font-weight:800;color:#1E88FF}
 #learnDbgText{margin:0;padding:8px 10px;white-space:pre-wrap;font:inherit}
+#gate{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;background:#F4EEFF}
+#gate.hidden{display:none!important}
+#gateCard{background:#fff;border-radius:28px;padding:28px 22px;width:min(92vw,420px);text-align:center;box-shadow:0 24px 60px rgba(42,33,82,.18);display:flex;flex-direction:column;gap:12px}
+#gateCard h2{margin:0;font-size:28px;color:#2A2152}
+#gateCard p{margin:0;color:#6B6490;font-size:18px;line-height:1.4}
+#gateCode{font-size:28px;font-weight:800;letter-spacing:.12em;text-align:center;padding:14px;border-radius:16px;border:3px solid #E4D4FF;text-transform:uppercase}
+#gateMsg{min-height:1.4em;font-weight:800;color:#8A2030}
+#trReplay{margin:4px auto 0;min-height:44px;padding:8px 16px;border-radius:999px;background:#F6F2FF;color:var(--p1);font-weight:800;font-size:18px}
+#trReplay.hidden{display:none}
 </style>
 </head>
 <body>
@@ -679,6 +688,16 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   window.addEventListener('unhandledrejection',function(ev){ show('promise: '+(ev.reason&&ev.reason.message||ev.reason)); });
   window.__showErr=show; })();
 </script>
+<section id="gate" class="hidden" dir="rtl">
+  <div id="gateCard">
+    <h1 class="logo" dir="ltr" aria-label="HilinGo"><span class="hilin">Hilin</span><span class="go">Go</span></h1>
+    <h2>הכניסו את הקוד שקיבלתם</h2>
+    <p>הקוד פותח את המשחק במכשיר הזה.</p>
+    <input id="gateCode" autocomplete="off" inputmode="text" maxlength="12" placeholder="K7M-42Q" aria-label="קוד">
+    <p id="gateMsg"></p>
+    <button type="button" class="big" id="gateGo">כניסה</button>
+  </div>
+</section>
 <section id="start">
   <div class="hero">
     <h1 id="ttl" class="logo" dir="ltr" aria-label="HilinGo"><span class="hilin">Hilin</span><span class="go">Go</span></h1>
@@ -722,7 +741,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.10.9</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.11.0</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -748,7 +767,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.10.9</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.11.0</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -775,7 +794,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 
 <div id="endov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle"><div id="confetti" aria-hidden="true"></div><div id="endbox"><button type="button" id="endClose" class="modal-x" aria-label="סגור">✕</button><div class="logo" dir="ltr" aria-hidden="true"><span class="hilin">Hilin</span><span class="go">Go</span></div><h2 id="endTitle"></h2><div id="podium"></div><p id="endRecord" class="hidden"></p><p id="endSent" class="hidden"></p><p id="endText"></p><button class="big" id="again">משחק חדש</button></div></div>
 
-<div id="trOv" class="hidden" role="dialog"><div id="trCard"><p id="trFrom"></p><p id="trWord"></p><div id="trMic" aria-hidden="true">🎤</div><p id="trAsk" aria-live="polite"></p><button type="button" id="trTap" class="hidden">🎤 הקש ודבר</button><button type="button" id="trSkip" class="hidden">דלג</button><button type="button" id="trRetry" class="hidden">נסו את המיקרופון</button><p id="trMark" class="hidden"></p></div></div>
+<div id="trOv" class="hidden" role="dialog"><div id="trCard"><p id="trFrom"></p><p id="trWord"></p><div id="trMic" aria-hidden="true">🎤</div><p id="trAsk" aria-live="polite"></p><button type="button" id="trReplay" class="hidden">🔊 שמע שוב</button><button type="button" id="trTap" class="hidden">🎤 הקש ודבר</button><button type="button" id="trSkip" class="hidden">דלג</button><button type="button" id="trRetry" class="hidden">נסו את המיקרופון</button><p id="trMark" class="hidden"></p></div></div>
 <div id="bankov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="bankTitle"><div id="bankbox"><h2 id="bankTitle">בנק המילים שלי</h2><p id="bankNote"></p><div id="bankFilter"></div><ul id="bankList"></ul><p id="bankEmpty" class="hidden"></p><button type="button" class="big" id="bankClose">סגור</button></div></div>
 <div id="wordsov" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wordsTitle">
   <div id="wordsbox">
@@ -787,10 +806,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="words.js?v=4.10.9" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.10.9"></script>
-<script src="cat_hints.js?v=4.10.9"></script>
-<script src="learn_dict.js?v=4.10.9"></script>
+<script src="config.js?v=4.11.0"></script>
+<script src="words.js?v=4.11.0" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.11.0"></script>
+<script src="cat_hints.js?v=4.11.0"></script>
+<script src="learn_dict.js?v=4.11.0"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1030,7 +1050,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.10.9';
+window.WG = WG; window.HILINGO_VERSION='4.11.0';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1052,7 +1072,7 @@ const STR = {
   rules:'<h3>כללים 🎲</h3><ul><li>כל אחד אומר מילה שמתחילה באות האחרונה של המילה שלפניה.</li><li>האות הראשונה של המילה שלך נמחקת מהלוח.</li><li>מי שמרוקן את הלוח ראשון — מנצח! 🏆</li><li>שחקן אחד: אתם נגד השעון.</li><li>שניים, שלושה או ארבעה: תור תור, לפי הסדר.</li><li>למידה: אומרים מילה בשפה שלכם, שומעים ורואים אותה בשפה השנייה, חוזרים עליה ומקבלים ✅. היא נשמרת ב״המילים שלי״.</li></ul><h3>חוקים 📜</h3><ul><li>אות סופית היא אות רגילה: ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ.</li><li>אסור לחזור על מילה שכבר נאמרה.</li><li>נגמר הזמן? התור עובר, ואותה אות נשארת.</li><li>אם כולם מפספסים את אותה אות ברצף, הבא בוחר אות חופשית.</li><li>שישה פספוסים ברצף (בשניים) או שני סיבובים מלאים (בשלושה–ארבעה) מסיימים את המשחק. מי שנשארו לו פחות אותיות — מנצח.</li><li><span class="rules-hint">💡 רמז</span> עד 3 רמזים בתור, רק למילים שעוד לא נאמרו. יש קטגוריה? הרמז הוא מילה מהסוג הזה. רמז = לא נמחקת אות באותו תור. שני תורות ברצף עם רמז? האות האחרונה שנמחקה חוזרת.</li><li>לפני המילה לוחצים על <span class="rules-sent">משפט</span>. הכפתור נדלק בצבע מלא, ואז אומרים מילה. זו מילה 1 במשפט של 5. טיפ: בחרו מילה שקשה להמשיך!</li><li>הבאים ממשיכים את המשפט, ועדיין מתחילים באות האחרונה.</li><li>מילות המשפט נהיות ירוקות. אין ביניהן חצים.</li><li>השחקן הבא יכול ללחוץ <span class="rules-no">לא הגיוני</span>. המילה יורדת, האות שהיא מחקה חוזרת, בלי נקודה ובלי עונש, והתור חוזר למי שאמר אותה.</li><li>🪄 נתקעתם במשפט? חייבים לומר הילי. המשפט מתבטל. שתי אותיות עונש נדלקות שוב על הלוח שלכם, אם הן כבר נמחקו קודם.</li><li>הילי אף פעם לא מתקבלת כמילה רגילה.</li><li>🎉 חמש מילים? קונפטי! כל מילה שווה נקודה, וכל נקודה מוחקת עוד אות אקראית. הנקודות מופיעות בסוף. אם הבונוס מרוקן לוח — זה ניצחון.</li><li>לפני המילה אפשר גם להדליק <span class="rules-cat ctry">ארץ</span> <span class="rules-cat city">עיר</span> <span class="rules-cat anim">חי</span> <span class="rules-cat plant">צומח</span>. התחרטתם? לוחצים על כפתור עמום אחר, והבחירה עוברת. האתגר הולך לשחקן הבא: מילה מהסוג הזה, שמתחילה באות האחרונה.</li><li>המשחק בודק ברשימה. לא בטוחים? קופץ „שייך לקטגוריה?” ולוחצים ✓ או ✗.</li><li>אין מילה? <span class="rules-pass">דלג</span> או נגמר הזמן, והתור עובר בלי עונש. אין בונוס. רק מילה אחת. אי אפשר יחד עם משפט.</li><li>פעם אחת בתור, לפני המילה, לוחצים <span class="rules-crazy">🤪</span> לעצמכם. אומרים מילה מצחיקה באות הנכונה. בלי נקודות, בלי מחיקה, והתור נשאר. השעון רץ. הילי אסורה גם כאן.</li></ul><h3>טיפים 🌟</h3><ul><li>🌐 תרגום: לפני המשחק בוחרים שפה, או בלי תרגום. אחרי מילה טובה השעון נעצר, רואים ושומעים את המילה בשפה השנייה, והמיקרופון נשאר דלוק ומקשיב לבד. הצליח? סימן יפה, ואות בונוס נמחקת. לא הצליח? איקס לבן על אדום, והתור עובר. הזוג נשמר בבנק המילים.</li><li>📚 בנק המילים שלי נמצא במסך הבית. כל זוג שתורגם נשמר במכשיר הזה, לכל השחקנים. לוחצים על הרמקול ושומעים שוב. כפתור התרגול מקשיב לבד, ומקבלים ✅ או X. אפשר גם למחוק זוג.</li><li>😜 הפרעה סודית, רק במשחק של שניים עד ארבעה: אם אתם הבאים בתור, הקשה כפולה על אמצע הלוח שלכם שולחת אפקט שקט ואקראי למי שמשחק עכשיו. פעם ב־20 שניות. לא בשחקן אחד, ולא בלמידה.</li><li>🙈 לא התור שלכם? לחצו על העין בפינת הלוח. הלוח מתכסה ל-10 שניות בצבע שלכם, עם ספירה גדולה. פעם אחת בכל תור, ואז העין נחה עד שהתור מתחלף. כשמגיע התור שלכם, הלוח חוזר מיד.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> המיקרופון נדלק לבד בכל תור. נתקע אחרי הודעה או אחרי שיצאתם לאפליקציה? חוזרים, והוא מתאושש. או לוחצים על <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>⏱️ בשחקן אחד השעון סופר למעלה. ״My New record״ נשמר רק אם סיימתם באמת, ורק במכשיר הזה.</li></ul>',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
-  override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש', trLbl:'תרגום:', trNone:'ללא תרגום', bankBtn:'בנק המילים שלי', trSay:'אמרו את המילה', trOk:'כל הכבוד!', trNo:'לא הפעם', trNoMic:'המיקרופון לא נפתח — התור עובר בלי עונש', trRetry:'נסו את המיקרופון', trTap:'הקש ודבר', trSkip:'דלג', trBonus:l=>`✔ בונוס תרגום! האות ${l} נמחקה`, bankTitle:'בנק המילים שלי', bankEmpty:'עוד אין זוגות. שחקו עם תרגום והם יישמרו כאן.', bankAll:'הכל', bankGo:'תרגול', bankAsk:'למחוק?',
+  override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש', trLbl:'תרגום:', trNone:'ללא תרגום', bankBtn:'בנק המילים שלי', trSay:'אמרו את המילה', trOk:'כל הכבוד!', trNo:'לא הפעם', trNoMic:'המיקרופון לא נפתח — התור עובר בלי עונש', trRetry:'נסו את המיקרופון', trTap:'הקש ודבר', trSkip:'דלג', trReplay:'🔊 שמע שוב', trBonus:l=>`✔ בונוס תרגום! האות ${l} נמחקה`, bankTitle:'בנק המילים שלי', bankEmpty:'עוד אין זוגות. שחקו עם תרגום והם יישמרו כאן.', bankAll:'הכל', bankGo:'תרגול', bankAsk:'למחוק?',
   savedToast:'המילה נשמרה רק במכשיר הזה',
   myWords:'המילים שלי', myWordsNote:'נשמרות רק במכשיר הזה, לשפה הנוכחית.', myWordsEmpty:'עוד לא הוספתם מילים.', myWordsAsk:'למחוק?', myWordsYes:'כן', myWordsNo:'לא', myWordsClose:'סגור', myWordsDeleteAria:'מחיקת המילה',
   micOff:'המיקרופון כבוי', left:n=>`נשארו ${n} אותיות`,
@@ -1556,7 +1576,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.10.9';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.0';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1916,12 +1936,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4109';
+const CAT_CACHE='hilingo-cats-v4110';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.10.9'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.11.0'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -2948,7 +2968,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.10.9');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.11.0');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3096,7 +3116,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.10.9 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.11.0 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3247,7 +3267,7 @@ function startRec(p,how){
   r.onaudiostart=()=>{ diag('audiostart'); if(sess!==recSession) return; clearTimeout(deafT);
     setTimeout(()=>{ if(!killed){ gameLangOk=true; gameDeaf=0; diag('game live '+r.lang); } }, 400);
     deafT=setTimeout(()=>{ if(challengeOwnsMic()){ diag('skip no-sound, challenge'); return; } if(!live()||sawSound) return; diag('no sound '+DEAF_MS/1000+'s');
-      if($('#autoMic').checked && gameDeaf<3){
+      if($('#autoMic').checked && gameDeaf<1){
         gameDeaf++;
         diag('no sound restart '+gameDeaf);
         done=true;
@@ -4276,7 +4296,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.10.9';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.0';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -4863,6 +4883,40 @@ function showTrFace(from, word, ask, mark){
   const retry=$('#trRetry'); if(retry) retry.classList.add('hidden');
   showTrTap(false);
   showTrSkip(false);
+  showTrReplay(!!(trKind==='game' && trTarget && !mark));
+}
+function showTrReplay(on){
+  const b=$('#trReplay'); if(!b) return;
+  b.textContent=(S&&S.trReplay)||'🔊 שמע שוב';
+  b.classList.toggle('hidden', !on);
+  if(on) wirePress(b, replayTranslation);
+}
+async function replayTranslation(){
+  if(!trLock||trScored||trKind!=='game'||!trTarget) return;
+  diag('tr replay');
+  clearTimeout(trHearT); clearTimeout(trTapT);
+  trPhase='tts';
+  showTrTap(false);
+  if(rec) stopRec(true);
+  try{ await recClosed; }catch(_){}
+  if(!trLock||trScored) return;
+  try{ await speakAloud(trTarget, TR); }catch(_){}
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  if(!trLock||trScored) return;
+  diag('tr replay done '+trLangTag());
+  if(isIPadOS()){
+    releaseAudioSession('replay');
+    try{ await recClosed; }catch(_){}
+    trPhase='arming';
+    showTrFace(trShownFrom, trTarget, (S&&S.trSay)||'', '');
+    showTrTap(true); showTrSkip(true); showTrReplay(true);
+    return;
+  }
+  trPhase='arming';
+  trInst=0;
+  diag('tr iphone arm replay '+trLangTag());
+  armChallengeMic('after-tts');
+  showTrReplay(true);
 }
 function showTrRetry(on){
   const b=$('#trRetry'); if(!b) return;
@@ -5690,6 +5744,124 @@ syncTargetButtons();
 paintSoloBest();
 scrubBank();
 window.__hilingoFinish=reason=>{ if(!G||G.over) return false; WG.finish(G, reason==='empty'?G.turn:null, reason||'empty'); endScreen(); return G.reason; };
+
+const ACCESS_KEY='hilingo_access_code', ACCESS_OK='hilingo_access_ok', DEVICE_KEY='hilingo_device';
+function supabaseConfig(){
+  const c=window.HILINGO_SUPABASE||{};
+  const url=String(c.url||'').trim();
+  const key=String(c.anonKey||'').trim();
+  if(!url||!key) return null;
+  return {url:url.replace(/\/$/,''), anonKey:key};
+}
+function idbDevice(read, value){
+  return new Promise(resolve=>{
+    try{
+      const req=indexedDB.open('hilingo',1);
+      req.onupgradeneeded=()=>{ try{ req.result.createObjectStore('kv'); }catch(_){} };
+      req.onerror=()=>resolve('');
+      req.onsuccess=()=>{
+        try{
+          const db=req.result;
+          const tx=db.transaction('kv', read?'readonly':'readwrite');
+          const store=tx.objectStore('kv');
+          if(read){
+            const g=store.get(DEVICE_KEY);
+            g.onsuccess=()=>resolve(g.result||'');
+            g.onerror=()=>resolve('');
+          } else {
+            store.put(value, DEVICE_KEY);
+            tx.oncomplete=()=>resolve(value);
+            tx.onerror=()=>resolve(value);
+          }
+        }catch(_){ resolve(read?'':value); }
+      };
+    }catch(_){ resolve(read?'':value); }
+  });
+}
+async function deviceId(){
+  let id='';
+  try{ id=localStorage.getItem(DEVICE_KEY)||''; }catch(_){}
+  if(!id) id=await idbDevice(true);
+  if(!id){
+    id=(crypto.randomUUID?crypto.randomUUID():('d'+Math.random().toString(36).slice(2)+Date.now().toString(36)));
+    try{ localStorage.setItem(DEVICE_KEY, id); }catch(_){}
+    await idbDevice(false, id);
+  } else {
+    try{ localStorage.setItem(DEVICE_KEY, id); }catch(_){}
+  }
+  return id;
+}
+async function accessRpc(name, body){
+  const cfg=supabaseConfig();
+  const res=await fetch(cfg.url+'/rest/v1/rpc/'+name,{
+    method:'POST',
+    headers:{apikey:cfg.anonKey, Authorization:'Bearer '+cfg.anonKey, 'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  const data=await res.json().catch(()=>null);
+  if(!res.ok) throw new Error('rpc');
+  return data||{};
+}
+function showGate(msg){
+  const g=$('#gate'); if(g) g.classList.remove('hidden');
+  const start=$('#start'); if(start) start.classList.add('hidden');
+  const m=$('#gateMsg'); if(m) m.textContent=msg||'';
+}
+function hideGate(){
+  const g=$('#gate'); if(g) g.classList.add('hidden');
+  const start=$('#start'); if(start) start.classList.remove('hidden');
+}
+function gateMessage(status){
+  if(status==='used_on_other_device') return 'הקוד הזה כבר פעיל במכשיר אחר. פנו לתמיר';
+  if(status==='revoked') return 'הקוד הזה כבר לא בתוקף. פנו לתמיר.';
+  if(status==='slow') return 'יותר מדי ניסיונות. חכו רגע ונסו שוב.';
+  return 'הקוד לא נכון. נסו שוב.';
+}
+async function submitGate(){
+  const cfg=supabaseConfig();
+  const input=$('#gateCode');
+  const code=((input&&input.value)||'').trim();
+  if(!code){ showGate('הכניסו את הקוד שקיבלתם'); return; }
+  const dev=await deviceId();
+  try{
+    const res=await accessRpc('claim_code',{p_code:code, p_device:dev});
+    if(res.status==='ok'){
+      try{ localStorage.setItem(ACCESS_KEY, code); localStorage.setItem(ACCESS_OK,'1'); }catch(_){}
+      hideGate();
+      return;
+    }
+    try{ localStorage.removeItem(ACCESS_OK); }catch(_){}
+    showGate(gateMessage(res.status));
+  }catch(_){
+    showGate('אין רשת כרגע. נסו שוב בעוד רגע.');
+  }
+}
+async function bootAccess(){
+  const cfg=supabaseConfig();
+  if(!cfg){ hideGate(); return; }
+  const dev=await deviceId();
+  let code='';
+  try{ code=localStorage.getItem(ACCESS_KEY)||''; }catch(_){}
+  let okFlag=false;
+  try{ okFlag=localStorage.getItem(ACCESS_OK)==='1'; }catch(_){}
+  if(!code){ showGate(''); return; }
+  try{
+    const res=await accessRpc('check_access',{p_code:code, p_device:dev});
+    if(res.status==='ok'){
+      try{ localStorage.setItem(ACCESS_OK,'1'); }catch(_){}
+      hideGate();
+      return;
+    }
+    try{ localStorage.removeItem(ACCESS_OK); }catch(_){}
+    showGate(gateMessage(res.status));
+  }catch(_){
+    if(okFlag) hideGate();
+    else showGate('אין רשת כרגע. נסו שוב בעוד רגע.');
+  }
+}
+const gateGo=$('#gateGo'); if(gateGo) gateGo.onclick=submitGate;
+const gateIn=$('#gateCode'); if(gateIn) gateIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitGate(); } });
+bootAccess();
 
 </script>
 </body>

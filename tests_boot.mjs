@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.2 — the home screen must load with no page error.
+ * HilinGo v4.11.3 — the home screen must load with no page error.
  * A saved solo record used to read SOLO_CAP before its const ran.
  *   node tests_boot.mjs
  */
@@ -118,7 +118,31 @@ try {
       const fresh = await open(browser, null);
       await assertClean(fresh.page, fresh.errors, tag + ' fresh');
       const ver = await fresh.page.evaluate(() => document.querySelector('meta[name="hilingo-version"]').content);
-      if (tag === 'chromium' && ver !== '4.11.2') bad('version ' + ver);
+      if (tag === 'chromium' && ver !== '4.11.3') bad('version ' + ver);
+      if (tag === 'chromium') {
+        const labels = await fresh.page.evaluate(() => {
+          const want = ['he','en','nl','pt','es','it'];
+          return want.map(code => {
+            applyLang(code);
+            showTrReplay(true);
+            const b = document.getElementById('trReplay');
+            const rules = document.getElementById('rules').textContent;
+            return {
+              code,
+              text: document.getElementById('trReplayLbl').textContent,
+              dir: b.dir,
+              five: /5/.test(rules),
+              auto: /אוטומטי|Automatic|Automatisch|Automático|Automatico/.test(rules),
+              old: /turns itself on every turn|נדלק לבד בכל תור/.test(rules),
+            };
+          });
+        });
+        const expect = { he:['שמע שוב','rtl'], en:['Hear again','ltr'], nl:['Opnieuw horen','ltr'], pt:['Ouvir de novo','ltr'], es:['Escuchar otra vez','ltr'], it:['Ascolta ancora','ltr'] };
+        const badRow = labels.find(row => row.text !== expect[row.code][0] || row.dir !== expect[row.code][1] || !row.five || !row.auto || row.old);
+        if (badRow) bad('replay labels ' + JSON.stringify(badRow));
+        else ok('replay button and rules follow the UI language');
+        await fresh.page.evaluate(() => { applyLang('he'); showTrReplay(false); });
+      }
       await fresh.context.close();
 
       const kept = await open(browser, saved);

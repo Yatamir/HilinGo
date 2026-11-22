@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.3 — a five-word sentence on top of the letter chain.
+ * HilinGo v4.11.4 — a five-word sentence on top of the letter chain.
  *   node tests_sentence.mjs
  */
 import { chromium } from 'playwright-core';
@@ -130,9 +130,7 @@ try {
 
   await page.click('#endBtn');
   await page.click('#again');
-  await page.evaluate(() => { ['אבא','אגס','סוס','ספר','רגל'].forEach(w => WG.addCustomWord(w)); });
-  await page.click('#go');
-  await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+  await page.evaluate(() => { ['אבא','אגס','סוס','ספר','רגל'].forEach(w => WG.addCustomWord(w)); try { releaseIntro('ended'); } catch (_) {} });
   await page.waitForSelector('#in0');
   const chain = [['#in0','#send0','אבא'],['#in1','#send1','אגס'],['#in0','#send0','סוס'],['#in1','#send1','ספר'],['#in0','#send0','רגל']];
   await page.click('#sentStart');

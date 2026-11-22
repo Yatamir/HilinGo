@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.9 — the translation mic keeps restarting, and the results screen can close.
+ * HilinGo v4.11.1 — the translation mic keeps restarting, and the results screen can close.
  *   node tests_trmic.mjs
  */
 import { chromium } from 'playwright-core';
@@ -160,6 +160,7 @@ try {
     await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => { document.getElementById('sound').checked = false; window.__langs = []; });
     await page.click(`#trLangs .opt[data-tr="${lang}"]`);
+    await page.click('#micAuto');
     await page.click('#go');
     await page.waitForSelector('#half0');
     await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });

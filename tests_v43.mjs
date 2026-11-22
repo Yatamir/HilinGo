@@ -64,8 +64,8 @@ async function run(browser, tag, shot) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   const auto = await page.evaluate(() => document.getElementById('autoMic').checked);
-  if (!auto) bad(tag + ' auto-mic default');
-  else ok(tag + ' auto-mic defaults on');
+  if (auto) bad(tag + ' tap is not the default');
+  else ok(tag + ' tap is the default');
   const one = (await page.locator('#pcSolo').innerText()).trim();
   if (one !== '1') bad(tag + ' button ' + one);
   else ok(tag + ' player button is 1');
@@ -86,7 +86,7 @@ async function run(browser, tag, shot) {
   else ok(tag + ' active card stays the top slot');
 
   await page.click('#endBtn');
-  await page.click('#again');
+  await page.click('#endClose');
   await page.click('#pcSolo');
   await page.click('#go');
   await page.waitForSelector('#soloTime');
@@ -118,8 +118,6 @@ async function run(browser, tag, shot) {
   if (manual != null) bad(tag + ' end game saved ' + manual);
   else ok(tag + ' end game does not save');
   await page.click('#again');
-  await page.click('#pcSolo');
-  await page.click('#go');
   await page.waitForSelector('#soloTime');
   await page.evaluate(() => window.__hilingoFinish('empty'));
   await page.waitForSelector('#endRecord:not(.hidden)');

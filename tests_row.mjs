@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.9 — the full button row stays bright, the header fits, and an
+ * HilinGo v4.11.1 — the full button row stays bright, the header fits, and an
  * automatic not-allowed does not show the settings card.
  *   node tests_row.mjs
  */
@@ -74,6 +74,7 @@ await page.setViewportSize({ width: 390, height: 844 });
 async function start(mode) {
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; });
+  await page.click('#micAuto');
   if (mode === 'solo') await page.click('#pcSolo');
   await page.click('#go');
   await page.waitForSelector('#half0');
@@ -179,8 +180,9 @@ try {
   if (!auto.checked || auto.msg.includes('Safari') || auto.starts !== before) bad('auto denied ' + JSON.stringify(auto));
   else ok('an automatic not-allowed stays quiet and does not restart');
 
+  await page.evaluate(() => { window.__srs.forEach(s => { s.started = false; }); });
   await page.click('#mic0');
-  await page.waitForFunction(n => window.__srs.length > n, before);
+  await page.waitForFunction(() => window.__srs.some(s => s.started));
   await page.evaluate(() => {
     const r = window.__srs[window.__srs.length - 1];
     r.fire('error', { error: 'not-allowed' });

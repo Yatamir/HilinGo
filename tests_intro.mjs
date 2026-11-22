@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.9 — Hili's intro plays once when a game starts, and the mic waits.
+ * HilinGo v4.11.1 — Hili's intro plays once when a game starts, and the mic waits.
  *   npm install playwright-core
  *   node tests_intro.mjs
  * Audio and speech recognition are mocked. The real clip is not decoded.
@@ -97,6 +97,7 @@ async function open(page) {
   const errors = [];
   page.on('pageerror', err => errors.push(String(err)));
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
+  await page.click('#micAuto');
   return errors;
 }
 
@@ -127,10 +128,10 @@ try {
     const page = await context.newPage();
     const errors = await open(page);
     let s = await snap(page);
-    if (s.loads < 1 || s.preload !== 'auto' || !/hilingo\.mp3(\?v=4\.10\.4)?$/.test(s.src)) bad('preload ' + JSON.stringify(s));
+    if (s.loads < 1 || s.preload !== 'auto' || !/hilingo\.mp3(\?v=[\d.]+)?$/.test(s.src)) bad('preload ' + JSON.stringify(s));
     else ok('preloaded audio/hilingo.mp3');
-    if (s.ver !== '4.10.9' || s.version !== '4.10.9') bad('version ' + s.ver + ' / ' + s.version);
-    else ok('version 4.10.9');
+    if (s.ver !== '4.11.1' || s.version !== '4.11.1') bad('version ' + s.ver + ' / ' + s.version);
+    else ok('version 4.11.1');
 
     await page.click('#go');
     s = await snap(page);
@@ -160,19 +161,8 @@ try {
     else ok('ending the game does not replay the intro');
     await page.click('#again');
     s = await snap(page);
-    if (s.startHidden || s.plays !== 1) bad('play again returned ' + JSON.stringify(s));
-    else ok('new game / play again returns to the start screen without a second play');
-
-    await page.click('#go');
-    s = await snap(page);
-    if (s.plays !== 2 || s.hiddenAtPlay !== true || s.active !== 0 || s.gameHidden || s.history) bad('rematch start ' + JSON.stringify(s));
-    else ok('the next game plays the intro once from the start tap');
-    await page.waitForTimeout(400);
-    s = await snap(page);
-    if (s.sr !== 1) bad('rematch mic during intro ' + JSON.stringify(s));
-    else ok('rematch mic waits for the intro');
-    await page.evaluate(() => window.__fireIntro('ended'));
-    await page.waitForFunction(() => window.__srStarts >= 2, { timeout: 2000 });
+    if (!s.startHidden || s.gameHidden || s.plays !== 1) bad('play again ' + JSON.stringify(s));
+    else ok('משחק חדש starts the next game without a second intro');
     await page.fill('#in0', 'שלום');
     await page.click('#send0');
     await page.waitForTimeout(200);

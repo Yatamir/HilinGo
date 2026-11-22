@@ -44,6 +44,7 @@ const port = server.address().port;
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 const context = await browser.newContext();
 await context.addInitScript(() => {
+  try { localStorage.setItem('hilingo_mic_v4111', 'auto'); } catch (_) {}
   window.__intro = { plays: 0 };
   window.__srStarts = 0;
   window.__srLangs = [];
@@ -213,7 +214,7 @@ function ttsOk(src, tl, text) {
   try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
 }
 function localOk(src, lang) {
-  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.10.9');
+  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.1');
 }
 
 try {

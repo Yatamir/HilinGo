@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.10.9 — the home screen must load with no page error.
+ * HilinGo v4.11.1 — the home screen must load with no page error.
  * A saved solo record used to read SOLO_CAP before its const ran.
  *   node tests_boot.mjs
  */
@@ -106,15 +106,19 @@ try {
   for (const [tag, browser] of engines) {
     try {
       const legacy = await open(browser, { hilingo_automic_v2: '0', hilingo_automic: '0' });
-      const micOn = await legacy.page.evaluate(() => document.getElementById('autoMic').checked);
-      const stored = await legacy.page.evaluate(() => localStorage.getItem('hilingo_automic_v2'));
-      if (!micOn || stored !== '1') bad(tag + ' legacy auto-mic ' + micOn + ' ' + stored);
-      else ok(tag + ' a stored off value loads as on');
+      const mic = await legacy.page.evaluate(() => ({
+        on: document.getElementById('autoMic').checked,
+        mode: localStorage.getItem('hilingo_mic_v4111'),
+        old: localStorage.getItem('hilingo_automic_v2'),
+        tap: document.getElementById('micTap').classList.contains('sel'),
+      }));
+      if (mic.on || mic.mode !== 'tap' || !mic.tap) bad(tag + ' legacy mic ' + JSON.stringify(mic));
+      else ok(tag + ' an old auto value loads as tap');
       await legacy.context.close();
       const fresh = await open(browser, null);
       await assertClean(fresh.page, fresh.errors, tag + ' fresh');
       const ver = await fresh.page.evaluate(() => document.querySelector('meta[name="hilingo-version"]').content);
-      if (tag === 'chromium' && ver !== '4.10.9') bad('version ' + ver);
+      if (tag === 'chromium' && ver !== '4.11.1') bad('version ' + ver);
       await fresh.context.close();
 
       const kept = await open(browser, saved);

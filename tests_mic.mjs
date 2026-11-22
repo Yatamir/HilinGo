@@ -76,6 +76,7 @@ async function run(browser, tag) {
       get onerror() { return this.handlers.error || null; }
       start() {
         this.started = true;
+        this.boots = (this.boots || 0) + 1;
         if (this.handlers.audiostart) this.handlers.audiostart();
         if (this.handlers.start) this.handlers.start();
       }
@@ -116,11 +117,15 @@ async function run(browser, tag) {
   }));
   if (dead.on || !dead.aborted) bad(tag + ' teardown ' + JSON.stringify(dead));
   else ok(tag + ' audio-capture aborts the instance and drops the listening light');
-  await page.waitForFunction(n => window.__srs.length === n + 1, beforeErr);
-  ok(tag + ' one fresh recognizer starts after audio-capture');
+  const bootsAtErr = await page.evaluate(() => window.__srs.reduce((n, s) => n + (s.boots || 0), 0));
+  await page.evaluate(() => { window.__srs.forEach(s => { s.started = false; }); });
+  await page.waitForFunction(() => window.__srs.some(s => s.started));
+  const bootsAfter = await page.evaluate(() => window.__srs.reduce((n, s) => n + (s.boots || 0), 0));
+  if (bootsAfter !== bootsAtErr + 1) bad(tag + ' capture restart ' + bootsAtErr + ' -> ' + bootsAfter);
+  else ok(tag + ' the recognizer starts again after audio-capture');
   await page.waitForTimeout(700);
-  const extra = await page.evaluate(n => window.__srs.length, beforeErr);
-  if (extra !== beforeErr + 1) bad(tag + ' restart loop ' + extra);
+  const extra = await page.evaluate(() => window.__srs.reduce((n, s) => n + (s.boots || 0), 0));
+  if (extra !== bootsAfter) bad(tag + ' restart loop ' + extra);
   else ok(tag + ' the error does not restart in a loop');
 
   await page.evaluate(() => {
@@ -132,21 +137,23 @@ async function run(browser, tag) {
     document.dispatchEvent(new Event('visibilitychange'));
     window.__vis = 'visible';
     document.dispatchEvent(new Event('visibilitychange'));
+    window.__srs.forEach(s => { s.started = false; });
   });
-  await page.waitForFunction(n => window.__srs.length === n + 2, beforeErr);
+  await page.waitForFunction(() => window.__srs.some(s => s.started));
   await page.waitForTimeout(700);
-  const afterVis = await page.evaluate(() => window.__srs.length);
+  const afterVis = await page.evaluate(() => window.__srs.reduce((n, s) => n + (s.boots || 0), 0));
   const log = await page.evaluate(() => document.getElementById('diag').textContent || '');
-  if (afterVis !== beforeErr + 2 || !/recover visible/.test(log)) bad(tag + ' vis ' + afterVis + ' ' + log.slice(-240));
+  if (afterVis !== extra + 1 || !/recover visible/.test(log)) bad(tag + ' vis ' + afterVis + ' ' + log.slice(-240));
   else ok(tag + ' hidden then visible recovers exactly once');
   const beforeAbort = afterVis;
   await page.evaluate(() => {
     const r = window.__srs[window.__srs.length - 1];
     r.fire('error', { error: 'aborted' });
+    r.started = false;
   });
-  await page.waitForFunction(n => window.__srs.length === n + 1, beforeAbort);
+  await page.waitForFunction(() => window.__srs.some(s => s.started));
   await page.waitForTimeout(800);
-  const afterAbort = await page.evaluate(() => window.__srs.length);
+  const afterAbort = await page.evaluate(() => window.__srs.reduce((n, s) => n + (s.boots || 0), 0));
   if (afterAbort !== beforeAbort + 1) bad(tag + ' aborted loop ' + afterAbort);
   else ok(tag + ' aborted without results recovers once');
   const heard = await page.evaluate(() => {

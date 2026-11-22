@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.0 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.11.1 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -95,8 +95,8 @@ try {
   }));
   if (!mode.safari || !mode.ptt) bad('iPad not seen as Safari PTT ' + JSON.stringify(mode));
   else ok('iPad Safari is the tap-to-talk browser');
-  if (!mode.auto) bad('auto-mic checkbox is off');
-  else ok('auto-mic stays on without a tap');
+  if (mode.auto) bad('tap is not the default');
+  else ok('tap is the default');
 
   await page.evaluate(() => { document.getElementById('sound').checked = false; document.getElementById('n1').value = 'נועה'; document.getElementById('n2').value = 'דני'; });
   await page.click('#trLangs .opt[data-tr="it"]');
@@ -216,6 +216,47 @@ try {
   if (kind.ipad) bad('iPhone was treated as an iPad ' + JSON.stringify(kind));
   else ok('iPhone stays on the automatic mic');
   await phone.evaluate(() => { document.getElementById('sound').checked = false; });
+  await phone.click('#trLangs .opt[data-tr="it"]');
+  await phone.click('#go');
+  await phone.waitForSelector('#half0');
+  await phone.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
+  const idle = await phone.evaluate(() => ({
+    on: document.getElementById('mic0').classList.contains('on'),
+    label: document.getElementById('mic0').innerText.replace(/\s+/g, ' ').trim(),
+    left: G.timeLeft,
+  }));
+  await phone.waitForTimeout(700);
+  const later = await phone.evaluate(() => ({ left: G.timeLeft, starts: window.__langs.length }));
+  if (idle.on || !idle.label.includes('לחצו ודברו') || later.starts) bad('idle mic ' + JSON.stringify({ idle, later }));
+  else ok('the mic stays idle until a tap');
+  if (later.left > idle.left - 0.4) bad('clock held ' + idle.left + ' -> ' + later.left);
+  else ok('the clock runs before the tap');
+  await phone.click('#mic0');
+  await phone.waitForFunction(() => document.getElementById('mic0').classList.contains('on'));
+  const listening = await phone.evaluate(() => document.getElementById('mic0').innerText.replace(/\s+/g, ' ').trim());
+  if (!listening.includes('אני מקשיב')) bad('listening label ' + listening);
+  else ok('the button says אני מקשיב');
+  const one = await phone.evaluate(() => window.__langs.length);
+  await phone.click('#mic0');
+  await phone.waitForFunction(() => !document.getElementById('mic0').classList.contains('on'));
+  await phone.waitForTimeout(400);
+  const cancelled = await phone.evaluate(() => window.__langs.length);
+  if (cancelled !== one) bad('cancel restarted ' + one + ' -> ' + cancelled);
+  else ok('a second tap cancels and does not restart');
+  await phone.evaluate(() => { WG.addCustomWord('כלב'); });
+  await phone.fill('#in0', 'כלב');
+  await phone.click('#send0');
+  await phone.waitForSelector('#trTap.live', { timeout: 8000 });
+  const replay = await phone.locator('#trReplay').isVisible();
+  const early = await phone.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
+  if (!replay || early) bad('tap card ' + JSON.stringify({ replay, early }));
+  else ok('iPhone tap mode waits, and שמע שוב is there');
+  await phone.click('#trTap');
+  await phone.waitForFunction(() => window.__langs.includes('it-IT'), { timeout: 6000 });
+  ok('the translation tap starts Italian');
+  await phone.goto(`http://127.0.0.1:${port}/index.html`, { waitUntil: 'domcontentloaded' });
+  await phone.evaluate(() => { document.getElementById('sound').checked = false; window.__langs = []; window.__aborts = 99; });
+  await phone.click('#micAuto');
   await phone.click('#trLangs .opt[data-tr="it"]');
   await phone.click('#go');
   await phone.waitForSelector('#half0');

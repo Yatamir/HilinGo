@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.13 — category round, and the sentence strip starts on the right.
+ * HilinGo v4.11.14 — category round, and the sentence strip starts on the right.
  *   node tests_categories.mjs
  */
 import { chromium } from 'playwright-core';

@@ -45,6 +45,7 @@ async function check(page, tag, shot) {
 
   await page.click('#playersCard .pc[data-n="2"]');
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half1');
   const multi = await page.evaluate(() => ({
     hidden: document.getElementById('soloTimer').classList.contains('hidden'),
@@ -57,6 +58,7 @@ async function check(page, tag, shot) {
 
   await page.click('#pcSolo');
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#soloTime');
   const names = await page.evaluate(() => [...document.querySelectorAll('#halves .pname')].map(e => e.childNodes[0] ? e.childNodes[0].textContent : e.textContent).map(t => t.trim()));
   if (names[0] !== 'שחקן 1' || names[1] !== 'שחקן 2') bad(tag + ' names ' + names.join('|'));
@@ -74,6 +76,7 @@ async function check(page, tag, shot) {
 
   await page.evaluate(() => document.getElementById('start').classList.remove('hidden'));
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   const dropped = await page.evaluate(() => localStorage.getItem('hilingo_solo_best2_he'));
   if (dropped != null) bad(tag + ' restart saved ' + dropped);
   else ok(tag + ' restart before the end does not save');
@@ -96,6 +99,7 @@ async function check(page, tag, shot) {
 
   await page.click('#modeLearn');
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   const learn = await page.evaluate(() => document.getElementById('soloTimer').classList.contains('hidden') && !document.getElementById('learn').classList.contains('hidden'));
   if (!learn) bad(tag + ' learn shows the stopwatch');
   else ok(tag + ' Learn hides the stopwatch');

@@ -98,6 +98,7 @@ try {
   await page.screenshot({ path: path.join(SHOTS, 'lang-webkit-iphone.png') });
   await page.click('#modeLearn');
   await page.click('#go');
+  await page.click('#silentOk');
   await page.evaluate(() => window.__fireIntro('ended'));
   await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_NATIVE');
   const idle = await page.evaluate(() => {

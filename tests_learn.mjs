@@ -220,7 +220,7 @@ function ttsOk(src, tl, text) {
   try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
 }
 function localOk(src, lang) {
-  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.6');
+  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.7');
 }
 
 try {
@@ -611,6 +611,7 @@ try {
     const errors = await open(page, { width: 390, height: 844 }, '&ios=1');
     await page.click('#modeLearn');
     await page.click('#go');
+    await page.click('#silentOk');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForTimeout(250);
     let s = await page.evaluate(() => ({
@@ -788,6 +789,7 @@ try {
     const errors = await open(page, { width: 390, height: 844 }, '&ios=1');
     await page.click('#modeLearn');
     await page.click('#go');
+    await page.click('#silentOk');
     await page.evaluate(() => window.__fireIntro('ended'));
     await page.waitForFunction(() => document.getElementById('learn').dataset.state === 'IDLE_NATIVE');
     for (let i = 0; i < 5; i++) await page.click('#verLblLearn');

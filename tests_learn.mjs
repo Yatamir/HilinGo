@@ -220,7 +220,7 @@ function ttsOk(src, tl, text) {
   try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
 }
 function localOk(src, lang) {
-  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.8');
+  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.11.9');
 }
 
 try {

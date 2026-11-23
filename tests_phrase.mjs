@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.17 — phrases chain from the last word, and learning translates the whole sentence.
+ * HilinGo v4.12.0 — phrases chain from the last word, and learning translates the whole sentence.
  *   node tests_phrase.mjs
  */
 import { chromium } from 'playwright-core';

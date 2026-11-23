@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.11.17">
+<meta name="hilingo-version" content="4.12.0">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.11.17" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.12.0" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -759,7 +759,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.11.17</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.12.0</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -785,7 +785,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.11.17</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.12.0</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -825,11 +825,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.11.17"></script>
-<script src="words.js?v=4.11.17" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.11.17"></script>
-<script src="cat_hints.js?v=4.11.17"></script>
-<script src="learn_dict.js?v=4.11.17"></script>
+<script src="config.js?v=4.12.0"></script>
+<script src="words.js?v=4.12.0" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.12.0"></script>
+<script src="cat_hints.js?v=4.12.0"></script>
+<script src="learn_dict.js?v=4.12.0"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1106,7 +1106,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.11.17';
+window.WG = WG; window.HILINGO_VERSION='4.12.0';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1651,7 +1651,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.17';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.12.0';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -2019,12 +2019,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v41117';
+const CAT_CACHE='hilingo-cats-v4120';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.11.17'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.12.0'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3050,7 +3050,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.11.17');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.12.0');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3266,7 +3266,7 @@ const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hear
 // ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
 let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false, restartTimer=0;
-function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>80) diagLog.shift(); drawDiag();
+function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>800) diagLog.shift(); drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
@@ -3295,10 +3295,18 @@ function learningRouteHeld(){
   if(postTtsReadyAt) return true;
   return learnState==='SPEAK_TARGET'||learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='OK';
 }
+function iosAudioOnly(){
+  if(/[?&]tts=synth/.test(location.search)) return false;
+  return isIOSDevice();
+}
+function synthCancel(){
+  if(iosAudioOnly()) return;
+  try{ const s=window.speechSynthesis; if(s) s.cancel(); }catch(_){}
+}
 function sessionForSpeak(reason){
   const why=reason||'unknown';
   if(micIsLive()){ diag('audioSession playback by '+why+' skipped'); return; }
-  if(learningRouteHeld()){ diag('audioSession playback by '+why+' blocked'); return; }
+  if(introBusy()){ diag('audioSession playback by '+why+' blocked intro'); return; }
   setAudioSession('playback', why);
 }
 let forceListenWrite=false, startStep='tap', deafEscalating=false;
@@ -3310,12 +3318,6 @@ function introBusy(){
 function sessionForListen(reason){
   if(introBusy()){
     diag('audioSession play-and-record by '+(reason||'listen')+' blocked intro');
-    return;
-  }
-  const write=forceListenWrite;
-  if(write) forceListenWrite=false;
-  if(!write && learningRouteHeld() && audioSessionNow==='play-and-record'){
-    diag('audioSession play-and-record by '+(reason||'listen')+' held');
     return;
   }
   setAudioSession(listenSessionType, reason||'listen');
@@ -3514,7 +3516,7 @@ function gumAcquire(why, keep){
         let heard=false;
         const mark=ev=>{ if(heard) return; heard=true; diag('gum track '+(ev||'signal')); };
         try{ if(track) track.addEventListener('unmute', ()=>mark('unmute')); }catch(_){}
-        if(track && track.muted===false) mark('already-unmuted');
+        if(track && track.muted===false) diag('gum track unmuted');
         const tHold=performance.now();
         const poll=()=>{
           if(level.peak()>0.008) mark('rms');
@@ -3569,51 +3571,14 @@ function wantGumReset(deafN){
   try{ api=navigator.audioSession; }catch(_){ api=null; }
   return !!api;
 }
-function beginStart(r, deafN){
-  if(gumLive){
-    const g=gumLive;
-    gumLive=null;
-    diag('gum path live-until-speech');
-    if(g&&g.stream) armStopAfterSpeech(r, g.stream, g.level);
-    return startRecognizer(r);
-  }
-  if(!wantGumReset(deafN)) return startRecognizer(r);
-  if(introBusy()){ diag('gum reset skipped intro'); return startRecognizer(r); }
-  deafEscalating=true;
-  logDevice('mic');
-  try{ learnMicLive(true); }catch(_){}
-  try{ if(typeof trLock!=='undefined' && trLock && !trScored) paintTrListen(true); }catch(_){}
-  gumAcquire('tap', true).then(g=>{
-    diag('gum path live-until-speech');
-    try{ learnMicLive(true); }catch(_){}
-    try{ if(trLock && !trScored) paintTrListen(true); }catch(_){}
-    if(g&&g.stream) armStopAfterSpeech(r, g.stream, g.level);
-    const err=startRecognizer(r);
-    deafEscalating=false;
-    if(err) diag('gum start threw '+(err&&err.message||err));
-  });
-  return null;
+function beginStart(r){
+  return startRecognizer(r);
 }
-function queueDeafRestart(r, latency, n, sawAudio, again){
-  try{ paintTrListen(true); }catch(_){}
-  if(typeof trSpeaker!=='undefined' && trSpeaker>=0) lightMic(trSpeaker);
+function queueDeafRestart(r, latency, n, sawAudio){
   if(!sawAudio) diag('audiostart attempt #'+(n||0)+' no');
-  if(startedAfterGum && !sawAudio) diag('audiostart after gum no');
-  if((n||0)>=1){
-    diag('deaf restart give up latency '+latency+'ms');
-    abortAllRecs('give-up').then(()=>showGameDeaf());
-    return;
-  }
-  diag('deaf restart #1 gum-live latency '+latency+'ms');
-  deafEscalating=true;
-  abortAllRecs('gum').then(()=>gumAcquire('deaf', true)).then(g=>{
-    gumLive=g||null;
-    deafEscalating=false;
-    try{ paintTrListen(true); }catch(_){}
-    if(trSpeaker>=0) lightMic(trSpeaker);
-    try{ again(1); }
-    catch(e){ diag('deaf restart start threw '+(e&&e.message||e)); showGameDeaf(); }
-  });
+  diag('deaf restart give up latency '+latency+'ms');
+  try{ if(r){ r.onend=null; r.abort(); } }catch(_){}
+  showGameDeaf();
 }
 function sessionListenFailed(){
   if(listenSessionType!=='play-and-record') return false;
@@ -3638,7 +3603,7 @@ function preMicAudio(){
     if(window.speechSynthesis){
       speaking=speechSynthesis.speaking?1:0;
       pending=speechSynthesis.pending?1:0;
-      if(speaking||pending) speechSynthesis.cancel();
+      if(speaking||pending) synthCancel();
     }
   }catch(_){}
   try{ if(typeof silentAudio!=='undefined' && silentAudio) silent=silentAudio.paused?'paused':'playing'; }catch(_){}
@@ -3684,7 +3649,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.11.17 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  e.textContent='HilinGo v4.12.0 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3794,7 +3759,7 @@ function takeEngine(){
   return micEngine;
 }
 function quietPlayback(){
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   try{ if(typeof introAudio!=='undefined' && introAudio) introAudio.pause(); }catch(_){}
   try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
 }
@@ -4617,7 +4582,7 @@ function learnHandsFree(){
 function learnLog(msg){
   const line=((performance.now()/1000).toFixed(2))+' '+learnState+' '+msg;
   learnDbgLines.push(line);
-  if(learnDbgLines.length>400) learnDbgLines.shift();
+  if(learnDbgLines.length>4000) learnDbgLines.shift();
   const pre=$('#learnDbgText');
   if(pre && learnDbgOn) pre.textContent=learnDbgLines.join('\n');
 }
@@ -4891,28 +4856,8 @@ function wireSession(r, side, tag, isRetry, deafN){
     }
     const noSpeech=err==='no-speech' || /no speech/i.test(msg);
     if(sawAudio && !sawSpeech && noSpeech){
-      if((deafN||0)<1){
-        deafHold=true;
-        diag('deaf after audiostart no speech');
-        learnLog('deaf after audiostart no speech');
-        clearTimeout(learnListenTimer);
-        clearTimeout(stableT);
-        learnMicLive(true);
-        const sideNow=side, tagNow=tag;
-        abortAllRecs('silent').then(()=>gumAcquire('silent', true)).then(g=>{
-          gumLive=g||null;
-          const root=$('#learn');
-          if(!root || root.classList.contains('hidden')) return;
-          learnPrevEnded=true;
-          learnPrevRec=null;
-          learnRec=null;
-          srRunning=false;
-          learnMicLive(true);
-          if(sideNow==='target') startLearnTarget(tagNow, false, 1);
-          else beginListen(sideNow, tagNow, false, false, 1);
-        });
-        return;
-      }
+      diag('deaf after audiostart no speech');
+      learnLog('deaf after audiostart no speech');
       endSession(false);
       showLearnDeaf();
       return;
@@ -4958,40 +4903,13 @@ function wireSession(r, side, tag, isRetry, deafN){
     diag('learn onstart '+tag);
     learnMicLive(true);
     if(!fastRouteDeaf(latency)) return;
-    deafHold=true;
+    if(!sawAudio) diag('audiostart attempt #'+(deafN||0)+' no');
+    diag('deaf restart give up latency '+latency+'ms');
+    learnLog('deaf restart give up latency '+latency+'ms');
     clearTimeout(learnListenTimer);
     clearTimeout(stableT);
-    learnMicLive(true);
-    const n=deafN||0;
-    if(!sawAudio) diag('audiostart attempt #'+n+' no');
-    if(startedAfterGum && !sawAudio) diag('audiostart after gum no');
-    if(n>=1){
-      diag('deaf restart give up latency '+latency+'ms');
-      learnLog('deaf restart give up latency '+latency+'ms');
-      abortAllRecs('give-up').then(()=>{
-        deafHold=false;
-        endSession(false);
-        showLearnDeaf();
-      });
-      return;
-    }
-    diag('deaf restart #1 gum-live latency '+latency+'ms');
-    learnLog('deaf restart #1 gum-live latency '+latency+'ms');
-    const sideNow=side, tagNow=tag;
-    deafEscalating=true;
-    abortAllRecs('gum').then(()=>gumAcquire('deaf', true)).then(g=>{
-      gumLive=g||null;
-      deafEscalating=false;
-      const root=$('#learn');
-      if(!root || root.classList.contains('hidden')) return;
-      learnPrevEnded=true;
-      learnPrevRec=null;
-      learnRec=null;
-      srRunning=false;
-      learnMicLive(true);
-      if(sideNow==='target') startLearnTarget(tagNow, false, 1);
-      else beginListen(sideNow, tagNow, false, false, 1);
-    });
+    endSession(false);
+    showLearnDeaf();
   };
   r.onend=()=>{
     learnLog('end');
@@ -5192,7 +5110,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.17';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.12.0';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -5210,7 +5128,7 @@ function ensureTtsAudio(){
 function primeLearnAudio(){ /* do not play a clip in the mic tap: that ducks recognition on iOS */ }
 function releaseAudioSession(why){
   learnLog('release audio '+(why||''));
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   const a=learnTtsAudio;
   learnTtsAudio=null;
   audioReleasedAt=performance.now();
@@ -5242,6 +5160,7 @@ function playTtsUrl(url){
         a.onpause=()=>shut();
         a.pause();
         a.removeAttribute('src');
+        try{ a.src=''; }catch(_){}
         a.load();
       }catch(_){ shut(); }
       setTimeout(shut, 300);
@@ -5262,6 +5181,10 @@ function ttsNote(msg){
   if(typeof learnLog==='function'){ try{ learnLog('tts '+msg); }catch(_){} }
 }
 function unlockTts(){
+  if(iosAudioOnly()){
+    if(!ttsUnlocked){ ttsUnlocked=true; diag('tts mode audio-only'); }
+    return;
+  }
   if(!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
   try{
     const u=new SpeechSynthesisUtterance(' ');
@@ -5281,7 +5204,7 @@ document.addEventListener('pointerdown', (ev)=>{
   if(t && t.closest && t.closest('#trCard')) return;
   if(!ttsUnlocked) unlockTts();
 }, true);
-if(window.speechSynthesis){
+if(window.speechSynthesis && !iosAudioOnly()){
   try{ speechSynthesis.addEventListener('voiceschanged', ()=>{ try{ ttsNote('voices '+(speechSynthesis.getVoices()||[]).length); }catch(_){} }); }catch(_){}
 }
 function waitVoices(){
@@ -5339,14 +5262,11 @@ function silentAudioOff(){
   diag('silent-audio off');
 }
 function postTtsRoute(){
-  // Learning only. The game leaves the route alone until the tap. Learning's
-  // recognizer stays deaf unless play-and-record is set as soon as speech ends.
+  // Same as the game: tear the clip down, and let the next tap write play-and-record.
   silentAudioOff();
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   try{ if(typeof learnTtsAudio!=='undefined') teardownMicAudio(learnTtsAudio); }catch(_){}
-  setAudioSession('play-and-record');
   postTtsReadyAt=performance.now();
-  gumAfterTts=true;
   diag('post-tts route ready');
 }
 function logPostTtsAge(){
@@ -5397,13 +5317,12 @@ function speakSynth(text, langCode, opts){
         ttsNote('voices '+voices.length+' '+tag);
         const voice=exactVoice(tag);
         ttsNote('voice '+(voice?(voice.name+' '+voice.lang):'none'));
-        if(opts&&opts.learn) diag('audioSession playback by tts blocked');
-        else sessionForSpeak('tts');
+        sessionForSpeak('tts');
         await silentAudioOn();
         let ok=await utterOnce(text, tag, voice);
         if(!ok){
           ttsNote('retry');
-          try{ speechSynthesis.cancel(); }catch(_){}
+          synthCancel();
           await new Promise(r=>setTimeout(r, 300));
           ok=await utterOnce(text, tag, voice);
         }
@@ -5416,14 +5335,32 @@ function speakSynth(text, langCode, opts){
 let aloudGen=0, lastSpeakPath='';
 function cancelSpoken(){
   aloudGen++;
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   try{
     if(learnTtsAudio){ learnTtsAudio.onended=null; learnTtsAudio.onerror=null; learnTtsAudio.pause(); }
   }catch(_){}
-  try{ if(typeof introAudio!=='undefined' && introAudio) introAudio.pause(); }catch(_){}
+  try{ if(typeof introAudio!=='undefined' && introAudio && !introBusy()) introAudio.pause(); }catch(_){}
+}
+async function playAudioOnly(text, langCode, gen){
+  sessionForSpeak('audio-only');
+  let res=await playLocalMp3(localTtsUrl(text, langCode));
+  if(gen!==aloudGen){ ttsNote('dropped'); return false; }
+  if(res.ok){ lastSpeakPath='local-mp3'; ttsNote('end local-mp3'); return true; }
+  if(/NotAllowed|not-allowed/i.test(res.why||'')){ ttsNote('error not-allowed'); return false; }
+  res=await playTtsUrl(ttsUrl(text, langCode));
+  if(gen!==aloudGen){ ttsNote('dropped'); return false; }
+  if(res.ok){ lastSpeakPath='audio-url'; learnLog('audio-url used'); ttsNote('end audio-url'); return true; }
+  ttsNote('error '+(res.why||'none'));
+  return false;
 }
 function speakAloud(text, langCode, opts){
   const gen=++aloudGen;
+  if(iosAudioOnly()){
+    diag('tts mode audio-only');
+    try{ learnLog('tts mode audio-only'); }catch(_){}
+    ttsNote('start audio-only '+(langCode||'')+' "'+text+'"');
+    return playAudioOnly(text, langCode, gen);
+  }
   ttsNote('start '+(langCode||'')+' "'+text+'"');
   return speakSynth(text, langCode, opts).then(async ok=>{
     if(gen!==aloudGen){ ttsNote('dropped'); return false; }
@@ -5475,11 +5412,8 @@ function speakTarget(text, langCode, after){
     showSpeaker(text, langCode);
     if(after) try{ after(); }catch(_){}
   };
-  learnLog('try speechSynthesis');
+  learnLog(iosAudioOnly()?'tts mode audio-only':'try speechSynthesis');
   diag('rec ended before tts='+(learnRecEnded?'yes':'no'));
-  // Stay on play-and-record through learning speech. Switching to playback
-  // and back flips a Bluetooth headset (A2DP to HFP) and the next start() is deaf.
-  diag('audioSession playback by learn-speak blocked');
   setTimeout(()=>{
     if(gen!==speechGen) return;
     diag('route settle 400ms');
@@ -5937,7 +5871,7 @@ async function replayTranslation(){
   try{ await recClosed; }catch(_){}
   if(!trLock||trScored) return;
   try{ await speakAloud(trTarget, TR); }catch(_){}
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   if(!trLock||trScored) return;
   diag('tr replay done '+trLangTag());
   if(trWantsTap()){
@@ -6088,7 +6022,7 @@ async function openChallengeMic(why, gen){
   if(gen!==trOpenGen){ trOpening=false; return; }
   if(ttsBusy()){
     ttsNote('still speaking, cancel');
-    try{ speechSynthesis.cancel(); }catch(_){}
+    synthCancel();
     const t0=performance.now();
     while(ttsBusy() && performance.now()-t0<1200) await new Promise(r=>setTimeout(r, 40));
   }
@@ -6524,7 +6458,7 @@ async function runTranslation(p, word){
     armCardEscape();
   }
   try{ await speakAloud(text, TR); }catch(_){}
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
   if(ttsBusy()){
     const t0=performance.now();
@@ -6614,7 +6548,7 @@ async function practiceBank(item){
   const fromEl=$('#trFrom'); if(fromEl) fromEl.dir=item.src==='he'?'rtl':'ltr';
   const wordEl=$('#trWord'); if(wordEl) wordEl.dir=item.dst==='he'?'rtl':'ltr';
   try{ await speakAloud(item.to, item.dst); }catch(_){}
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+  synthCancel();
   try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
   if(!trLock||trScored) return;
   trDeaf=false;

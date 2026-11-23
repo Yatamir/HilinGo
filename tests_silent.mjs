@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.17 — silent-switch hint, and the Safari audio session around speech and the mic.
+ * HilinGo v4.12.0 — silent-switch hint, and the Safari audio session around speech and the mic.
  *   node tests_silent.mjs
  */
 import { chromium } from 'playwright-core';

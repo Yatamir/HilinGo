@@ -1,5 +1,5 @@
 /* Caches the category lists so a later game can use them offline. */
-const CACHE = 'hilingo-cats-v41116';
+const CACHE = 'hilingo-cats-v41117';
 self.addEventListener('install', event => { self.skipWaiting(); event.waitUntil(Promise.resolve()); });
 self.addEventListener('activate', event => { event.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', event => {

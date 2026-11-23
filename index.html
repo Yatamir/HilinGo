@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.11.11">
+<meta name="hilingo-version" content="4.11.12">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.11.11" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.11.12" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -119,7 +119,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 #trWord.sentence{font-size:clamp(20px,5.5vw,40px);line-height:1.3}
 #trMark{margin:0;font-size:150px;font-weight:800;line-height:.9}
 #trMic{width:54px;height:54px;margin:4px auto 0;border-radius:50%;background:#E4D4FF;color:var(--p1);display:none;align-items:center;justify-content:center;font-size:26px;box-shadow:0 3px 0 #B794FF}
-#trMic.on{display:flex;animation:trpulse 1s ease-in-out infinite}
+#trMic.on{display:flex;width:auto;min-width:160px;height:56px;border-radius:28px;padding:0 16px;background:var(--bad);color:#fff;font-size:18px;font-weight:800;animation:micon .6s infinite alternate}
+#trTap.on{background:var(--bad);color:#fff;animation:micon .6s infinite alternate}
 #trRetry{margin:8px auto 0;min-height:48px;padding:12px 22px;border-radius:999px;background:var(--p1);color:#fff;font-weight:800;font-size:18px;box-shadow:0 3px 0 #3A1FA8}
 #trRetry.hidden{display:none}
 #trTap,#trSkip,#trRetry{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:rgba(107,44,255,.3)}
@@ -758,7 +759,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.11.11</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.11.12</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -784,7 +785,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.11.11</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.11.12</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -824,11 +825,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.11.11"></script>
-<script src="words.js?v=4.11.11" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.11.11"></script>
-<script src="cat_hints.js?v=4.11.11"></script>
-<script src="learn_dict.js?v=4.11.11"></script>
+<script src="config.js?v=4.11.12"></script>
+<script src="words.js?v=4.11.12" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.11.12"></script>
+<script src="cat_hints.js?v=4.11.12"></script>
+<script src="learn_dict.js?v=4.11.12"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1105,7 +1106,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.11.11';
+window.WG = WG; window.HILINGO_VERSION='4.11.12';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1150,7 +1151,7 @@ const STR = {
   endEmpty:'הלוח התרוקן! ', endMisses:'יותר מדי החמצות ברצף. ', endManual:'המשחק הסתיים. ', letters:'אותיות', words:'מילים',
   srNA:'זיהוי דיבור לא זמין – אפשר להקליד', listening:'מקשיב…', notHeard:'לא שמעתי מילה – נסו שוב', noPerm:'אין הרשאה למיקרופון – אפשר להקליד', micBlocked:'המיקרופון חסום',
   noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤', micRestart:'לחצו להפעלת המיקרופון',
-  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו',
+  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו', learnDeaf:'לא שמעתי, לחצו שוב',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו", hintNoCat:"אין מילה כזאת באות הזו. אפשר לדלג", veil:"הסתרת הלוח",
   hintNoDel:"<span class='rules-hint'>💡 רמז</span> נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`<span class='rules-hint'>💡 רמז</span> בשני תורות ברצף – האות ${l} חזרה ללוח`,
@@ -1200,7 +1201,7 @@ const STR = {
   endEmpty:'Board cleared! ', endMisses:'Too many misses in a row. ', endManual:'Game over. ', letters:'letters', words:'words',
   srNA:'Speech recognition unavailable – please type', listening:'Listening…', notHeard:"Didn't catch a word – try again", noPerm:'No microphone permission – please type', micBlocked:'Mic blocked',
   noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤", micRestart:'Tap to restart mic',
-  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak",
+  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak", learnDeaf:"I didn't hear you, tap again",
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter", hintNoCat:"No word like that with this letter. You can pass", veil:"Hide board",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> used – no letter crossed off this turn", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> two turns in a row – ${l} is back on your board`,
@@ -1250,7 +1251,7 @@ const STR = {
   endEmpty:'Bord leeg! ', endMisses:'Te veel missers op rij. ', endManual:'Spel afgelopen. ', letters:'letters', words:'woorden',
   srNA:'Spraakherkenning niet beschikbaar – typ maar', listening:'Luistert…', notHeard:'Geen woord gehoord – probeer opnieuw', noPerm:'Geen toegang tot de microfoon – typ maar', micBlocked:'Microfoon geblokkeerd',
   noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤', micRestart:'Tik om de microfoon te herstarten',
-  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg',
+  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg', learnDeaf:'Ik hoorde je niet, tik nog eens',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter", hintNoCat:"Geen zulk woord met deze letter. Je mag passen", veil:"Bord verbergen",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> twee beurten op rij – de ${l} staat weer op je bord`,
@@ -1300,7 +1301,7 @@ const STR = {
   endEmpty:'Tabuleiro vazio! ', endMisses:'Erros demais em seguida. ', endManual:'O jogo terminou. ', letters:'letras', words:'palavras',
   srNA:'Reconhecimento de voz indisponível – digite a palavra', listening:'Ouvindo…', notHeard:'Não ouvi uma palavra – tente de novo', noPerm:'Sem permissão para o microfone – digite a palavra', micBlocked:'Microfone bloqueado',
   noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤', micRestart:'Toque para religar o microfone',
-  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale',
+  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale', learnDeaf:'Não ouvi, toque de novo',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra", hintNoCat:"Não tem palavra assim com esta letra. Pode pular", veil:"Esconder tabuleiro",
   hintNoDel:"<span class='rules-hint'>💡 Dica</span> usada – nenhuma letra foi apagada neste turno", hintRestored:l=>`<span class='rules-hint'>💡 Dica</span> em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
@@ -1414,7 +1415,7 @@ const STR = {
   ptt:"Toca y habla",
   pttOn:"Estoy escuchando",
   tapToTalk:"Toca y habla",
-  tapAgain:"No oí nada. Toca y habla",
+  tapAgain:"No oí nada. Toca y habla", learnDeaf:"No te oí, toca otra vez",
   deaf:"El micrófono se abrió, pero el sonido no llega. Prueba: cierra Safari del todo y ábrelo otra vez · apaga Sonidos en la pantalla inicial · mira Ajustes del sistema → Sonido → Entrada.",
   hint:"💡 Pista",
   hintTitle:"Pista: una frase corta de una palabra con la letra buena (hasta 3 por turno). Con pista no se tacha letra.",
@@ -1547,7 +1548,7 @@ const STR = {
   ptt:"Tocca e parla",
   pttOn:"Sto ascoltando",
   tapToTalk:"Tocca e parla",
-  tapAgain:"Non ho sentito niente. Tocca e parla",
+  tapAgain:"Non ho sentito niente. Tocca e parla", learnDeaf:"Non ti ho sentito, tocca ancora",
   deaf:"Il microfono si è aperto, ma il suono non arriva. Prova: chiudi Safari del tutto e riaprilo · spegni Suoni nella schermata iniziale · controlla Impostazioni di sistema → Suono → Ingresso.",
   hint:"💡 Indizio",
   hintTitle:"Indizio: una frase corta per una parola con la lettera giusta (fino a 3 a turno). Con un indizio non si cancella una lettera.",
@@ -1591,7 +1592,7 @@ let soloRunning=false, soloFrozen=false, soloSaved=false, soloAccum=0, soloStart
 const $ = s=>document.querySelector(s);
 let G=null, seconds=45, timerId=null, lastT=0, paused=false, pendingOverride=[null,null,null,null], pendingDelete=null;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec=null, recFor=null;
+let rec=null, recFor=null, micArmP=-1;
 const isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome|Chromium|CriOS|Edg/.test(navigator.userAgent);
 // Push-to-talk: Safari only starts recognition reliably from a direct user gesture, handles one request
 // at a time, and often goes "deaf" after automatic restarts. So in Safari every turn is tap-🎤-and-speak.
@@ -1650,7 +1651,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.11';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.11.12';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1730,7 +1731,7 @@ document.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{
 
 // sound
 let actx=null;
-function beep(f=600,d=.12,type='sine',v=.15){ if(!$('#sound').checked) return; sessionForSpeak(); try{
+function beep(f=600,d=.12,type='sine',v=.15){ if(!$('#sound').checked) return; sessionForSpeak('beep'); try{
   actx=actx||new (window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;
   o.connect(g);g.connect(actx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.stop(actx.currentTime+d);}catch(e){} }
@@ -1784,6 +1785,8 @@ function buildHalves(){
         else submit(p,e.target.value); } else enterTyping(p); };
     $('#in'+p).addEventListener('input',()=>enterTyping(p));
     $('#mic'+p).onclick=()=>micToggle(p,'click');   // synchronous: recognition.start() runs inside the click
+    $('#mic'+p).addEventListener('pointerdown', ()=>{ $('#mic'+p)._downAt=performance.now(); });
+    $('#mic'+p).addEventListener('pointerup', ()=>{ if(recFor!==p && micArmP!==p) flashListening($('#mic'+p)); });
     $('#ov'+p).onclick=()=>{ if(pendingOverride[p]) submit(p,pendingOverride[p],true); };
     $('#hb'+p).onclick=()=>showHint(p);   // v3.0: never touches the recognizer
     $('#vb'+p).onclick=e=>{ e.stopPropagation(); hideBoard(p); };
@@ -2016,12 +2019,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v41111';
+const CAT_CACHE='hilingo-cats-v41112';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.11.11'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.11.12'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3047,7 +3050,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.11.11');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.11.12');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3081,7 +3084,7 @@ function playIntro(){
     introAudio.addEventListener('ended', hold.onEnded);
     introAudio.addEventListener('error', hold.onError);
     hold.timer=setTimeout(()=>{ if(introHold===hold) releaseIntro('timeout'); },3000);
-    sessionForSpeak();
+    sessionForSpeak('intro');
     let played;
     try{ played=introAudio.play(); }
     catch(_){ if(introHold===hold) releaseIntro('error'); return; }
@@ -3219,7 +3222,7 @@ function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
 let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0;
-function setAudioSession(type){
+function setAudioSession(type, reason){
   let api=null;
   try{ if('audioSession' in navigator && navigator.audioSession) api=navigator.audioSession; }catch(_){ api=null; }
   if(!api){
@@ -3227,15 +3230,49 @@ function setAudioSession(type){
     return false;
   }
   try{
+    const why=reason||'unknown';
+    if(type==='playback') diag('audioSession playback by '+why);
     if(api.type!==type) api.type=type;
     const now=String(api.type||type);
-    if(now!==audioSessionNow){ audioSessionNow=now; diag('audioSession '+now); }
+    audioSessionNow=now;
+    if(type!=='playback') diag('audioSession '+now+(reason?(' by '+why):''));
     return now===type;
   }catch(_){ diag('audioSession fail'); return false; }
 }
 function micIsLive(){ return !!(rec || srRunning); }
-function sessionForSpeak(){ if(micIsLive()) return; setAudioSession('playback'); }
-function sessionForListen(){ setAudioSession(listenSessionType); }
+function learningRouteHeld(){
+  const root=$('#learn');
+  if(!root || root.classList.contains('hidden')) return false;
+  if(postTtsReadyAt) return true;
+  return learnState==='SPEAK_TARGET'||learnState==='IDLE_TARGET'||learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='OK';
+}
+function sessionForSpeak(reason){
+  const why=reason||'unknown';
+  if(micIsLive()){ diag('audioSession playback by '+why+' skipped'); return; }
+  if(learningRouteHeld()){ diag('audioSession playback by '+why+' blocked'); return; }
+  setAudioSession('playback', why);
+}
+function sessionForListen(reason){
+  if(learningRouteHeld() && audioSessionNow==='play-and-record'){
+    diag('audioSession play-and-record by '+(reason||'listen')+' held');
+    return;
+  }
+  setAudioSession(listenSessionType, reason||'listen');
+}
+function logRoute(why){
+  let session='none';
+  try{ if('audioSession' in navigator && navigator.audioSession) session=navigator.audioSession.type||''; }catch(_){}
+  diag('route: '+(why||'mic')+' session='+session);
+  try{
+    if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices){
+      navigator.mediaDevices.enumerateDevices().then(list=>{
+        const outs=(list||[]).filter(d=>d.kind==='audiooutput');
+        const labels=outs.map(d=>d.label||'unlabeled').join('|')||'0';
+        diag('route: outputs '+labels);
+      }).catch(()=>{});
+    }
+  }catch(_){}
+}
 function sessionListenFailed(){
   if(listenSessionType!=='play-and-record') return false;
   listenSessionType='auto';
@@ -3269,7 +3306,8 @@ function preMicAudio(){
 }
 function startRecognizer(r){
   preMicAudio();
-  sessionForListen();
+  logRoute('mic');
+  sessionForListen('start');
   try{ r.start(); return null; }
   catch(err){
     if(!sessionListenFailed()) return err||new Error('start');
@@ -3295,7 +3333,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.11.11 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
+  e.textContent='HilinGo v4.11.12 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-14).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3368,8 +3406,14 @@ function micToggle(p,how){
   }
   if(challengeOwnsMic()) return;
   if(!SR||!G||G.over||paused||p!==G.turn) return;
-  if(recFor===p){ if(recCtl) recCtl.userStop(); else { stopRec(); setHeard(p,S.micOff); } return; }
+  if(recFor===p || micArmP===p){
+    micArmP=-1;
+    if(recCtl) recCtl.userStop(); else { stopRec(); setHeard(p,S.micOff); }
+    return;
+  }
   typing=false; emptyEnds=0; heardNote[p]='';
+  micArmP=p;
+  flashListening($('#mic'+p));
   setMsg(p,''); startRec(p,how||'click');
 }
 document.addEventListener('keydown',e=>{   // Space (outside text fields) = talk
@@ -3403,13 +3447,19 @@ function quietPlayback(){
   try{ if(typeof introAudio!=='undefined' && introAudio) introAudio.pause(); }catch(_){}
   try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
 }
+function dropMicArm(p){
+  if(micArmP!==p) return;
+  micArmP=-1;
+  const m=$('#mic'+p);
+  if(m && recFor!==p) m.classList.remove('on');
+}
 function startRec(p,how){
-  if(challengeOwnsMic()){ diag('skip '+how+', challenge'); return; }
-  if(!SR||!G||G.over||paused||p!==G.turn) return;
+  if(challengeOwnsMic()){ diag('skip '+how+', challenge'); dropMicArm(p); return; }
+  if(!SR||!G||G.over||paused||p!==G.turn){ dropMicArm(p); return; }
   const user=userMicHow(how);
-  if(!user && !micIsAuto()){ diag('skip '+how+', tap'); return; }
+  if(!user && !micIsAuto()){ diag('skip '+how+', tap'); dropMicArm(p); return; }
   if(user) micHoldAuto=false;
-  if(!user && micHoldAuto){ diag('skip start, held'); return; }
+  if(!user && micHoldAuto){ diag('skip start, held'); dropMicArm(p); return; }
   if(!user && recFor===p && micSawStart){ diag('skip start, live'); return; }
   // First turn: don't open the mic while Hili's intro is still playing.
   if(introHold&&!introHold.done){
@@ -3422,17 +3472,21 @@ function startRec(p,how){
     setTimeout(()=>{ if(!challengeOwnsMic() && G && G.turn===p && !paused) startRec(p,'after-quiet'); }, 800);
     return;
   }
+  const armed=micArmP;
   if(rec) stopRec();
+  if(armed===p) micArmP=p;
   const ticket=++recTicket;
+  const micEl=$('#mic'+p);
+  if(micEl) micEl.classList.add('on');
   recClosed.then(()=>setTimeout(()=>{
-  if(ticket!==recTicket) return;
-  if(challengeOwnsMic()||!SR||!G||G.over||paused||p!==G.turn) return;
-  if(!user && micHoldAuto) return;
+  if(ticket!==recTicket){ if(micEl) micEl.classList.remove('on'); return; }
+  if(challengeOwnsMic()||!SR||!G||G.over||paused||p!==G.turn){ if(micEl) micEl.classList.remove('on'); return; }
+  if(!user && micHoldAuto){ if(micEl) micEl.classList.remove('on'); return; }
   const sess=++recSession;
   const r=takeEngine();
-  if(!r){ setHeard(p,S.srNA); return; }
+  if(!r){ setHeard(p,S.srNA); if(micEl) micEl.classList.remove('on'); return; }
   r.lang=S.speech; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
-  rec=r; recFor=p; $('#mic'+p).classList.add('on');
+  rec=r; recFor=p; if(micArmP===p) micArmP=-1; $('#mic'+p).classList.add('on');
   lastStartUser=user; micSawStart=false; micArmedAt=performance.now();
   let lastAlts=null, done=false, stableT=null, deafT=null, sawSound=false, errShown=false, killed=false;
   const listening=()=>setHeard(p,(heardNote[p]?heardNote[p]+' · ':'')+S.listening);
@@ -3604,6 +3658,7 @@ function stopRec(keep){
     });
   } else recClosed=Promise.resolve();
   recFor=null;
+  micArmP=-1;
   micSawStart=false;
   document.querySelectorAll('#halves .mic.on').forEach(m=>{
     if(!(keep && trSpeaker>=0 && m.id==='mic'+trSpeaker)) m.classList.remove('on');
@@ -4244,6 +4299,33 @@ function showSpeaker(text, lang){
 }
 function hideSpeaker(){ const sp=$('#learnSpeak'); if(sp) sp.classList.add('hidden'); }
 function micOff(){ [$('#learnMic'),$('#learnRepeatMic')].forEach(m=>{ if(m) m.classList.remove('on'); }); }
+function showLearnDeaf(){
+  const line=(S&&S.learnDeaf)||'לא שמעתי, לחצו שוב';
+  setLearnHeard(line);
+  setLearnStatus(line);
+  diag('deaf retry skipped');
+}
+function flashListening(el){
+  if(!el) return;
+  const t0=el._downAt||performance.now();
+  if(el.id==='trTap'){
+    el.classList.add('on');
+    el.textContent=(S&&S.pttOn)||'אני מקשיב';
+    paintTrListen(true);
+  } else if(el.classList && el.classList.contains('mic')){
+    if(el.classList.contains('on')) return;
+    el.classList.add('on');
+  } else return;
+  diag('ui listening shown '+Math.max(0, Math.round(performance.now()-t0))+'ms');
+}
+function revertListening(el){
+  if(!el) return;
+  el.classList.remove('on');
+  if(el.id==='trTap'){
+    paintTrListen(false);
+    el.textContent='🎤 '+((S&&S.trTap)||'הקש ודבר');
+  }
+}
 function learnMicLive(on){
   const target=learnState==='LISTEN_TARGET';
   const native=$('#learnMic'), rep=$('#learnRepeatMic');
@@ -4333,7 +4415,7 @@ function wireSession(r, side, tag, isRetry){
   learnRecEnded=false;
   const sess=++learnSession;
   const code=side==='target'?LEARN_TARGET:LANG;
-  let lastAlts=null, closed=false, stableT=0, quickRetry=false;
+  let lastAlts=null, closed=false, stableT=0, quickRetry=false, sawAudio=false, sawSpeech=false;
   const startedAt=performance.now();
   const live=()=>sess===learnSession && srRunning && !closed;
   const armTimeout=()=>{
@@ -4342,8 +4424,10 @@ function wireSession(r, side, tag, isRetry){
       if(!live()) return;
       if(lastAlts){ learnLog('10s with interim, take it'); take(lastAlts); return; }
       learnLog('10s timeout');
-      try{ r.stop(); }catch(_){ endSession(false); return; }
-      setTimeout(()=>{ if(live()) endSession(false); }, 400);
+      const deaf=side==='target' && sawAudio && !sawSpeech;
+      const finish=()=>{ endSession(false); if(deaf) showLearnDeaf(); };
+      try{ r.stop(); }catch(_){ finish(); return; }
+      setTimeout(()=>{ if(live()) finish(); }, 400);
     }, 10000);
   };
   armTimeout();
@@ -4390,9 +4474,9 @@ function wireSession(r, side, tag, isRetry){
   r.continuous=false;
   r.interimResults=true;
   r.maxAlternatives=5;
-  r.onaudiostart=()=>{ learnLog('audiostart '+tag); diag('learn audiostart '+tag); learnMicLive(true); };
+  r.onaudiostart=()=>{ sawAudio=true; learnLog('audiostart '+tag); diag('learn audiostart '+tag); learnMicLive(true); };
   r.onsoundstart=()=>{ learnLog('soundstart '+tag); diag('learn soundstart '+tag); };
-  r.onspeechstart=()=>{ learnLog('speechstart '+tag); diag('learn speechstart '+tag); };
+  r.onspeechstart=()=>{ sawSpeech=true; learnLog('speechstart '+tag); diag('learn speechstart '+tag); };
   r.onresult=ev=>{
     if(!live()) return;
     let finalSeen=false;
@@ -4473,9 +4557,9 @@ function wireSession(r, side, tag, isRetry){
 }
 function startLearnTarget(tag, isRetry){
   // Same start as the game translation tap: synchronous, no audio release, no delay.
-  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); return; }
-  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); return; }
-  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); return; }
+  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); revertListening($('#learnRepeatMic')); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); revertListening($('#learnRepeatMic')); return; }
+  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); revertListening($('#learnRepeatMic')); return; }
   const code=LEARN_TARGET;
   const langTag=tag || (code==='pt'?'pt-BR':(SPEECH_TAG[code]||'en-US'));
   setState('LISTEN_TARGET');
@@ -4498,9 +4582,9 @@ function startLearnTarget(tag, isRetry){
 }
 function beginListen(side, tag, isRetry, released){
   if(side==='target'){ startLearnTarget(tag, isRetry); return; }
-  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); return; }
-  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('refuse mic in '+learnState); return; }
-  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); return; }
+  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); revertListening($('#learnMic')); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('refuse mic in '+learnState); revertListening($('#learnMic')); return; }
+  if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); revertListening($('#learnMic')); return; }
   const code=side==='target'?LEARN_TARGET:LANG;
   const langTag=tag || (code==='pt'?'pt-BR':(SPEECH_TAG[code]||'en-US'));
   const startFresh=()=>{
@@ -4616,7 +4700,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.11';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.11.12';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -4672,7 +4756,7 @@ function playTtsUrl(url){
     };
     a.onended=()=>fin(true,'ended');
     a.onerror=()=>fin(false,'element-error');
-    sessionForSpeak();
+    sessionForSpeak('audio-url');
     try{ a.src=url; }catch(e){ fin(false,'src'); return; }
     let p;
     try{ p=a.play(); }catch(e){ fin(false,(e&&e.name)||'play'); return; }
@@ -4700,8 +4784,8 @@ function unlockTts(){
 document.addEventListener('pointerdown', (ev)=>{
   const t=ev.target;
   const onMic=t && t.closest && t.closest('.mic,#trTap,#dbgPt');
-  if(onMic) sessionForListen();
-  else sessionForSpeak();
+  if(onMic) sessionForListen('pointerdown');
+  else sessionForSpeak('pointerdown');
   if(t && t.closest && t.closest('#trCard')) return;
   if(!ttsUnlocked) unlockTts();
 }, true);
@@ -4808,7 +4892,7 @@ function utterOnce(text, tag, voice){
     catch(e){ ttsNote('speak throw'); finish(false, ''); }
   });
 }
-function speakSynth(text, langCode){
+function speakSynth(text, langCode, opts){
   return new Promise(resolve=>{
     if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsNote('no speechSynthesis'); resolve(false); return; }
     const tag=langCode==='pt'?'pt-BR':(SPEECH_TAG[langCode]||'en-US');
@@ -4820,7 +4904,8 @@ function speakSynth(text, langCode){
         ttsNote('voices '+voices.length+' '+tag);
         const voice=exactVoice(tag);
         ttsNote('voice '+(voice?(voice.name+' '+voice.lang):'none'));
-        sessionForSpeak();
+        if(opts&&opts.learn) diag('audioSession playback by tts blocked');
+        else sessionForSpeak('tts');
         await silentAudioOn();
         let ok=await utterOnce(text, tag, voice);
         if(!ok){
@@ -4844,10 +4929,10 @@ function cancelSpoken(){
   }catch(_){}
   try{ if(typeof introAudio!=='undefined' && introAudio) introAudio.pause(); }catch(_){}
 }
-function speakAloud(text, langCode){
+function speakAloud(text, langCode, opts){
   const gen=++aloudGen;
   ttsNote('start '+(langCode||'')+' "'+text+'"');
-  return speakSynth(text, langCode).then(async ok=>{
+  return speakSynth(text, langCode, opts).then(async ok=>{
     if(gen!==aloudGen){ ttsNote('dropped'); return false; }
     if(ok){ lastSpeakPath='speechSynthesis'; ttsNote('end speechSynthesis'); return true; }
     ttsNote('synth missed, try audio');
@@ -4899,13 +4984,13 @@ function speakTarget(text, langCode, after){
   };
   learnLog('try speechSynthesis');
   diag('rec ended before tts='+(learnRecEnded?'yes':'no'));
-  // The recognizer has ended. Let the playback route settle before speak(),
-  // or iOS accepts the utterance and then never plays it.
-  sessionForSpeak();
+  // Stay on play-and-record through learning speech. Switching to playback
+  // and back flips a Bluetooth headset (A2DP to HFP) and the next start() is deaf.
+  diag('audioSession playback by learn-speak blocked');
   setTimeout(()=>{
     if(gen!==speechGen) return;
     diag('route settle 400ms');
-  speakAloud(text, langCode).then(ok=>{
+  speakAloud(text, langCode, {learn:true}).then(ok=>{
     if(gen!==speechGen) return;
     if(lastSpeakPath==='audio-url'||lastSpeakPath==='local-mp3'){
       learnLog('destroy audio before listen '+lastSpeakPath);
@@ -5074,6 +5159,7 @@ function startLearn(){
 }
 function leaveLearn(){
   learnGen++;
+  postTtsReadyAt=0;
   stopTtsAudio();
   stopSession('leave');
   setOwner('none');
@@ -5091,10 +5177,10 @@ function dropNativeRound(){
   const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
 }
 function learnMicTap(){
-  if(!SR) return;
+  if(!SR){ revertListening($('#learnMic')); return; }
   primeLearnAudio();
   learnTyping=false;
-  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); revertListening($('#learnMic')); return; }
   if(srRunning && learnState==='LISTEN_NATIVE'){
     stopSession('tap').then(()=>enterIdleNative(false));
     return;
@@ -5116,8 +5202,8 @@ function learnMicTap(){
   go();
 }
 function learnRepeatTap(){
-  if(!SR) return;
-  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); return; }
+  if(!SR){ revertListening($('#learnRepeatMic')); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); revertListening($('#learnRepeatMic')); return; }
   if(srRunning && learnState==='LISTEN_TARGET'){
     stopSession('tap').then(()=>enterIdleTarget(false));
     return;
@@ -5393,6 +5479,7 @@ function wirePress(b, fn){
   };
   b.addEventListener('pointerdown', ev=>{
     trPressEl=b;
+    b._downAt=performance.now();
     try{ ev.stopPropagation(); }catch(_){}
   });
   const up=ev=>{
@@ -5400,6 +5487,7 @@ function wirePress(b, fn){
     if(trPressEl && trPressEl!==b){ diag('tr ignore '+(ev&&ev.type||'')+' '+(b.id||'')); return; }
     trPressEl=null;
     trHandledEl=b; trHandledAt=performance.now();
+    if(b.id==='trTap' || (b.classList && b.classList.contains('mic') && !b.classList.contains('on'))) flashListening(b);
     run(ev);
   };
   b.addEventListener('pointerup', up);
@@ -5417,6 +5505,7 @@ function wirePress(b, fn){
 }
 function showTrTap(on){
   const b=$('#trTap'); if(!b) return;
+  b.classList.remove('on');
   b.textContent='🎤 '+((S&&S.trTap)||'הקש ודבר');
   b.classList.toggle('live', !!on);
   b.classList.toggle('hidden', !on);
@@ -5431,6 +5520,7 @@ function showTrSkip(on){
 function paintTrListen(on){
   const mic=$('#trMic'); if(!mic) return;
   mic.classList.toggle('on', !!on);
+  mic.textContent=on ? ((S&&S.pttOn)||'אני מקשיב') : '🎤';
 }
 function hideTrFace(){ const ov=$('#trOv'); if(ov){ ov.classList.add('hidden'); ov.classList.remove('good','bad'); } paintTrListen(false); showTrRetry(false); showTrTap(false); showTrSkip(false); }
 const TR_TAGS={it:['it-IT','it','it-CH'],es:['es-ES','es','es-MX'],en:['en-US','en-GB','en'],nl:['nl-NL','nl'],pt:['pt-BR','pt-PT','pt'],he:['he-IL','he']};
@@ -5710,8 +5800,8 @@ function freshTapStart(tag, wire){
 }
 function tapChallengeMic(){
   diag('tr mic tap');
-  if(!trLock||trScored||trKind!=='game') return;
-  if(trPhase==='listening' && rec){ diag('tr mic tap already'); return; }
+  if(!trLock||trScored||trKind!=='game'){ revertListening($('#trTap')); return; }
+  if(trPhase==='listening' && rec){ diag('tr mic tap already'); revertListening($('#trTap')); return; }
   diag('tr tts '+(ttsBusy()?'speaking':'idle'));
   const sess=++recSession;
   const tag=trLangTag();
@@ -6109,6 +6199,8 @@ $('#learnSend').onclick=submitLearnTyped;
 $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
 $('#learnMic').onclick=()=>learnMicTap();
+$('#learnMic').addEventListener('pointerdown', ()=>{ $('#learnMic')._downAt=performance.now(); });
+$('#learnMic').addEventListener('pointerup', ()=>{ if(!srRunning) flashListening($('#learnMic')); });
 wirePress($('#learnRepeatMic'), ()=>learnRepeatTap());
 $('#learnClear').onclick=()=>clearLearnRound();
 $('#learnSaid').onclick=()=>{ if(learnPair) acceptRepeat([learnPair.t]); };

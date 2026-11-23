@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.11 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.11.12 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -292,6 +292,7 @@ try {
   const listening = await phone.evaluate(() => document.getElementById('mic0').innerText.replace(/\s+/g, ' ').trim());
   if (!listening.includes('אני מקשיב')) bad('listening label ' + listening);
   else ok('the button says אני מקשיב');
+  await phone.waitForFunction(() => window.__langs.length >= 1);
   const one = await phone.evaluate(() => window.__langs.length);
   await phone.click('#mic0');
   await phone.waitForFunction(() => !document.getElementById('mic0').classList.contains('on'));

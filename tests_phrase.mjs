@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.12.0 — phrases chain from the last word, and learning translates the whole sentence.
+ * HilinGo v4.12.1 — phrases chain from the last word, and learning translates the whole sentence.
  *   node tests_phrase.mjs
  */
 import { chromium } from 'playwright-core';
@@ -78,6 +78,34 @@ try {
   });
   if (chain.first !== 'ב' || chain.next !== 'ל' || chain.word !== 'בית גדול' || chain.heard !== 'כלב בית' || chain.removed !== 'ב') bad('chain ' + JSON.stringify(chain));
   else ok('a phrase chains from the last word and is not cut to the first');
+
+  const used = await page.evaluate(() => {
+    WG.addCustomWord('היכל');
+    WG.addCustomWord('התרבות');
+    const g = WG.newGame({ players: 2, names: ['א', 'ב'], seconds: 45 });
+    WG.play(g, 'היכל');
+    g.required = 'ה';
+    const phrase = WG.play(g, 'היכל התרבות');
+    const repeat = WG.check(g, 'היכל התרבות');
+    const fresh = WG.newGame({ players: 2, names: ['א', 'ב'], seconds: 45 });
+    const firstPhrase = WG.play(fresh, 'היכל התרבות');
+    fresh.required = 'ה';
+    const singleAfter = WG.check(fresh, 'היכל');
+    return {
+      phraseOk: phrase.ok,
+      phrase: phrase.word,
+      chain: phrase.required,
+      repeat: repeat.reason,
+      stored: [...g.used],
+      firstChain: firstPhrase.required,
+      singleAfter: singleAfter.ok,
+      freshUsed: [...fresh.used],
+    };
+  });
+  const phraseNew = used.phraseOk && used.phrase === 'היכל התרבות' && used.chain === 'ת' && used.repeat === 'used' && used.stored.join('|') === 'היכל|היכל התרבות';
+  const wordAfter = used.firstChain === 'ת' && used.singleAfter && used.freshUsed.join('|') === 'היכל התרבות';
+  if (!phraseNew || !wordAfter) bad('used ' + JSON.stringify(used));
+  else ok('a phrase is new even when one of its words was already said');
 
   const match = await page.evaluate(() => ({
     yes: trMatch(['Che ore sono?'], 'Che ore sono?', 'it'),

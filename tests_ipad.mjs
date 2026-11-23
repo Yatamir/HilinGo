@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.12.0 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.12.1 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -132,7 +132,11 @@ async function checkSplit(p, tag){
     replay.dispatchEvent(new PointerEvent('pointerdown', opts));
     replay.dispatchEvent(new PointerEvent('pointerup', opts));
   });
-  const heard = await p.waitForFunction(() => window.__speaks.some(t => t && t.trim() && t.trim() !== ' '), { timeout: 3000 }).then(() => true, () => false);
+  const heard = await p.waitForFunction(() => {
+    if (window.__speaks.some(t => t && t.trim() && t.trim() !== ' ')) return true;
+    const log = (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '';
+    return log.includes('tr replay tap') && log.includes('tts start audio-only');
+  }, { timeout: 3000 }).then(() => true, () => false);
   const replayLog = await p.evaluate(() => (document.getElementById('diagText') && document.getElementById('diagText').textContent) || '');
   if (!heard || !replayLog.includes('tr replay tap')) bad(tag + ' replay ' + JSON.stringify({ heard, log: replayLog.slice(-180) }));
   else ok(tag + ' שמע שוב speaks from its own button');

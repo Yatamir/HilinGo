@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.12.0">
+<meta name="hilingo-version" content="4.12.1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.12.0" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.12.1" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -759,7 +759,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.12.0</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.12.1</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -785,7 +785,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.12.0</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.12.1</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -825,11 +825,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.12.0"></script>
-<script src="words.js?v=4.12.0" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.12.0"></script>
-<script src="cat_hints.js?v=4.12.0"></script>
-<script src="learn_dict.js?v=4.12.0"></script>
+<script src="config.js?v=4.12.1"></script>
+<script src="words.js?v=4.12.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.12.1"></script>
+<script src="cat_hints.js?v=4.12.1"></script>
+<script src="learn_dict.js?v=4.12.1"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1033,11 +1033,12 @@ const WG = (()=>{
       return {ok:true, word:w};
     }
     if(magic(phrase)) return {ok:false, reason:'magic', word:phrase};
+    // A phrase is a duplicate only when the whole answer was said. "היכל" does not block "היכל התרבות".
+    if(g.used.has(phrase)) return {ok:false, reason:'used', word:phrase};
     for(let i=0;i<parts.length;i++){
       const w=parts[i];
       if(w.length<2) return {ok:false, reason:'short', word:phrase};
       if(i===0 && g.required && firstLetter(w)!==g.required) return {ok:false, reason:'letter', word:phrase};
-      if(g.used.has(w)||g.used.has(phrase)) return {ok:false, reason:'used', word:phrase};
       if(lang==='pt' && !ptEndingOk(w)) return {ok:false, reason:'ending', word:phrase};
       if(!force && !isWord(w)) return {ok:false, reason:'dict', word:phrase};
     }
@@ -1055,7 +1056,6 @@ const WG = (()=>{
     const removed = !hintedNow && g.boards[p].has(f);   // v3.0: used a hint this turn → no deletion
     if(removed){ g.boards[p].delete(f); g.deleted[p].push(f); }
     const hs = settleHints(g, p);
-    parts.forEach(part=>g.used.add(part));
     g.used.add(w);
     // The player who must say the next word is the next seat, (p+1) % n — not the player who just spoke.
     // Their board decides the exception. A later timeout keeps this same letter (it does not re-check).
@@ -1106,7 +1106,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.12.0';
+window.WG = WG; window.HILINGO_VERSION='4.12.1';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1651,7 +1651,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.12.0';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.12.1';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -1730,8 +1730,8 @@ document.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{
 });
 
 // sound
-let actx=null;
-function beep(f=600,d=.12,type='sine',v=.15){ if(!$('#sound').checked) return; sessionForSpeak('beep'); try{
+let actx=null, lastBeepAt=0;
+function beep(f=600,d=.12,type='sine',v=.15){ if(!$('#sound').checked) return; lastBeepAt=performance.now(); sessionForSpeak('beep'); try{
   actx=actx||new (window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;
   o.connect(g);g.connect(actx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.stop(actx.currentTime+d);}catch(e){} }
@@ -2019,12 +2019,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4120';
+const CAT_CACHE='hilingo-cats-v4121';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.12.0'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.12.1'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3050,7 +3050,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.12.0');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.12.1');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3338,12 +3338,19 @@ function noteMicOnstart(){
   diag('onstart latency '+n+'ms');
   return n;
 }
-function fastRouteDeaf(latency){
-  // A healthy desktop start is also this fast. On iOS an instant onstart means the
-  // audio-session route never opened the mic. That only exists where the API exists.
-  let api=null;
-  try{ api=navigator.audioSession; }catch(_){ api=null; }
-  return !!(api && isIOSDevice() && latency<150);
+function armNoAudioWatch(r, saw, onMiss){
+  if(!isIOSDevice() || saw()) return;
+  const t=setTimeout(()=>{ if(saw()) return; onMiss(); }, 1000);
+  const wrap=key=>{
+    const prev=r[key];
+    r[key]=function(){
+      clearTimeout(t);
+      if(typeof prev==='function') return prev.apply(this, arguments);
+    };
+  };
+  wrap('onaudiostart');
+  wrap('onspeechstart');
+  wrap('onresult');
 }
 function sessionTypeNow(){
   try{ if(navigator.audioSession) return String(navigator.audioSession.type||''); }catch(_){}
@@ -3574,10 +3581,10 @@ function wantGumReset(deafN){
 function beginStart(r){
   return startRecognizer(r);
 }
-function queueDeafRestart(r, latency, n, sawAudio){
-  if(!sawAudio) diag('audiostart attempt #'+(n||0)+' no');
-  diag('deaf restart give up latency '+latency+'ms');
-  try{ if(r){ r.onend=null; r.abort(); } }catch(_){}
+function queueDeafRestart(r){
+  diag('audiostart attempt #0 no');
+  diag('deaf no audiostart 1000ms');
+  try{ if(r){ r.onend=null; r.onerror=null; r.abort(); } }catch(_){}
   showGameDeaf();
 }
 function sessionListenFailed(){
@@ -3649,7 +3656,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.12.0 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  e.textContent='HilinGo v4.12.1 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -4700,6 +4707,44 @@ function logPrevRec(){
   learnLog('prev rec ended='+yes);
   return learnPrevEnded;
 }
+function dropPrevRec(){
+  if(!learnPrevRec || learnPrevEnded) return Promise.resolve();
+  const r=learnPrevRec;
+  learnLog('prev rec force abort');
+  diag('prev rec force abort');
+  return new Promise(resolve=>{
+    let done=false;
+    const fin=why=>{
+      if(done) return; done=true;
+      markRecEnded(r);
+      learnPrevEnded=true;
+      learnPrevRec=null;
+      learnRec=null;
+      srRunning=false;
+      diag('prev rec cleared '+why);
+      learnLog('prev rec cleared '+why);
+      resolve();
+    };
+    try{
+      r.onresult=null; r.onerror=()=>{};
+      r.onend=()=>{ diag('rec onend force'); learnLog('rec onend force'); fin('onend'); };
+      r.abort();
+    }catch(_){ fin('abort-threw'); return; }
+    setTimeout(()=>fin('500ms'), 500);
+  });
+}
+function giveUpLearn(r){
+  try{
+    r.onresult=null; r.onerror=()=>{};
+    r.onend=()=>{ markRecEnded(r); diag('rec onend give-up'); learnLog('rec onend give-up'); };
+    r.abort();
+  }catch(_){}
+  markRecEnded(r);
+  learnPrevEnded=true;
+  learnPrevRec=null;
+  learnRec=null;
+  srRunning=false;
+}
 function endRecognizer(r, why){
   return new Promise(resolve=>{
     if(!r){ resolve(learnPrevEnded); return; }
@@ -4763,7 +4808,13 @@ function wireSession(r, side, tag, isRetry, deafN){
       if(lastAlts){ learnLog('10s with interim, take it'); take(lastAlts); return; }
       learnLog('10s timeout');
       const deaf=side==='target' && sawAudio && !sawSpeech;
-      const finish=()=>{ endSession(false); if(deaf) showLearnDeaf(); };
+      if(deaf){
+        giveUpLearn(r);
+        endSession(false);
+        showLearnDeaf();
+        return;
+      }
+      const finish=()=>endSession(false);
       try{ r.stop(); }catch(_){ finish(); return; }
       setTimeout(()=>{ if(live()) finish(); }, 400);
     }, 10000);
@@ -4858,6 +4909,7 @@ function wireSession(r, side, tag, isRetry, deafN){
     if(sawAudio && !sawSpeech && noSpeech){
       diag('deaf after audiostart no speech');
       learnLog('deaf after audiostart no speech');
+      giveUpLearn(r);
       endSession(false);
       showLearnDeaf();
       return;
@@ -4898,18 +4950,21 @@ function wireSession(r, side, tag, isRetry, deafN){
     }
   };
   r.onstart=()=>{
-    const latency=noteMicOnstart();
+    noteMicOnstart();
     learnLog('onstart '+tag);
     diag('learn onstart '+tag);
     learnMicLive(true);
-    if(!fastRouteDeaf(latency)) return;
-    if(!sawAudio) diag('audiostart attempt #'+(deafN||0)+' no');
-    diag('deaf restart give up latency '+latency+'ms');
-    learnLog('deaf restart give up latency '+latency+'ms');
-    clearTimeout(learnListenTimer);
-    clearTimeout(stableT);
-    endSession(false);
-    showLearnDeaf();
+    armNoAudioWatch(r, ()=>sawAudio, ()=>{
+      if(!live()) return;
+      diag('audiostart attempt #'+(deafN||0)+' no');
+      diag('deaf no audiostart 1000ms');
+      learnLog('deaf no audiostart 1000ms');
+      clearTimeout(learnListenTimer);
+      clearTimeout(stableT);
+      giveUpLearn(r);
+      endSession(false);
+      showLearnDeaf();
+    });
   };
   r.onend=()=>{
     learnLog('end');
@@ -4935,9 +4990,7 @@ function startLearnTarget(tag, isRetry, deafN){
   if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); revertListening($('#learnRepeatMic')); return; }
   logPrevRec();
   if(learnPrevRec && !learnPrevEnded){
-    learnLog('prev rec still live');
-    showLearnDeaf();
-    revertListening($('#learnRepeatMic'));
+    dropPrevRec().then(()=>startLearnTarget(tag, isRetry, deafN));
     return;
   }
   const code=LEARN_TARGET;
@@ -4975,9 +5028,7 @@ function beginListen(side, tag, isRetry, released, deafN){
   const startFresh=()=>{
     logPrevRec();
     if(learnPrevRec && !learnPrevEnded){
-      learnLog('prev rec still live');
-      showLearnDeaf();
-      revertListening($('#learnMic'));
+      dropPrevRec().then(()=>startFresh());
       return;
     }
     // Same start as the first Hebrew listen. Do not tear an audio element down in this turn.
@@ -5110,7 +5161,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.12.0';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.12.1';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -5141,10 +5192,52 @@ function stopTtsAudio(){
   speechGen++;
   releaseAudioSession('stop');
 }
+function settleBeep(){
+  const wait=lastBeepAt?Math.max(0, lastBeepAt+280-performance.now()):0;
+  const running=!!(actx && actx.state==='running');
+  if(!wait && !running) return Promise.resolve();
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      try{
+        if(actx && actx.state==='running'){
+          const p=actx.suspend();
+          if(p&&p.then){ p.then(()=>resolve(), ()=>resolve()); return; }
+        }
+      }catch(_){}
+      resolve();
+    }, wait);
+  });
+}
+function playViaContext(url){
+  return new Promise(resolve=>{
+    let ctx;
+    try{ ctx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx=ctx; }
+    catch(_){ resolve(false); return; }
+    const cap=setTimeout(()=>resolve(false), 8000);
+    const start=()=>{
+      fetch(url).then(res=>res.arrayBuffer()).then(buf=>ctx.decodeAudioData(buf.slice(0))).then(audio=>{
+        const src=ctx.createBufferSource();
+        src.buffer=audio;
+        src.connect(ctx.destination);
+        src.onended=()=>{ clearTimeout(cap); try{ if(ctx.state==='running') ctx.suspend(); }catch(_){} resolve(true); };
+        src.start();
+        diag('tts context after beep');
+        try{ learnLog('tts context after beep'); }catch(_){}
+      }).catch(()=>{ clearTimeout(cap); resolve(false); });
+    };
+    try{
+      if(ctx.state==='suspended'){
+        const p=ctx.resume();
+        if(p&&p.then){ p.then(start, ()=>{ clearTimeout(cap); resolve(false); }); return; }
+      }
+    }catch(_){ clearTimeout(cap); resolve(false); return; }
+    start();
+  });
+}
 function playTtsUrl(url){
   return new Promise(resolve=>{
     const a=ensureTtsAudio();
-    let done=false;
+    let done=false, timer=0, tries=0;
     const fin=(ok, why)=>{
       if(done) return; done=true;
       clearTimeout(timer);
@@ -5165,14 +5258,31 @@ function playTtsUrl(url){
       }catch(_){ shut(); }
       setTimeout(shut, 300);
     };
+    const arm=()=>{
+      clearTimeout(timer);
+      timer=setTimeout(()=>{ try{ a.pause(); }catch(_){} fin(false,'timeout'); }, 4000);
+    };
+    const kick=()=>{
+      tries++;
+      sessionForSpeak('audio-url');
+      try{ a.src=url; }catch(e){ fin(false,'src'); return; }
+      let p;
+      const rejected=name=>{
+        if(tries<2 && /NotAllowed/i.test(name)){ diag('tts play retry'); setTimeout(kick, 350); return; }
+        if(/NotAllowed/i.test(name)){ playViaContext(url).then(ok=>fin(!!ok, ok?'context':'not-allowed')); return; }
+        fin(false, name);
+      };
+      try{ p=a.play(); }
+      catch(e){ rejected((e&&e.name)||'play'); return; }
+      if(p&&p.then) p.then(()=>arm(), err=>rejected((err&&(err.name||err.message))||'rejected'));
+      else arm();
+    };
     a.onended=()=>fin(true,'ended');
     a.onerror=()=>fin(false,'element-error');
-    sessionForSpeak('audio-url');
-    try{ a.src=url; }catch(e){ fin(false,'src'); return; }
-    let p;
-    try{ p=a.play(); }catch(e){ fin(false,(e&&e.name)||'play'); return; }
-    if(p&&p.then) p.then(()=>{}, err=>fin(false,(err&&(err.name||err.message))||'rejected'));
-    const timer=setTimeout(()=>{ try{ a.pause(); }catch(_){} fin(false,'timeout'); }, 4000);
+    const begin=()=>kick();
+    const wait=lastBeepAt?Math.max(0, lastBeepAt+280-performance.now()):0;
+    if(wait || (actx && actx.state==='running')) settleBeep().then(begin);
+    else begin();
   });
 }
 let ttsUnlocked=false, ttsHold=null;
@@ -6085,7 +6195,7 @@ function beginChallengeMic(why, deafN){
     diag('tr onstart #'+inst+' '+tag+' '+why+' tts '+(ttsBusy()?'speaking':'idle'));
     if(sess!==recSession) return;
     micSawStart=true; trDeaf=false; lightMic(trSpeaker); paintTrListen(true);
-    if(fastRouteDeaf(latency)) queueDeafRestart(r, latency, deafN||0, sawTrAudio, next=>beginChallengeMic('deaf', next));
+    armNoAudioWatch(r, ()=>sawTrAudio, ()=>queueDeafRestart(r));
   };
   r.onresult=e=>{
     if(!live()||trDeaf){ diag('tr deaf'); return; }
@@ -6260,7 +6370,7 @@ function tapChallengeMic(deafN){
       diag('tr onstart #'+inst+' '+tag+' tts '+(ttsBusy()?'speaking':'idle'));
       if(sess!==recSession) return;
       micSawStart=true; trDeaf=false; lightMic(trSpeaker); paintTrListen(true);
-      if(fastRouteDeaf(latency)) queueDeafRestart(nr, latency, deafN||0, sawTapAudio, next=>tapChallengeMic(next));
+      armNoAudioWatch(nr, ()=>sawTapAudio, ()=>queueDeafRestart(nr));
     };
     nr.onresult=e=>{
     if(!live()) return;

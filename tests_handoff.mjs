@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.10 — learning mode stops the Hebrew mic and waits before Italian.
+ * HilinGo v4.11.11 — learning mode stops the Hebrew mic and waits before Italian.
  *   node tests_handoff.mjs
  */
 import { chromium } from 'playwright-core';
@@ -72,7 +72,11 @@ await context.addInitScript(() => {
   };
   Object.defineProperty(window, 'speechSynthesis', { configurable: true, get(){ return synth; } });
   window.Audio = class {
-    set src(v){ this._src = v; window.__audioPlays++; }
+    set src(v){
+      this._src = v;
+      const s = String(v || '');
+      if (s && !s.startsWith('data:')) window.__audioPlays++;
+    }
     play(){ return Promise.resolve(); }
     pause(){}
     load(){}

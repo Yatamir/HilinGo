@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.6 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.11.7 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -116,6 +116,7 @@ try {
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; });
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   await page.waitForFunction(() => window.__game && window.__game.lang === 'he-IL');
@@ -138,6 +139,7 @@ try {
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__aborts = 99; window.__langs = []; window.__times = []; });
   await page.click('#trLangs .opt[data-tr="it"]');
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await page.waitForFunction(() => gameLangOk, { timeout: 3000 });
@@ -151,7 +153,7 @@ try {
   const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (beforeTap) bad('Italian started before the tap ' + beforeTap);
   else ok('iPad waits for a tap before opening Italian');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4116-tap.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4117-tap.png' });
   const hit = await page.evaluate(() => {
     const b = document.getElementById('trTap');
     const r = b.getBoundingClientRect();
@@ -201,6 +203,7 @@ try {
   await page.goto(`http://127.0.0.1:${port}/index.html?ptt=0`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.getElementById('sound').checked = false; window.__muteOnce = true; window.__muted = false; window.__langs = []; window.__times = []; });
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   const heardMic = await page.waitForFunction(() => window.__langs.filter(l => l === 'he-IL').length >= 2, { timeout: 5000 }).then(() => true, async () => {
@@ -224,6 +227,7 @@ try {
   });
   await page.click('#trLangs .opt[data-tr="it"]');
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await page.fill('#in0', 'כלב');
@@ -249,7 +253,7 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v4116-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v4117-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();

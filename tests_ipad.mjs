@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.6 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.11.7 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */
@@ -100,6 +100,7 @@ async function checkSplit(p, tag){
   });
   await p.click('#trLangs .opt[data-tr="it"]');
   await p.click('#go');
+  if (await p.locator('#silentOk').isVisible()) await p.locator('#silentOk').click();
   await p.waitForSelector('#half0');
   await p.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await p.fill('#in0', 'כלב');
@@ -160,6 +161,7 @@ try {
   }));
   await page.evaluate(() => { window.__aborts = 1; window.__say = ''; window.__langs = []; });
   await page.click('#go');
+  if (await page.locator('#silentOk').isVisible()) await page.locator('#silentOk').click();
   await page.waitForSelector('#half0');
   await page.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   await page.fill('#in0', 'כלב');
@@ -271,6 +273,7 @@ try {
   await phone.evaluate(() => { document.getElementById('sound').checked = false; });
   await phone.click('#trLangs .opt[data-tr="it"]');
   await phone.click('#go');
+  if (await phone.locator('#silentOk').isVisible()) await phone.locator('#silentOk').click();
   await phone.waitForSelector('#half0');
   await phone.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} });
   const idle = await phone.evaluate(() => ({
@@ -312,6 +315,7 @@ try {
   await phone.click('#micAuto');
   await phone.click('#trLangs .opt[data-tr="it"]');
   await phone.click('#go');
+  if (await phone.locator('#silentOk').isVisible()) await phone.locator('#silentOk').click();
   await phone.waitForSelector('#half0');
   await phone.evaluate(() => { try { releaseIntro('ended'); } catch (_) {} WG.addCustomWord('כלב'); });
   await phone.waitForFunction(() => gameLangOk, { timeout: 3000 });

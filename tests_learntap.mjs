@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.11.8 — the learning target mic starts like the game translation tap.
+ * HilinGo v4.11.9 — the learning target mic starts like the game translation tap.
  *   node tests_learntap.mjs
  */
 import { chromium } from 'playwright-core';
@@ -111,7 +111,7 @@ try {
   await page.waitForFunction(() => window.__srLangs.at(-1) === 'he-IL');
   await page.evaluate(() => window.__emit('כלב'));
   await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('cane'));
-  await page.waitForFunction(() => (document.getElementById('diagText').textContent || '').includes('silent-audio on'));
+  await page.waitForFunction(() => (document.getElementById('diagText').textContent || '').includes('silent-audio play ok'));
   const during = await page.evaluate(() => ({
     sr: window.__srStarts,
     it: window.__srLangs.includes('it-IT'),
@@ -129,10 +129,10 @@ try {
     it: window.__srLangs.includes('it-IT'),
     log: document.getElementById('diagText').textContent || '',
   }));
-  if (idle.sr !== 1 || idle.it || !idle.log.includes('silent-audio off')) bad('after speech ' + JSON.stringify(idle).slice(0, 400));
-  else ok('speech ends, the silent clip is destroyed, and Italian has not started');
+  if (idle.sr !== 1 || idle.it || !idle.log.includes('silent-audio off') || !idle.log.includes('rec ended before tts=yes')) bad('after speech ' + JSON.stringify(idle).slice(0, 500));
+  else ok('speech ends after the recognizer, the silent clip is destroyed, and Italian has not started');
   const offAt = idle.log.indexOf('silent-audio off');
-  const onAt = idle.log.indexOf('silent-audio on');
+  const onAt = idle.log.indexOf('silent-audio play ok');
   if (onAt < 0 || offAt < onAt) bad('silent order ' + idle.log.slice(-300));
   else ok('silent-audio turns on before it turns off');
   await page.click('#learnRepeatMic');

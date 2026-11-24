@@ -400,9 +400,15 @@ function trimSilence(audio, rate){
   }
   if (first < 0) return { samples: new Float32Array(0), start: 0, end: 0 };
   const pad = Math.round(rate * 0.3);
-  const a = Math.max(0, first - pad);
+  let a = Math.max(0, first - pad);
   let b = Math.min(audio.length, last + pad);
-  if (last >= audio.length - frame) b = audio.length;
+  const minKeep = Math.min(audio.length, Math.round(rate * 1.2));
+  if (b - a < minKeep) {
+    const mid = Math.floor((first + last) / 2);
+    a = Math.max(0, mid - Math.floor(minKeep / 2));
+    b = Math.min(audio.length, a + minKeep);
+    if (b - a < minKeep) a = Math.max(0, b - minKeep);
+  }
   return { samples: audio.subarray(a, b), start: a, end: b };
 }
 export function trimPcm(audio, rate){ return trimSilence(audio, rate); }
@@ -448,7 +454,6 @@ export function recordUtterance(opts){
   const givenCtx = opts && opts.ctx;
   const givenStream = opts && opts.stream;
   const keep = !!(opts && opts.keep);
-  const maxMs = (opts && opts.maxMs) || MAX_MS;
   return new Promise((resolve, reject) => {
     let stream = null;
     let ctx = givenCtx || null;
@@ -491,12 +496,10 @@ export function recordUtterance(opts){
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); proc = null; } } catch (_) {}
       try { if (source) { source.disconnect(); source = null; } } catch (_) {}
       try { if (mute) { mute.disconnect(); mute = null; } } catch (_) {}
-      if (!keep) {
-        stopStream(stream);
-        stream = null;
-        try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
-        ctx = null;
-      }
+      stopStream(stream);
+      stream = null;
+      try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+      ctx = null;
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
       let trimmed = trimSilence(full, TARGET_RATE);
       let slice = trimmed.samples;
@@ -524,13 +527,21 @@ export function recordUtterance(opts){
       finishAudio(why, audio, rate);
     };
     const report = () => {
+      const closed = !!(ctx && ctx.state === 'closed');
+      let ended = false;
       try {
+        const tracks = stream && stream.getAudioTracks ? stream.getAudioTracks() : [];
+        ended = !!(tracks.length && tracks.every(t => t.readyState === 'ended'));
+      } catch (_) {}
+      if (settled || closed || ended) { clearInterval(tick); tick = 0; return; }
+      try {
+        log('cap level peak=' + peak.toFixed(2));
         log('cap ctx state ' + (ctx && ctx.state || 'none'));
         log('cap samples ' + count);
         log('cap track ' + trackLine(stream));
       } catch (_) {}
     };
-    cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, maxMs + 2000);
+    cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, MAX_MS + 2000);
     const openGraph = async (s) => {
       stream = s;
       const bad = trackUnusable(stream);
@@ -563,19 +574,13 @@ export function recordUtterance(opts){
         let preSamples = 0;
         let voiced = false;
         let lastVoice = 0;
-        let sawSample = false;
         const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
           const copy = new Float32Array(ev.inputBuffer.getChannelData(0));
           const now = performance.now();
           const level = rms(copy);
-          const before = count;
           measure(copy);
-          if (!sawSample && count > before) {
-            sawSample = true;
-            try { if (opts && opts.onFirstSample) opts.onFirstSample(); } catch (_) {}
-          }
           all.push(copy);
           if (!heard) {
             pre.push(copy);
@@ -600,7 +605,7 @@ export function recordUtterance(opts){
             said.push(copy);
             if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
           }
-          if (now - captureStart >= maxMs) finishProcessor(heard ? 'max' : 'no-speech');
+          if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
         tick = setInterval(report, 1000);
         setTimeout(() => {

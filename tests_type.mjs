@@ -37,7 +37,7 @@ const context = await browser.newContext({ viewport: { width: 390, height: 844 }
 await context.addInitScript(() => {
   window.__intro = { plays: 0 };
   class FakeAudio {
-    constructor(){ this._src=''; this.paused=true; this.currentTime=0; this._ls={}; this.onended=null; this.onerror=null; }
+    constructor(src){ this._src=''; this.paused=true; this.currentTime=0; this.duration=1; this._ls={}; this.onended=null; this.onerror=null; if(src) this.src=src; }
     set src(v){ this._src=String(v||''); if (/hilingo/.test(this._src)) window.__intro.el=this; }
     get src(){ return this._src; }
     load(){}
@@ -55,6 +55,18 @@ await context.addInitScript(() => {
   window.SpeechRecognition = FakeSR;
   window.webkitSpeechRecognition = FakeSR;
   window.speechSynthesis = { getVoices(){ return []; }, cancel(){}, resume(){}, speak(){} };
+  window.__gums = 0;
+  window.__sessionSets = 0;
+  const tracks = () => [{ muted: false, readyState: 'live', kind: 'audio', stop(){ this.readyState = 'ended'; }, addEventListener(){} }];
+  const stream = () => ({ getAudioTracks: tracks, getTracks: tracks });
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: {
+    getUserMedia(){ window.__gums++; return Promise.resolve(stream()); }
+  }});
+  let sessionType = 'auto';
+  Object.defineProperty(navigator, 'audioSession', { configurable: true, value: {
+    get type(){ return sessionType; },
+    set type(v){ window.__sessionSets++; sessionType = String(v); }
+  }});
 });
 
 try {
@@ -100,6 +112,27 @@ try {
   ok('a typed game word is accepted');
   if (errors.length) bad('page errors ' + errors.join('; '));
   else ok('no page error');
+  await page.close();
+
+  const cap = await context.newPage();
+  await cap.goto('http://127.0.0.1:' + port + '/index.html?asr=whisper&ios=1&ptt=1', { waitUntil: 'domcontentloaded' });
+  if (await cap.locator('#silentOk').isVisible()) await cap.click('#silentOk');
+  await cap.click('#modeLearn');
+  await cap.click('#go');
+  await cap.evaluate(() => window.__fireIntro('ended'));
+  await cap.evaluate(() => { window.__gums = 0; window.__sessionSets = 0; });
+  await cap.click('#learnMic');
+  await cap.waitForTimeout(400);
+  const counts = await cap.evaluate(() => ({
+    gums: window.__gums, sets: window.__sessionSets,
+    state: document.getElementById('learn') && document.getElementById('learn').dataset.state,
+    plays: window.__intro && window.__intro.plays,
+    log: (document.getElementById('diagText') && document.getElementById('diagText').textContent || '').slice(-400)
+  }));
+  if (counts.gums !== 1) bad('getUserMedia calls ' + counts.gums + ' ' + JSON.stringify(counts));
+  else ok('one tap calls getUserMedia once');
+  if (counts.sets > 2) bad('audioSession sets ' + counts.sets);
+  else ok('audioSession is set at most twice on a tap (' + counts.sets + ')');
 } catch (err) {
   bad(err && err.message || err);
 } finally {

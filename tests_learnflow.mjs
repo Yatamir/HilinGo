@@ -11,8 +11,13 @@ function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
 function ok(msg){ console.log('  ok  ', msg); }
 
 const page = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-if (page.includes('cap settle 400ms') || page.includes("act:'wait'")) bad('settle or prime-wait is still in the page');
-else ok('capture does not wait 400ms and does not park on an in-flight open');
+const asr = readFileSync(new URL('./asr.js', import.meta.url), 'utf8');
+if (page.includes('cap settle 400ms') || page.includes("act:'wait'") || page.includes("diag('cap retry silent')")) bad('settle, prime-wait, or silent retry is still in the page');
+else ok('capture does not wait, park, or retry a silent take');
+if (!page.includes("typeof primedCapture.stream.then==='function') return;")) bad('a second open can start another getUserMedia');
+else ok('a tap that already asked for the mic does not ask again');
+if (!asr.includes("log('cap level peak=")) bad('no per-second peak log');
+else ok('the capture logs its peak every second');
 if (!page.includes("diag('cap ctx state '")) bad('context is not opened with the capture');
 else ok('the audio context is opened in the tap, with getUserMedia');
 if (!page.includes("diag('cap watch 8s')")) bad('no 8s watchdog');

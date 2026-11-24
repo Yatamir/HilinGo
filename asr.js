@@ -383,7 +383,7 @@ function mimeForRecorder(){
 }
 
 function trimSilence(audio, rate){
-  if (!audio || !audio.length) return audio;
+  if (!audio || !audio.length) return { samples: audio || new Float32Array(0), start: 0, end: 0 };
   const frame = Math.max(1, Math.round(rate * 0.03));
   let first = -1;
   let last = -1;
@@ -394,11 +394,18 @@ function trimSilence(audio, rate){
       last = i + slice.length;
     }
   }
-  if (first < 0) return new Float32Array(0);
-  const pad = Math.round(rate * 0.2);
-  const a = Math.max(0, first - pad);
-  const b = Math.min(audio.length, last + pad);
-  return audio.subarray(a, b);
+  if (first < 0) return { samples: new Float32Array(0), start: 0, end: 0 };
+  const pad = Math.round(rate * 0.3);
+  let a = Math.max(0, first - pad);
+  let b = Math.min(audio.length, last + pad);
+  const minKeep = Math.min(audio.length, Math.round(rate * 1.2));
+  if (b - a < minKeep) {
+    const mid = Math.floor((first + last) / 2);
+    a = Math.max(0, mid - Math.floor(minKeep / 2));
+    b = Math.min(audio.length, a + minKeep);
+    if (b - a < minKeep) a = Math.max(0, b - minKeep);
+  }
+  return { samples: audio.subarray(a, b), start: a, end: b };
 }
 
 export function recordUtterance(opts){
@@ -454,9 +461,13 @@ export function recordUtterance(opts){
       try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
       ctx = null;
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
-      let slice = trimSilence(full, TARGET_RATE);
-      if (!slice.length && full.length) slice = full;
-      if (slice.length > TARGET_RATE * 3) slice = slice.subarray(0, TARGET_RATE * 3);
+      let trimmed = trimSilence(full, TARGET_RATE);
+      let slice = trimmed.samples;
+      if (!slice.length && full.length) { slice = full; trimmed = { samples: full, start: 0, end: full.length }; }
+      if (slice.length > TARGET_RATE * 3) {
+        slice = slice.subarray(0, TARGET_RATE * 3);
+        trimmed = { samples: slice, start: trimmed.start, end: trimmed.start + slice.length };
+      }
       const out = new Float32Array(slice.length);
       if (slice.length) out.set(slice);
       all.length = 0;
@@ -466,6 +477,7 @@ export function recordUtterance(opts){
         log('pcm16k samples ' + full.length);
         log('pcm16k duration ' + (full.length / TARGET_RATE).toFixed(2) + 's');
         log('pcm16k kept ' + out.length);
+        log('pcm16k kept start ' + Math.round(1000 * trimmed.start / TARGET_RATE) + 'ms end ' + Math.round(1000 * trimmed.end / TARGET_RATE) + 'ms');
       } catch (_) {}
       resolve(Object.assign({ heard: !!(out && out.length), why: why === 'silence' ? 'pause' : why, audio: out, rate: rate || 0 }, stats()));
     };
@@ -606,7 +618,8 @@ function recordWithRecorder(stream, ctx, log){
         }
         try { log('cap samples ' + copy.length); } catch (_) {}
         const kept = trimSilence(copy, rate);
-        resolve({ audio: kept.length ? kept : copy, rate, peak, rms: copy.length ? Math.sqrt(sum / copy.length) : 0 });
+        const audioOut = kept.samples && kept.samples.length ? kept.samples : copy;
+        resolve({ audio: audioOut, rate, peak, rms: copy.length ? Math.sqrt(sum / copy.length) : 0 });
       }).catch(reject);
     };
     try { rec.start(); } catch (err) { reject(err); return; }
@@ -718,6 +731,68 @@ export function scoreDecision(scores, expected){
   const mine = real.find(s => s.text === expected);
   if (mine && best && best.text === expected && mine.score > -3) return expected;
   return '';
+}
+export function scoreBest(scores, min){
+  const floor = min == null ? -3 : min;
+  const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
+  if (!real.length) return null;
+  real.sort((a, b) => b.score - a.score);
+  return real[0].score > floor ? real[0] : null;
+}
+const HE_FIN = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+function heFold(w){
+  return String(w || '').replace(/[\u0591-\u05C7]/g, '').replace(/[ךםןףץ]/g, ch => HE_FIN[ch] || ch);
+}
+function heToks(raw){
+  return String(raw || '').replace(/[\u0591-\u05C7]/g, '').replace(/[^\u05D0-\u05EA\s]/g, ' ').match(/[\u05D0-\u05EA]+/g) || [];
+}
+function edits(a, b, max){
+  if (!a || !b || Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = [];
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      if (cur[j] < rowMin) rowMin = cur[j];
+    }
+    if (rowMin > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+export function nearWords(raw, letter, words){
+  const tokens = heToks(raw).map(heFold);
+  const seeds = tokens.slice();
+  if (tokens.length > 1) seeds.push(tokens.join(''));
+  const out = [];
+  const seen = new Set();
+  const add = (w) => {
+    const n = heFold(w);
+    if (!n || seen.has(n)) return;
+    if (letter && n[0] !== letter) return;
+    seen.add(n);
+    out.push(n);
+  };
+  if (tokens.length > 1) out.push(tokens.join(' '));
+  for (const t of tokens) add(t);
+  const list = words || [];
+  for (const seed of seeds) {
+    if (!seed || seed.length < 2 || seed.length > 14) continue;
+    const hits = [];
+    for (const w of list) {
+      const n = heFold(w);
+      if (!n || Math.abs(n.length - seed.length) > 2) continue;
+      if (letter && n[0] !== letter) continue;
+      const d = edits(seed, n, 2);
+      if (d <= 2) hits.push({ n, d });
+    }
+    hits.sort((a, b) => a.d - b.d || a.n.length - b.n.length);
+    for (const h of hits.slice(0, 6)) add(h.n);
+  }
+  return out.filter(Boolean).slice(0, 8);
 }
 
 async function scoreOnce(audio, tag, texts){

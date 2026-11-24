@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.13.3">
+<meta name="hilingo-version" content="4.13.4">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.3" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.4" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -763,7 +763,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.13.3</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.13.4</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -789,7 +789,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.13.3</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.13.4</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -829,11 +829,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.3"></script>
-<script src="words.js?v=4.13.3" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.3"></script>
-<script src="cat_hints.js?v=4.13.3"></script>
-<script src="learn_dict.js?v=4.13.3"></script>
+<script src="config.js?v=4.13.4"></script>
+<script src="words.js?v=4.13.4" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.4"></script>
+<script src="cat_hints.js?v=4.13.4"></script>
+<script src="learn_dict.js?v=4.13.4"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -993,6 +993,42 @@ const WG = (()=>{
   }
   const playableLetters = () => L.letters.filter(l=>!isInactive(l));
   const isWord = w => !!(DICTS[lang] && DICTS[lang].has(w));
+  function editAtMost(a, b, max){
+    if(!a||!b) return max+1;
+    if(Math.abs(a.length-b.length)>max) return max+1;
+    const n=b.length;
+    let prev=new Array(n+1);
+    for(let j=0;j<=n;j++) prev[j]=j;
+    for(let i=1;i<=a.length;i++){
+      const cur=new Array(n+1);
+      cur[0]=i;
+      let rowMin=cur[0];
+      const ai=a.charCodeAt(i-1);
+      for(let j=1;j<=n;j++){
+        const cost=ai===b.charCodeAt(j-1)?0:1;
+        cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+        if(cur[j]<rowMin) rowMin=cur[j];
+      }
+      if(rowMin>max) return max+1;
+      prev=cur;
+    }
+    return prev[n];
+  }
+  function snapHebrew(raw, letter){
+    const n=normalize(raw);
+    if(!n || n.length<2 || n.length>14) return '';
+    if((!letter || firstLetter(n)===letter) && isWord(n)) return n;
+    const dict=DICTS.he;
+    if(!dict) return '';
+    let best='', bestD=3;
+    for(const w of dict){
+      if(!w || w.length<2 || Math.abs(w.length-n.length)>2) continue;
+      if(letter && firstLetter(w)!==letter) continue;
+      const d=editAtMost(n, w, 2);
+      if(d<bestD){ bestD=d; best=w; if(!d) break; }
+    }
+    return bestD<=2 ? best : '';
+  }
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
   const maxMissesFor = n => n===2 ? MAX_MISSES : 2*n;   // 3–4 players: two full rounds
   // v3.0 hints: at most MAX_HINTS per turn. A turn in which the player used ≥1 hint never deletes a letter.
@@ -1108,9 +1144,9 @@ const WG = (()=>{
   }
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
-    addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
+    addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.13.3';
+window.WG = WG; window.HILINGO_VERSION='4.13.4';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1655,7 +1691,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.3';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.4';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -2023,12 +2059,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4133';
+const CAT_CACHE='hilingo-cats-v4134';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.13.3'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.13.4'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3054,7 +3090,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.13.3');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.13.4');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3170,6 +3206,7 @@ $('#silentOk').onclick=()=>hideSilentCard(false);
 $('#silentHide').onclick=()=>hideSilentCard(true);
 $('#go').onclick=()=>{
   primeTtsElement();
+  primeCapture();
   warmWhisper();
   playIntro();
   showSilentCard();
@@ -3672,6 +3709,7 @@ function asrChoice(){
 function shouldWarmWhisper(){
   const q=location.search||'';
   if(/[?&]asr=apple(?:&|$)/.test(q) || /[?&]asr=apple-reset(?:&|$)/.test(q)) return false;
+  if(/[?&]model=tiny(?:&|$)/.test(q)) return false;
   return isIOSDevice() && nativeRecognizer();
 }
 function showWhisperLine(line, think){
@@ -3733,25 +3771,26 @@ function primeCapture(){
     }
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
 }
-function takePrimedCapture(){
-  const held=primedCapture;
-  primedCapture=null;
-  return held;
+function sessionCapture(){
+  return primedCapture;
 }
 function warmWhisper(){
   if(whisperWarm || !shouldWarmWhisper()) return;
-  const t0=performance.now();
   whisperWarm=(async()=>{
     try{
       if(!asrMod) asrMod=await import('./asr.js');
-      const info=await asrMod.ensureModel();
-      diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
-      diag('whisper warm skipped');
+      asrMod.setLogger(diag);
+      asrMod.prefetch();
     }catch(e){
       diag('whisper fail '+(e&&(e.message||e.name)||e));
       whisperWarm=null;
     }
   })();
+}
+function scheduleModelFetch(){
+  const run=()=>warmWhisper();
+  if(window.requestIdleCallback) requestIdleCallback(run, { timeout: 800 });
+  else setTimeout(run, 1);
 }
 function noteMediaPlayed(){
   if(mediaPlayed) return;
@@ -3759,15 +3798,71 @@ function noteMediaPlayed(){
   diag('asr media played');
 }
 function whisperLangTag(r){ return (r&&r.lang)||''; }
+function whisperNearSilent(recd){
+  const peak=Number(recd&&recd.peak||0);
+  const level=Number(recd&&recd.rms||0);
+  return peak<0.02 || level<0.003;
+}
+function whisperJunk(text){
+  const t=String(text||'').trim();
+  if(!t) return true;
+  if(/thank you for watching|thanks for watching|subtitles by|please subscribe/i.test(t)) return true;
+  if(/תלמי|לא נראה לך/.test(t)) return true;
+  let scripts=0;
+  if(/[A-Za-z]/.test(t)) scripts++;
+  if(/[\u0590-\u05FF]/.test(t)) scripts++;
+  if(/[\u0400-\u04FF]/.test(t)) scripts++;
+  if(/[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(t)) scripts++;
+  if(scripts>=3) return true;
+  if(t.length>48) return true;
+  return false;
+}
+function whisperExpected(){
+  try{ if(typeof trLock!=='undefined' && trLock && trTarget) return { text:trTarget, lang:TR, kind:'tr' }; }catch(_){}
+  try{
+    const learn=$('#learn');
+    if(learn && !learn.classList.contains('hidden') && learnPair && learnPair.t && (learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='IDLE_TARGET')) return { text:learnPair.t, lang:LEARN_TARGET, kind:'learn' };
+  }catch(_){}
+  return null;
+}
+function whisperDistractors(expected){
+  const out=[];
+  const add=w=>{ const s=String(w||'').trim(); if(s && s!==expected && out.indexOf(s)<0 && out.length<3) out.push(s); };
+  try{ (readLearnWords()||[]).forEach(row=>add(row.t)); }catch(_){}
+  if(out.length<2){ add(expected.slice(0,-1)+(expected.slice(-1)==='a'?'o':'a')); add('שלום'); }
+  return out;
+}
 function whisperPreferExpected(text){
   const raw=text||'';
+  const exp=whisperExpected();
+  if(!exp) return raw;
   try{
-    if(typeof trLock!=='undefined' && trLock && trTarget && trMatch([raw], trTarget, TR)) return trTarget;
-  }catch(_){}
-  try{
-    if(learnPair && learnPair.t && learnMatch([raw], learnPair.t)) return learnPair.t;
+    if(exp.kind==='tr' && trMatch([raw], exp.text, exp.lang)) return exp.text;
+    if(exp.kind==='learn' && learnMatch([raw], exp.text)) return exp.text;
   }catch(_){}
   return raw;
+}
+function whisperNotHeard(){
+  diag('whisper skip silent');
+  whisperOwns=false;
+  const learn=$('#learn');
+  if(learn && !learn.classList.contains('hidden')){
+    try{ srRunning=false; learnRec=null; learnSession++; }catch(_){}
+    micOff();
+    const line=(S&&S.learnDeaf)||'';
+    setLearnStatus(line);
+    setLearnHeard(line);
+    return;
+  }
+  if(typeof trLock!=='undefined' && trLock){
+    try{ paintTrListen(false); showTrTap(true); }catch(_){}
+    const ask=$('#trAsk'); if(ask) ask.textContent=(S&&S.trSay)||'';
+    return;
+  }
+  if(G && typeof G.turn==='number'){
+    const m=$('#mic'+G.turn); if(m) m.classList.remove('on');
+    setHeard(G.turn, (S&&S.tapAgain)||(S&&S.notHeard)||'');
+  }
 }
 function logWhisperAudio(recd){
   const d=recd||{};
@@ -3807,45 +3902,82 @@ async function whisperListen(r){
     diag('asr engine=apple');
     appleStart(r);
   };
-  const primed=takePrimedCapture();
+  const primed=sessionCapture();
   let info=null;
   try{
     if(!asrMod) asrMod=await import('./asr.js');
+    asrMod.setLogger(diag);
     info=await asrMod.ensureModel();
   }catch(e){
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
   diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
+  const grab=()=>asrMod.recordUtterance({
+    ctx:primed&&primed.ctx,
+    stream:primed&&primed.stream,
+    keep:true,
+    onVoice:()=>{ diag('speechstart'); },
+    log:diag
+  });
   let recd=null;
-  try{
-    recd=await asrMod.recordUtterance({
-      ctx:primed&&primed.ctx,
-      stream:primed&&primed.stream,
-      onVoice:()=>{ diag('speechstart'); },
-      log:diag
-    });
-  }
+  try{ recd=await grab(); }
   catch(e){
     logWhisperAudio({ why:'mic', durationMs:0, peak:0, rms:0 });
-    diag('whisper text ""');
-    deliverWhisper(r, '');
-    whisperOwns=false;
+    whisperNotHeard();
     return;
   }
+  if(whisperNearSilent(recd)){
+    diag('cap retry silent');
+    try{ if(primed&&primed.ctx&&primed.ctx.resume) await primed.ctx.resume(); }catch(_){}
+    try{ recd=await grab(); }catch(_){}
+  }
   logWhisperAudio(recd);
+  if(whisperNearSilent(recd)){
+    whisperNotHeard();
+    return;
+  }
   showWhisperThink();
   const audio=(recd&&recd.audio)||new Float32Array(0);
   diag('whisper transcribe start n='+audio.length);
+  const tag=whisperLangTag(r);
+  const exp=whisperExpected();
+  if(exp && audio.length && asrMod.scoreTexts){
+    try{
+      const list=[exp.text].concat(whisperDistractors(exp.text));
+      const scores=await asrMod.scoreTexts(audio, tag, list);
+      if(scores && scores.length){
+        scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+        const best=scores.slice().sort((a,b)=>b.score-a.score)[0];
+        const mine=scores.find(s=>s.text===exp.text);
+        if(mine && best && best.text===exp.text && mine.score>-3){
+          diag('whisper transcribe ms 0');
+          deliverWhisper(r, exp.text);
+          whisperOwns=false;
+          return;
+        }
+      }
+    }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
+  }
   const t1=performance.now();
   let text='';
   try{
-    if(audio.length) text=await whisperBudget(asrMod.transcribe(audio, whisperLangTag(r)), 15000);
+    if(audio.length) text=await whisperBudget(asrMod.transcribe(audio, tag), 15000);
   }catch(e){
     diag('whisper transcribe '+(e&&(e.message||e.name)||e));
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
+  if(whisperJunk(text)){
+    diag('whisper junk "'+text+'"');
+    whisperNotHeard();
+    return;
+  }
+  if(!exp && text && !/\s/.test(text) && G && (G.lang==='he'||LANG==='he') && WG.snapHebrew){
+    const snapped=WG.snapHebrew(text, G.required);
+    if(snapped && snapped!==text){ diag('whisper snap "'+text+'" -> "'+snapped+'"'); text=snapped; }
+    else if(!snapped){ whisperNotHeard(); return; }
+  }
   text=whisperPreferExpected(text);
   deliverWhisper(r, text);
   whisperOwns=false;
@@ -3912,7 +4044,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.13.3 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  e.textContent='HilinGo v4.13.4 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -5435,7 +5567,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.3';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.4';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -7294,6 +7426,7 @@ async function bootAccess(){
 const gateGo=$('#gateGo'); if(gateGo) gateGo.onclick=submitGate;
 const gateIn=$('#gateCode'); if(gateIn) gateIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitGate(); } });
 bootAccess();
+scheduleModelFetch();
 
 </script>
 </body>

@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.15" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.16" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -838,11 +838,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.15"></script>
-<script src="words.js?v=4.13.15" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.15"></script>
-<script src="cat_hints.js?v=4.13.15"></script>
-<script src="learn_dict.js?v=4.13.15"></script>
+<script src="config.js?v=4.13.16"></script>
+<script src="words.js?v=4.13.16" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.16"></script>
+<script src="cat_hints.js?v=4.13.16"></script>
+<script src="learn_dict.js?v=4.13.16"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1206,7 +1206,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.15';
+const HILINGO_VERSION='4.13.16';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -4270,7 +4270,7 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
-  const learningHe=learning && LANG==='he' && !(typeof learnState!=='undefined' && learnState==='LISTEN_TARGET');
+  const learningHe=learningNow && LANG==='he' && !(typeof learnState!=='undefined' && learnState==='LISTEN_TARGET');
   if(!exp && text && learningHe && asrMod.decideLearn && asrMod.cheapScores){
     const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
     const one=(cleaned.match(/[\u05D0-\u05EA]+/g)||[])[0]||'';
@@ -4290,7 +4290,7 @@ async function whisperListen(r){
       return;
     }
   }
-  if(!exp && text && !learning && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
+  if(!exp && text && !learningNow && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
     const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
     const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
     const one=tokens.length===1?tokens[0]:'';
@@ -4334,6 +4334,11 @@ async function whisperListen(r){
   if(dropped()){ diag('cap drop stale'); audio=null; return; }
   deliverWhisper(r, text);
   whisperOwns=false;
+  } catch(err){
+    diag('whisper flow '+(err&&(err.message||err.name)||err));
+    try{ releaseCapture('error'); }catch(_){}
+    whisperOwns=false;
+    try{ whisperNotHeard(); }catch(_){}
   } finally { clearTimeout(watchT); capBusy=false; }
 }
 function unloadSpokenAudio(){

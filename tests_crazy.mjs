@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.7 — one silly word per turn, and Hili is never allowed.
+ * HilinGo v4.13.8 — one silly word per turn, and Hili is never allowed.
  *   node tests_crazy.mjs
  */
 import { chromium } from 'playwright-core';

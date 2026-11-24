@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.7" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.8" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -829,11 +829,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.7"></script>
-<script src="words.js?v=4.13.7" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.7"></script>
-<script src="cat_hints.js?v=4.13.7"></script>
-<script src="learn_dict.js?v=4.13.7"></script>
+<script src="config.js?v=4.13.8"></script>
+<script src="words.js?v=4.13.8" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.8"></script>
+<script src="cat_hints.js?v=4.13.8"></script>
+<script src="learn_dict.js?v=4.13.8"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1147,7 +1147,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.7';
+const HILINGO_VERSION='4.13.8';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -3358,8 +3358,13 @@ function userMicHow(how){ return how==='click'||how==='space'||how==='chip'||how
 const MAX_EMPTY_RESTARTS=2;  // auto-restart at most twice in a row without hearing anything
 // ---- diagnostics: lifecycle log (🔍 button). Hidden by default on all devices; 🔍 shows it.
 const diagLog=[]; const diagT0=performance.now();
+const PREV_LOG_KEY='hilingo_prev_log';
+let previousLog='';
+try{ previousLog=localStorage.getItem(PREV_LOG_KEY)||''; }catch(_){}
 let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false, restartTimer=0;
-function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>800) diagLog.shift(); drawDiag();
+function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>800) diagLog.shift();
+  try{ localStorage.setItem(PREV_LOG_KEY, diagLog.slice(-60).join('\n')); }catch(_){}
+  drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
@@ -4033,7 +4038,11 @@ function whisperBudget(promise, ms){
     promise.then(v=>{ clearTimeout(t); resolve(v); }, e=>{ clearTimeout(t); reject(e); });
   });
 }
+let capBusy=false;
 async function whisperListen(r){
+  if(capBusy){ diag('cap busy ignore'); return; }
+  capBusy=true;
+  try{
   r.__whisper=true;
   whisperOwns=true;
   clearTimeout(learnListenTimer);
@@ -4098,12 +4107,11 @@ async function whisperListen(r){
       const scores=await asrMod.scoreTexts(audio, tag, list);
       if(scores && scores.length){
         scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
-        const best=scores.slice().sort((a,b)=>b.score-a.score)[0];
-        const mine=scores.find(s=>s.text===exp.text);
-        if(mine && best && best.text===exp.text && mine.score>-3){
+        const hit=asrMod.scoreDecision ? asrMod.scoreDecision(scores, exp.text) : '';
+        if(hit){
           audio=null;
           diag('whisper transcribe ms 0');
-          deliverWhisper(r, exp.text);
+          deliverWhisper(r, hit);
           whisperOwns=false;
           return;
         }
@@ -4133,6 +4141,7 @@ async function whisperListen(r){
   text=whisperPreferExpected(text);
   deliverWhisper(r, text);
   whisperOwns=false;
+  } finally { capBusy=false; }
 }
 function unloadSpokenAudio(){
   const a=learnTtsAudio;
@@ -4196,7 +4205,9 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v'+HILINGO_VERSION+' · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  const head='HilinGo v'+HILINGO_VERSION+' · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: ';
+  const prev=previousLog ? ('previous session log:\n'+previousLog+'\n—\n') : '';
+  e.textContent=prev+head+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -6569,8 +6580,11 @@ function wirePress(b, fn){
     if(b.id==='trTap' || (b.classList && b.classList.contains('mic') && !b.classList.contains('on'))) flashListening(b);
     run(ev);
   };
-  b.addEventListener('pointerup', up);
-  b.ontouchend=up;
+  b.addEventListener('pointerup', ev=>{ b._upAt=performance.now(); up(ev); });
+  b.addEventListener('touchend', ev=>{
+    if(b._upAt && performance.now()-b._upAt<700){ diag('tr press drop touchend '+(b.id||'')); return; }
+    up(ev);
+  });
   b.onclick=ev=>{
     try{ if(ev){ ev.preventDefault(); ev.stopPropagation(); } }catch(_){}
     const now=performance.now();
@@ -7116,6 +7130,7 @@ async function runTranslation(p, word){
   const wordEl=$('#trWord'); if(wordEl) wordEl.dir=TR==='he'?'rtl':'ltr';
   // Stop the game recognizer and wait until iOS has fired its onend.
   // Starting Italian while that he-IL object is still held returns error 7.
+  diag('tr target '+TR+' '+trLangTag()+' "'+text+'"');
   diag('tr stop game '+(rec?rec.lang:micEngine?'engine':'none'));
   lightMic(p);
   stopRec(true);
@@ -7583,6 +7598,9 @@ const gateGo=$('#gateGo'); if(gateGo) gateGo.onclick=submitGate;
 const gateIn=$('#gateCode'); if(gateIn) gateIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitGate(); } });
 bootAccess();
 scheduleModelFetch();
+try{
+  if(previousLog && sessionStorage.getItem('hilingo_whisper_base_crash')==='1') openMicLog('previous session log');
+}catch(_){}
 
 </script>
 </body>

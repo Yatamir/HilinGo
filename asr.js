@@ -111,12 +111,24 @@ function lowerModelFetch(){
   };
 }
 
+function iosWasm(){ return isIOS() || baseBanned; }
+function weightFiles(id){
+  const q8 = iosWasm() || id === TINY;
+  const enc = q8 ? 'onnx/encoder_model_quantized.onnx' : 'onnx/encoder_model_fp16.onnx';
+  const dec = q8 ? 'onnx/decoder_model_merged_quantized.onnx' : 'onnx/decoder_model_merged_q4f16.onnx';
+  return [
+    'config.json', 'generation_config.json', 'preprocessor_config.json', 'tokenizer_config.json',
+    'tokenizer.json', 'vocab.json', 'merges.txt', 'normalizer.json', 'added_tokens.json', 'special_tokens_map.json',
+    enc, dec,
+  ];
+}
 async function baseFilesReady(){
   if (baseBanned || wantsTiny()) return false;
   try {
     const cache = await caches.open(FILE_CACHE);
-    const enc = await cache.match(fileUrl(BASE, 'onnx/encoder_model_fp16.onnx'));
-    const dec = await cache.match(fileUrl(BASE, 'onnx/decoder_model_merged_q4f16.onnx'));
+    const files = weightFiles(BASE);
+    const enc = await cache.match(fileUrl(BASE, files[files.length - 2]));
+    const dec = await cache.match(fileUrl(BASE, files[files.length - 1]));
     return !!(enc && dec);
   } catch (_) { return false; }
 }
@@ -155,12 +167,21 @@ async function cacheOne(id, file){
 export function prefetch(){
   noteCrashOnce();
   lowerModelFetch();
-  if (wantsTiny() || baseBanned) return;
+  const want = (wantsTiny() || baseBanned) ? TINY : BASE;
   (async () => {
-    for (const file of BASE_FILES) {
-      try { await cacheOne(BASE, file); } catch (_) {}
+    if (want === TINY) {
+      for (const file of weightFiles(TINY)) { try { await cacheOne(TINY, file); } catch (_) {} }
+      const info = await ensureModel();
+      note('whisper warm ready ' + ((info && info.model) || TINY));
+      return;
     }
-  })().catch(() => {});
+    for (const file of weightFiles(TINY)) { try { await cacheOne(TINY, file); } catch (_) {} }
+    let info = await ensureModel();
+    note('whisper warm ready ' + ((info && info.model) || TINY));
+    for (const file of weightFiles(BASE)) { try { await cacheOne(BASE, file); } catch (_) {} }
+    info = await ensureModel();
+    note('whisper warm ready ' + ((info && info.model) || ''));
+  })().catch(err => { note('whisper warm fail ' + (err && err.message || err)); });
 }
 
 async function webgpuPlan(){
@@ -224,11 +245,11 @@ async function buildPipe(id, device, spec){
 async function createPipe(id){
   if (pipe && pipeId === id) return pipeInfo;
   if (pipe) await disposePipe('switch');
-  let model = id;
+  let model = (baseBanned && id === BASE) ? TINY : id;
   let device = 'wasm';
   let spec = 'q8';
   let label = 'q8';
-  if (model === BASE) {
+  if (model === BASE && !isIOS()) {
     const plan = await webgpuPlan();
     if (!plan || baseBanned) {
       note('whisper webgpu unavailable, using tiny');
@@ -239,11 +260,11 @@ async function createPipe(id){
       label = plan.label;
     }
   }
-  if (isIOS() && device === 'webgpu' && spec && spec.encoder_model === 'fp32') {
-    model = TINY;
+  if (isIOS()) {
     device = 'wasm';
     spec = 'q8';
     label = 'q8';
+    note('whisper ios wasm ' + model);
   }
   if (model === BASE) markBase();
   const t0 = performance.now();
@@ -529,7 +550,7 @@ export function recordUtterance(opts){
         tick = setInterval(report, 1000);
         setTimeout(() => {
           if (settled || usedRecorder) return;
-          if (count > 0 && peak > 0) return;
+          if (count > 0) return;
           usedRecorder = true;
           clearTimeout(cap);
           cap = setTimeout(() => { if (!settled) finishProcessor('recorder-timeout'); }, MAX_MS + 3000);
@@ -672,14 +693,31 @@ function logSumExp(data, offset, vocab){
   return max + Math.log(sum);
 }
 
-function tokenList(tok, text){
-  let ids = [];
+function asIdList(ids){
+  if (!ids) return [];
+  if (ids.input_ids) return asIdList(ids.input_ids);
+  if (ids.data) return asIdList(ids.data);
+  if (typeof ids.length !== 'number') return [];
+  return Array.from(ids).map(Number).filter(id => id >= 0 && id < 50257);
+}
+export function tokenIds(tok, text){
+  const word = String(text || '');
+  if (!tok || !word) return [];
   try {
-    if (tok.encode) ids = tok.encode(String(text), null, { add_special_tokens: false });
+    if (tok.encode) return asIdList(tok.encode(word, { add_special_tokens: false }));
   } catch (_) {}
-  if (!ids || !ids.length) return [];
-  if (ids.data) ids = Array.from(ids.data);
-  return ids.map(Number).filter(id => id >= 0 && id < 50257);
+  try {
+    if (typeof tok === 'function') return asIdList(tok(word, { add_special_tokens: false }));
+  } catch (_) {}
+  return [];
+}
+export function scoreDecision(scores, expected){
+  const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
+  if (!real.length || !expected) return '';
+  const best = real.slice().sort((a, b) => b.score - a.score)[0];
+  const mine = real.find(s => s.text === expected);
+  if (mine && best && best.text === expected && mine.score > -3) return expected;
+  return '';
 }
 
 async function scoreOnce(audio, tag, texts){
@@ -701,15 +739,20 @@ async function scoreOnce(audio, tag, texts){
   const eos = cfg.eos_token_id || 50257;
   const out = [];
   for (const text of texts) {
-    const word = tokenList(current.tokenizer, text);
-    if (!word.length) { out.push({ text: String(text), score: -99 }); continue; }
+    const word = tokenIds(current.tokenizer, text);
+    note('whisper score tokens "' + text + '" n=' + word.length);
+    if (!word.length) continue;
     const ids = init.concat(word, [eos]);
-    let result;
+    const row = ids.slice(0, -1);
+    let result = null;
     try {
-      result = await current.model({ input_features, decoder_input_ids: ids.slice(0, -1) });
+      result = await current.model({ input_features, decoder_input_ids: row });
     } catch (_) {
-      try { result = await current.model({ input_features, decoder_input_ids: [ids.slice(0, -1)] }); }
-      catch (_) { return null; }
+      try {
+        const T = input_features.constructor;
+        const data = BigInt64Array.from(row.map(n => BigInt(n)));
+        result = await current.model({ input_features, decoder_input_ids: new T('int64', data, [1, row.length]) });
+      } catch (__) { return null; }
     }
     const logits = result && result.logits;
     const data = logits && logits.data;

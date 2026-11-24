@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.0 — translation card, hands-free repeat, and the word bank.
+ * HilinGo v4.13.1 — translation card, hands-free repeat, and the word bank.
  *   node tests_translate.mjs
  */
 import { chromium } from 'playwright-core';
@@ -85,7 +85,7 @@ try {
   await page.reload({ waitUntil: 'domcontentloaded' });
   const migrated = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);
   if (migrated !== '45') bad('migrate ' + migrated);
-  else ok('updating to v4.13.0 resets a saved level to 45 once');
+  else ok('updating to v4.13.1 resets a saved level to 45 once');
   await page.evaluate(() => { localStorage.setItem('hilingo_seconds', '15'); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   const keptLevel = await page.evaluate(() => document.querySelector('.lvl.sel').dataset.s);

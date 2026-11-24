@@ -2,7 +2,8 @@
  * HilinGo — learning trim, early deaf check, and commit decision.
  *   node tests_learnhear.mjs
  */
-import { trimPcm, deafEarly, decideLearn, nearWords, commitAllowed, SCORE_CAP, modelForSession, modelsToWarm } from './asr.js';
+import { readFileSync } from 'node:fs';
+import { trimPcm, deafEarly, decideLearn, nearWords, learnRescore, commitAllowed, SCORE_CAP, modelForSession, modelsToWarm } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -19,6 +20,17 @@ function ok(msg){ console.log('  ok  ', msg); }
   const end = kept.end / rate;
   if (start > 3.05 || end < 4.95) bad('trim ' + start.toFixed(2) + '-' + end.toFixed(2));
   else ok('silence then a tone from 3.3s is kept from about 3.0s through 5.0s');
+}
+{
+  const rate = 16000;
+  const n = Math.round(rate * 2.5);
+  const audio = new Float32Array(n);
+  const toneAt = Math.round(rate * 0.5);
+  for (let i = toneAt; i < n; i++) audio[i] = Math.sin(i / 8) * 0.4;
+  const kept = trimPcm(audio, rate);
+  const span = (kept.end - kept.start) / rate;
+  if (span < 2.0 || kept.samples.length === Math.round(rate * 1.2)) bad('short trim ' + span.toFixed(2) + 's n=' + kept.samples.length);
+  else ok('2.0s of speech in a 2.5s buffer is kept (' + span.toFixed(2) + 's), not a 1.2s slice');
 }
 
 if (!deafEarly(0.0002, 600)) bad('deaf early missed');
@@ -70,6 +82,23 @@ else ok('an iPhone session uses tiny only');
 const warm = modelsToWarm({ ios: true });
 if (warm.length !== 1 || warm[0] !== 'Xenova/whisper-tiny') bad('ios warm ' + warm.join(','));
 else ok('iOS warms one pipeline, and it is tiny');
+const dict = ['אחד', 'אמה', 'מערכת', 'עד', 'חד'];
+const split = learnRescore('מה רכת', dict);
+if (split.text !== 'מערכת' || split.text === 'אמה') bad('מה רכת -> ' + JSON.stringify(split));
+else ok('מה רכת becomes מערכת, not אמה');
+const exact = learnRescore('אחד', dict);
+if (exact.text !== 'אחד' || !exact.commit) bad('אחד -> ' + JSON.stringify(exact));
+else ok('אחד stays אחד');
+const far = learnRescore('מה רכת', ['אמה']);
+if (far.text === 'אמה' || far.commit) bad('short snap ' + JSON.stringify(far));
+else ok('a 5-letter utterance is not snapped to אמה');
+{
+  const blob = readFileSync(new URL('./words.js', import.meta.url), 'utf8').match(/="(.*)"/)[1].split(' ');
+  const full = learnRescore('מה רכת', blob);
+  if (full.text !== 'מערכת') bad('full dict ' + full.text);
+  else ok('the full dictionary turns מה רכת into מערכת');
+}
+
 if (modelForSession({ tiny: false, banned: false }) !== 'Xenova/whisper-base') bad('fresh session model');
 else ok('a fresh session may use base');
 

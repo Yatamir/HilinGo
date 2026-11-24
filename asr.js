@@ -397,16 +397,11 @@ function trimSilence(audio, rate){
     }
   }
   if (first < 0) return { samples: new Float32Array(0), start: 0, end: 0 };
-  const pad = Math.round(rate * 0.3);
+  const pad = Math.round(rate * 0.25);
+  const cap = Math.round(rate * 5);
   let a = Math.max(0, first - pad);
   let b = Math.min(audio.length, last + pad);
-  const minKeep = Math.min(audio.length, Math.round(rate * 1.2));
-  if (b - a < minKeep) {
-    const mid = Math.floor((first + last) / 2);
-    a = Math.max(0, mid - Math.floor(minKeep / 2));
-    b = Math.min(audio.length, a + minKeep);
-    if (b - a < minKeep) a = Math.max(0, b - minKeep);
-  }
+  if (b - a > cap) b = a + cap;
   return { samples: audio.subarray(a, b), start: a, end: b };
 }
 export function trimPcm(audio, rate){ return trimSilence(audio, rate); }
@@ -908,6 +903,62 @@ export function cheapScores(raw, words){
     else score = -2.2;
     return { text: w, score };
   });
+}
+function dictHas(words, w){
+  if (!words || !w) return false;
+  if (typeof words.has === 'function') return words.has(w);
+  for (const item of words) if (heFold(item) === w) return true;
+  return false;
+}
+export function learnRescore(raw, words){
+  const original = String(raw || '').replace(/[^\u05D0-\u05EA\s]/g, '').replace(/\s+/g, ' ').trim();
+  const tokens = heToks(original).map(heFold);
+  const joined = tokens.join('');
+  if (!joined) return { text: original, best: '', score: 'none', candidates: 0, commit: false, ask: [] };
+  if (dictHas(words, joined)) return { text: joined, best: joined, score: 0, candidates: 1, commit: true, ask: [] };
+  const maxEdits = Math.floor(joined.length * 0.25);
+  const weak = new Set(['א', 'ה', 'ע']);
+  const penalty = (a, b) => {
+    if (a.length !== b.length) return Math.abs(a.length - b.length) + 1;
+    let p = 0;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] === b[i]) continue;
+      if (!(weak.has(a[i]) && weak.has(b[i]))) p++;
+    }
+    return p;
+  };
+  let best = '';
+  let bestD = maxEdits + 1;
+  let bestP = 99;
+  let seen = 0;
+  const ask = [];
+  if (maxEdits >= 1 && words) {
+    for (const item of words) {
+      const n = heFold(item);
+      if (!n || n === joined) continue;
+      const diff = Math.abs(n.length - joined.length);
+      if (diff > maxEdits) continue;
+      const ratio = Math.max(n.length, joined.length) / Math.min(n.length, joined.length);
+      if (ratio > 1.25) continue;
+      seen++;
+      const d = edits(joined, n, maxEdits);
+      if (d > maxEdits) continue;
+      const norm = d / Math.max(joined.length, n.length);
+      const p = penalty(joined, n);
+      if (d < bestD || (d === bestD && diff < Math.abs(best.length - joined.length)) || (d === bestD && diff === Math.abs(best.length - joined.length) && p < bestP)) {
+        bestD = d; best = n; bestP = p;
+      }
+      if (ask.length < 3 && norm <= 0.25 && diff === 0 && ask.indexOf(n) < 0) ask.push(n);
+    }
+  }
+  if (best) {
+    const norm = bestD / Math.max(joined.length, best.length);
+    const ratio = Math.max(best.length, joined.length) / Math.min(best.length, joined.length);
+    if (norm <= 0.25 && ratio <= 1.25 && !(joined.length >= 5 && best.length <= 3)) {
+      return { text: best, best, score: Math.round(-norm * 1000) / 1000, candidates: seen, commit: true, ask: [] };
+    }
+  }
+  return { text: original, best: best || original, score: 'raw', candidates: seen, commit: false, ask: ask.filter(w => w !== best) };
 }
 
 async function scoreOnce(audio, tag, texts){

@@ -1,7 +1,7 @@
 /* Category lists and a short-lived copy of the page.
    The Whisper weight cache (transformers-cache) is never touched. */
-const CATS = 'hilingo-cats-v41312';
-const SHELL = 'hilingo-shell-v41312';
+const CATS = 'hilingo-cats-v41313';
+const SHELL = 'hilingo-shell-v41313';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

@@ -411,6 +411,46 @@ export function commitAllowed(tapAt, now){
   return !!(tapAt && now >= tapAt && (now - tapAt) < 4000);
 }
 export const SCORE_CAP = 8;
+export const TOKEN_CAP = 3;
+export const ROUTE_SETTLE_MS = 400;
+export function primeDecision(state){
+  const s = state || {};
+  if (s.playing) return { act: 'skip', settleMs: 0 };
+  if (s.bad) return { act: 'drop', settleMs: 0 };
+  if (s.live) return { act: 'reuse', settleMs: 0 };
+  if (s.inFlight && !s.forceFresh) return { act: 'wait', settleMs: 0 };
+  const settle = (s.forceFresh || s.fromPlayback) ? ROUTE_SETTLE_MS : 0;
+  return { act: 'open', settleMs: settle };
+}
+export function afterCapture(attempt, peak, tapped){
+  if (!tapped) return 'ignore';
+  if (Number(peak) >= 0.02) return 'commit';
+  if (attempt < 2) return 'retry';
+  return 'silent';
+}
+export async function runLearnListen(env){
+  if (!env || !env.tapped) return { commit: false, acquires: 0, why: 'no-tap' };
+  let acquires = 0;
+  for (let n = 1; n <= 2; n++) {
+    const decision = primeDecision({
+      fromPlayback: n === 1 && !!env.fromPlayback,
+      forceFresh: n > 1,
+      inFlight: false,
+      live: false,
+      playing: false
+    });
+    acquires++;
+    const rec = await env.acquire({ attempt: n, settleMs: decision.settleMs, fresh: n > 1 });
+    const next = afterCapture(n, rec && rec.peak, true);
+    if (next === 'commit') {
+      const text = await env.transcribe(rec && rec.audio);
+      const fixed = env.correct ? env.correct(text) : text;
+      return { commit: true, acquires, text: fixed || '', why: 'commit' };
+    }
+    if (next !== 'retry') return { commit: false, acquires, why: 'silent', text: '' };
+  }
+  return { commit: false, acquires, why: 'silent', text: '' };
+}
 
 export function recordUtterance(opts){
   const onVoice = opts && opts.onVoice;
@@ -769,7 +809,7 @@ export function learnPick(raw, scores){
 export function decideLearn(raw, scores, inDict){
   const fold = heFold(String(raw || '').replace(/[^\u05D0-\u05EA]/g, ''));
   const ranked = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20)
-    .slice().sort((a, b) => b.score - a.score);
+    .slice().sort((a, b) => b.score - a.score || heFold(b.text).length - heFold(a.text).length);
   const rawHit = ranked.find(s => heFold(s.text) === fold);
   const good = ranked.filter(s => s.score > -3);
   let pick = null;
@@ -865,6 +905,27 @@ export function nearWords(raw, letter, words){
   }
   return out.filter(Boolean).slice(0, SCORE_CAP);
 }
+export function cheapScores(raw, words){
+  const fold = heFold(String(raw || '').replace(/[^\u05D0-\u05EA]/g, ''));
+  const list = nearWords(raw, '', words || []);
+  const longer = list.some(w => {
+    const n = heFold(w);
+    return n && n !== fold && n.length > fold.length && edits(fold, n, 2) <= 2;
+  });
+  return list.map(w => {
+    const n = heFold(w);
+    const d = edits(fold, n, 2);
+    let score = -2.4;
+    if (n === fold) score = (fold.length <= 2 && longer) ? -4 : -0.5;
+    else if (fold.length <= 2 && n.length > fold.length && d <= 2) score = d <= 1 ? -1.0 : -1.2;
+    else if (fold && ['א', 'ה', 'ע', 'י'].some(h => n === h + fold)) score = -1.2;
+    else if (d <= 0) score = -0.5;
+    else if (d === 1) score = -1.4;
+    else if (n.endsWith(fold) && n.length - fold.length > 0 && n.length - fold.length <= 2) score = -1.3;
+    else score = -2.2;
+    return { text: w, score };
+  });
+}
 
 async function scoreOnce(audio, tag, texts){
   const current = activePipe();
@@ -932,7 +993,7 @@ function dropTensor(t){
 }
 
 export async function scoreTexts(audio, tag, texts){
-  const capped = (texts || []).slice(0, SCORE_CAP);
+  const capped = (texts || []).slice(0, TOKEN_CAP);
   return locked(async () => {
     const model = pipeId;
     if (model === BASE) markBase();

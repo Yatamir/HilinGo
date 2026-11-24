@@ -36,7 +36,7 @@ async function sparql(query) {
     signal: AbortSignal.timeout(28000),
     headers: {
       Accept: 'application/sparql-results+json',
-      'User-Agent': 'HilinGo/4.8.2 (educational word game; category list build)',
+      'User-Agent': 'HilinGo (educational word game; category list build)',
     },
   });
   if (!res.ok) throw new Error('sparql ' + res.status);

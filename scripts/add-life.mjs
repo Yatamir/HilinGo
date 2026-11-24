@@ -60,7 +60,7 @@ async function members(lang, title) {
     url.searchParams.set('cmtype', 'page');
     url.searchParams.set('format', 'json');
     if (cont) url.searchParams.set('cmcontinue', cont);
-    const res = await fetch(url, { headers: { 'User-Agent': 'HilinGo/4.8.2 (educational word game)' }, signal: AbortSignal.timeout(20000) });
+    const res = await fetch(url, { headers: { 'User-Agent': 'HilinGo (educational word game)' }, signal: AbortSignal.timeout(20000) });
     if (!res.ok) throw new Error(res.status + ' ' + title);
     const json = await res.json();
     const ms = (json.query && json.query.categorymembers) || [];

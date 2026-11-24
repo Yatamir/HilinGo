@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.11" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.12" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -837,11 +837,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.11"></script>
-<script src="words.js?v=4.13.11" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.11"></script>
-<script src="cat_hints.js?v=4.13.11"></script>
-<script src="learn_dict.js?v=4.13.11"></script>
+<script src="config.js?v=4.13.12"></script>
+<script src="words.js?v=4.13.12" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.12"></script>
+<script src="cat_hints.js?v=4.13.12"></script>
+<script src="learn_dict.js?v=4.13.12"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1056,20 +1056,35 @@ const WG = (()=>{
       for(const h of heads) if(isWord(h+t)) add(h+t);
     }
     const dict=DICTS.he;
+    const best=[];
+    const consider=(w,d)=>{
+      if(!w || seen.has(w)) return;
+      if(letter && firstLetter(w)!==letter) return;
+      let i=0;
+      while(i<best.length && best[i].d<=d) i++;
+      if(i>=8) return;
+      best.splice(i, 0, {w, d});
+      if(best.length>8) best.pop();
+    };
     if(dict){
-      for(const seed of seeds){
-        if(!seed || seed.length<2 || seed.length>14) continue;
-        const hits=[];
-        for(const w of dict){
-          if(!w || Math.abs(w.length-seed.length)>2) continue;
-          if(letter && firstLetter(w)!==letter) continue;
-          const d=editAtMost(seed, w, 2);
-          if(d<=2 || (w.endsWith(seed) && w.length-seed.length>0 && w.length-seed.length<=2)) hits.push({w, d:d<=2?d:1});
+      for(const w of dict){
+        if(!w || w.length<2 || w.length>14) continue;
+        if(letter && firstLetter(w)!==letter) continue;
+        let d=9;
+        for(const seed of seeds){
+          if(!seed) continue;
+          const diff=w.length-seed.length;
+          if(w.endsWith(seed) && diff>0 && diff<=2){ d=1; break; }
+          if(Math.abs(diff)>2) continue;
+          if(w[0]!==seed[0] && w[w.length-1]!==seed[seed.length-1]) continue;
+          const ed=editAtMost(seed, w, 2);
+          if(ed<d) d=ed;
+          if(!d) break;
         }
-        hits.sort((a,b)=>a.d-b.d);
-        for(const h of hits.slice(0, 6)) add(h.w);
+        if(d<=2) consider(w, d);
       }
     }
+    for(const h of best) add(h.w);
     return out.slice(0, 8);
   }
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
@@ -1190,7 +1205,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.11';
+const HILINGO_VERSION='4.13.12';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -3231,9 +3246,6 @@ function releaseIntro(why){
   if(introHold===hold) introHold=null;
   try{ diag('intro '+why); }catch(_){}
   if(fn){ try{ fn(); }catch(_){} }
-  if(finished && typeof MODE!=='undefined' && MODE==='learn'){
-    setTimeout(()=>{ try{ if(asrChoice()==='whisper'){ setAudioSession('play-and-record','after-intro'); primeCapture(); } }catch(_){} }, 200);
-  }
 }
 function playIntro(){
   // Never throw: a broken audio element must not stop the click from starting the game.
@@ -4102,10 +4114,18 @@ function whisperBudget(promise, ms){
     promise.then(v=>{ clearTimeout(t); resolve(v); }, e=>{ clearTimeout(t); reject(e); });
   });
 }
-let capBusy=false;
+let capBusy=false, lastUserTap=0;
+function noteUserTap(){ lastUserTap=performance.now(); }
+function asrModCommitAllowed(tapAt, now){
+  return !!(tapAt && now>=tapAt && (now-tapAt)<4000);
+}
 async function whisperListen(r){
+  const learningNow=!!($('#learn') && !$('#learn').classList.contains('hidden'));
+  if(learningNow && !asrModCommitAllowed(lastUserTap, performance.now())){ diag('cap ignore no tap'); return; }
   if(capBusy){ diag('cap busy ignore'); return; }
   capBusy=true;
+  const listenGen=learnSession;
+  const dropped=()=>learningNow && learnSession!==listenGen;
   try{
   r.__whisper=true;
   whisperOwns=true;
@@ -4186,6 +4206,7 @@ async function whisperListen(r){
         if(hit){
           audio=null;
           diag('whisper transcribe ms 0');
+          if(dropped()){ diag('cap drop stale'); return; }
           deliverWhisper(r, hit);
           whisperOwns=false;
           return;
@@ -4208,8 +4229,9 @@ async function whisperListen(r){
     const one=(cleaned.match(/[\u05D0-\u05EA]+/g)||[])[0]||'';
     const inDict=!!(one && WG.isWord(one));
     let scores=[];
+    const tRescore=performance.now();
     let pool=[one].filter(Boolean);
-    try{ (WG.nearHebrew?WG.nearHebrew(cleaned,''):[]).forEach(w=>{ if(pool.indexOf(w)<0) pool.push(w); }); }catch(_){}
+    try{ (WG.nearHebrew?WG.nearHebrew(cleaned,''):[]).forEach(w=>{ if(pool.indexOf(w)<0 && pool.length<8) pool.push(w); }); }catch(_){}
     try{
       if(pool.length && (!inDict || one.length<=2 || pool.length>1)){
         scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 8))||[];
@@ -4217,10 +4239,11 @@ async function whisperListen(r){
       }
     }catch(e){ diag('whisper score fail '+(e&&e.message||e)); scores=[]; }
     const choice=asrMod.decideLearn(one||cleaned, scores, inDict);
-    diag('learn rescore raw="'+cleaned+'" best="'+(choice.best||'')+'" score='+choice.score+' candidates='+pool.length);
+    diag('learn rescore raw="'+cleaned+'" best="'+(choice.best||'')+'" score='+choice.score+' candidates='+pool.length+' ms='+Math.round(performance.now()-tRescore));
     audio=null;
     if(choice.commit && choice.text && WG.isWord(choice.text)){ text=choice.text; }
     else {
+      if(dropped()){ diag('cap drop stale'); return; }
       showLearnChoices(choice.ask && choice.ask.length ? choice.ask : pool.filter(w=>w && w!==one && WG.isWord(w)).slice(0,3));
       return;
     }
@@ -4266,6 +4289,7 @@ async function whisperListen(r){
     else if(!snapped){ whisperNotHeard(); return; }
   }
   text=whisperPreferExpected(text);
+  if(dropped()){ diag('cap drop stale'); audio=null; return; }
   deliverWhisper(r, text);
   whisperOwns=false;
   } finally { capBusy=false; }
@@ -4723,6 +4747,7 @@ function runMicRecovery(why){
   if(learnOn){
     if(learnState==='INTRO'||learnState==='SPEAK_TARGET'){ diag('skip recover, '+learnState); return; }
     killLearnRec('recover');
+    if(isLearnIOS() || asrChoice()==='whisper'){ diag('skip recover, tap only'); return; }
     if(!$('#autoMic').checked || !SR) return;
     const side=(learnState==='LISTEN_TARGET'||learnState==='IDLE_TARGET'||learnState==='RETRY'||learnState==='OK')?'target':'native';
     beginListen(side);
@@ -4750,7 +4775,12 @@ function resumeApp(why){
 let pageHidden=false;
 document.addEventListener('visibilitychange', ()=>{
   diag('visibility '+document.visibilityState);
-  if(document.visibilityState==='hidden'){ pageHidden=true; return; }
+  if(document.visibilityState==='hidden'){
+    pageHidden=true;
+    try{ if($('#learn') && !$('#learn').classList.contains('hidden')) killLearnRec('hidden'); }catch(_){}
+    try{ releaseCapture('hidden'); }catch(_){}
+    return;
+  }
   if(swReg){ try{ swReg.update(); }catch(_){} }
   checkAppVersion();
   maybeApplyUpdate();
@@ -5331,7 +5361,7 @@ function showLearnChoices(cands){
   again.type='button';
   again.className='again';
   again.textContent=(S&&S.guessRetry)||'נסו שוב';
-  again.onclick=()=>{ hideLearnChoices(); beginListen('native'); };
+  again.onclick=()=>{ hideLearnChoices(); noteUserTap(); beginListen('native'); };
   row.appendChild(again);
   box.classList.remove('hidden');
   setLearnStatus((S&&S.guessAsk)||'');
@@ -6470,6 +6500,7 @@ function leaveLearn(){
   setOwner('none');
   $('#learn').classList.add('hidden');
   $('#start').classList.remove('hidden');
+  try{ releaseCapture('leave'); }catch(_){}
   maybeApplyUpdate();
 }
 function dropNativeRound(){
@@ -6483,6 +6514,7 @@ function dropNativeRound(){
   const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
 }
 function learnMicTap(){
+  noteUserTap();
   primeCapture();
   if(deafEscalating){ learnLog('mic tap during escalate'); return; }
   if(!SR){ revertListening($('#learnMic')); return; }
@@ -6510,6 +6542,7 @@ function learnMicTap(){
   go();
 }
 function learnRepeatTap(){
+  noteUserTap();
   primeCapture();
   if(deafEscalating){ learnLog('repeat tap during escalate'); return; }
   if(!SR){ revertListening($('#learnRepeatMic')); return; }

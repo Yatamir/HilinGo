@@ -2,7 +2,7 @@
  * HilinGo — learning trim, early deaf check, and commit decision.
  *   node tests_learnhear.mjs
  */
-import { trimPcm, deafEarly, decideLearn, nearWords } from './asr.js';
+import { trimPcm, deafEarly, decideLearn, nearWords, commitAllowed, SCORE_CAP, modelForSession } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -49,6 +49,24 @@ else ok('a non-dictionary word is not committed');
 const sure = decideLearn('אחד', [{ text: 'אחד', score: -0.8 }], true);
 if (!sure.commit || sure.text !== 'אחד') bad('sure ' + JSON.stringify(sure));
 else ok('a confident dictionary word is committed');
+
+if (commitAllowed(0, 1000) || commitAllowed(100, 5000)) bad('commit without a fresh tap');
+else ok('a capture with no tap, or an old tap, is not committed');
+if (!commitAllowed(100, 200)) bad('fresh tap refused');
+else ok('a capture started by a tap may be committed');
+
+const crowd = ['אחד'];
+for (let i = 0; i < 30; i++) crowd.push(String.fromCharCode(0x05D0 + (i % 22)) + 'חד');
+const capped = nearWords('חד', '', crowd);
+if (capped.length > SCORE_CAP) bad('candidate cap ' + capped.length);
+else ok('rescoring keeps at most ' + SCORE_CAP + ' candidates');
+if (capped.indexOf('אחד') < 0) bad('cap dropped אחד');
+else ok('the cheap match אחד stays inside the cap');
+
+if (modelForSession({ banned: true }) !== 'Xenova/whisper-tiny') bad('crash still wants base');
+else ok('after a crash the session stays on tiny');
+if (modelForSession({ tiny: false, banned: false }) !== 'Xenova/whisper-base') bad('fresh session model');
+else ok('a fresh session may use base');
 
 if (problems.length) {
   console.log('\n' + problems.length + ' failure(s)');

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.15 — the full button row stays bright, the header fits, and an
+ * HilinGo v4.13.16 — the full button row stays bright, the header fits, and an
  * automatic not-allowed does not show the settings card.
  *   node tests_row.mjs
  */

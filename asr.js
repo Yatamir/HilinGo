@@ -412,43 +412,33 @@ export function commitAllowed(tapAt, now){
 }
 export const SCORE_CAP = 8;
 export const TOKEN_CAP = 3;
-export const ROUTE_SETTLE_MS = 400;
-export function primeDecision(state){
-  const s = state || {};
-  if (s.playing) return { act: 'skip', settleMs: 0 };
-  if (s.bad) return { act: 'drop', settleMs: 0 };
-  if (s.live) return { act: 'reuse', settleMs: 0 };
-  if (s.inFlight && !s.forceFresh) return { act: 'wait', settleMs: 0 };
-  const settle = (s.forceFresh || s.fromPlayback) ? ROUTE_SETTLE_MS : 0;
-  return { act: 'open', settleMs: settle };
+export const WATCH_MS = 8000;
+export function watchExpired(elapsedMs, heard){
+  return elapsedMs >= WATCH_MS && !heard;
 }
-export function afterCapture(attempt, peak, tapped){
-  if (!tapped) return 'ignore';
-  if (Number(peak) >= 0.02) return 'commit';
-  if (attempt < 2) return 'retry';
-  return 'silent';
+export function typedWord(raw){
+  const text = String(raw || '').replace(/[\u200e\u200f\u202a-\u202e]/g, '').trim();
+  if (!text) return { commit: false, text: '' };
+  return { commit: true, text };
 }
 export async function runLearnListen(env){
   if (!env || !env.tapped) return { commit: false, acquires: 0, why: 'no-tap' };
   let acquires = 0;
+  let now = 0;
+  let heard = false;
   for (let n = 1; n <= 2; n++) {
-    const decision = primeDecision({
-      fromPlayback: n === 1 && !!env.fromPlayback,
-      forceFresh: n > 1,
-      inFlight: false,
-      live: false,
-      playing: false
-    });
+    if (watchExpired(now, heard)) return { commit: false, acquires, why: 'watch' };
     acquires++;
-    const rec = await env.acquire({ attempt: n, settleMs: decision.settleMs, fresh: n > 1 });
-    const next = afterCapture(n, rec && rec.peak, true);
-    if (next === 'commit') {
-      const text = await env.transcribe(rec && rec.audio);
+    const rec = await env.acquire({ attempt: n, fresh: n > 1, settleMs: 0 });
+    now = rec && rec.at != null ? rec.at : now;
+    if (rec && Number(rec.peak) >= 0.02) {
+      heard = true;
+      const text = await env.transcribe(rec.audio);
       const fixed = env.correct ? env.correct(text) : text;
       return { commit: true, acquires, text: fixed || '', why: 'commit' };
     }
-    if (next !== 'retry') return { commit: false, acquires, why: 'silent', text: '' };
   }
+  if (watchExpired(now, heard)) return { commit: false, acquires, why: 'watch' };
   return { commit: false, acquires, why: 'silent', text: '' };
 }
 
@@ -573,9 +563,7 @@ export function recordUtterance(opts){
         let preSamples = 0;
         let voiced = false;
         let lastVoice = 0;
-        let voiceAt = 0;
         let sawSample = false;
-        let deafChecked = false;
         const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
@@ -589,12 +577,6 @@ export function recordUtterance(opts){
             try { if (opts && opts.onFirstSample) opts.onFirstSample(); } catch (_) {}
           }
           all.push(copy);
-          if (!deafChecked && now - captureStart >= 600 && count > 0 && deafEarly(peak, now - captureStart)) {
-            deafChecked = true;
-            try { log('cap deaf early'); } catch (_) {}
-            finishProcessor('deaf');
-            return;
-          }
           if (!heard) {
             pre.push(copy);
             preSamples += copy.length;
@@ -606,7 +588,6 @@ export function recordUtterance(opts){
           if (level >= VOICE_RMS) {
             if (!heard) {
               heard = true;
-              voiceAt = now;
               lastVoice = now;
               for (const c of pre) said.push(c);
               pre.length = 0;
@@ -617,8 +598,7 @@ export function recordUtterance(opts){
             }
           } else if (heard) {
             said.push(copy);
-            const spokeFor = voiceAt ? (now - voiceAt) : 0;
-            if (now - lastVoice >= SILENCE_MS && spokeFor >= 1800) { finishProcessor('pause'); return; }
+            if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
           }
           if (now - captureStart >= maxMs) finishProcessor(heard ? 'max' : 'no-speech');
         };

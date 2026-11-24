@@ -3,7 +3,12 @@
 // the public Hugging Face CDN once, then the Cache API keeps them.
 // No server and no paid API.
 
-const MODEL = 'Xenova/whisper-tiny';
+function modelId(){
+  try {
+    if (/[?&]model=base(?:&|$)/.test(location.search || '')) return 'Xenova/whisper-base';
+  } catch (_) {}
+  return 'Xenova/whisper-tiny';
+}
 const RUNTIME = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const TARGET_RATE = 16000;
 const VOICE_RMS = 0.012;
@@ -38,8 +43,19 @@ async function pickDevice(){
   return 'wasm';
 }
 
+async function dtypePlan(device){
+  if (device !== 'webgpu') return { spec: 'q8', label: 'q8' };
+  let fp16 = false;
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    fp16 = !!(adapter && adapter.features && adapter.features.has('shader-f16'));
+  } catch (_) {}
+  if (fp16) return { spec: { encoder_model: 'fp16', decoder_model_merged: 'q4f16' }, label: 'encoder=fp16 decoder=q4f16' };
+  return { spec: { encoder_model: 'fp32', decoder_model_merged: 'q4' }, label: 'encoder=fp32 decoder=q4' };
+}
+
 export async function ensureModel(){
-  if (pipe) return { ms: 0, cached: true, device: pipe.__device || '' };
+  if (pipe) return { ms: 0, cached: true, device: pipe.__device || '', dtype: pipe.__dtype || '', model: pipe.__model || '' };
   if (loading) return loading;
   const t0 = performance.now();
   loading = (async () => {
@@ -47,16 +63,28 @@ export async function ensureModel(){
     env.allowLocalModels = false;
     env.useBrowserCache = true;
     let device = await pickDevice();
-    const make = (dev) => pipeline('automatic-speech-recognition', MODEL, { dtype: 'q8', device: dev });
+    const id = modelId();
+    const plan = await dtypePlan(device);
+    const make = (dev, spec) => pipeline('automatic-speech-recognition', id, { dtype: spec, device: dev });
+    let label = plan.label;
     try {
-      pipe = await make(device);
+      pipe = await make(device, plan.spec);
     } catch (err) {
-      if (device === 'wasm') throw err;
-      device = 'wasm';
-      pipe = await make(device);
+      if (device === 'webgpu') {
+        try {
+          label = 'encoder=fp32 decoder=q4';
+          pipe = await make('webgpu', { encoder_model: 'fp32', decoder_model_merged: 'q4' });
+        } catch (_) {
+          device = 'wasm';
+          label = 'q8';
+          pipe = await make('wasm', 'q8');
+        }
+      } else throw err;
     }
     pipe.__device = device;
-    return { ms: Math.round(performance.now() - t0), cached: false, device };
+    pipe.__dtype = label;
+    pipe.__model = id;
+    return { ms: Math.round(performance.now() - t0), cached: false, device, dtype: label, model: id };
   })();
   try {
     return await loading;
@@ -154,6 +182,7 @@ export function recordUtterance(opts){
     let count = 0;
     let heard = false;
     let usedRecorder = false;
+    const all = [];
     const said = [];
     const t0 = performance.now();
     const measure = (copy) => {
@@ -182,12 +211,21 @@ export function recordUtterance(opts){
       try { if (mute) mute.disconnect(); } catch (_) {}
       stopStream(stream);
       try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
-      const out = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
-      resolve(Object.assign({ heard: !!(out && out.length), why, audio: out }, stats()));
+      const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
+      let out = trimSilence(full, TARGET_RATE);
+      if (!out.length && full.length) out = full;
+      if (out.length > TARGET_RATE * 3) out = out.subarray(0, TARGET_RATE * 3);
+      try {
+        log('cap rate ' + (rate || 0));
+        log('pcm16k samples ' + full.length);
+        log('pcm16k duration ' + (full.length / TARGET_RATE).toFixed(2) + 's');
+        log('pcm16k kept ' + out.length);
+      } catch (_) {}
+      resolve(Object.assign({ heard: !!(out && out.length), why: why === 'silence' ? 'pause' : why, audio: out, rate: rate || 0 }, stats()));
     };
     const finishProcessor = (why) => {
       const rate = (ctx && ctx.sampleRate) || 48000;
-      const audio = said.length ? concat(said) : new Float32Array(0);
+      const audio = all.length ? concat(all) : new Float32Array(0);
       finishAudio(why, audio, rate);
     };
     const report = () => {
@@ -225,6 +263,7 @@ export function recordUtterance(opts){
           const now = performance.now();
           const level = rms(copy);
           measure(copy);
+          all.push(copy);
           if (!heard) {
             pre.push(copy);
             preSamples += copy.length;
@@ -246,7 +285,7 @@ export function recordUtterance(opts){
             }
           } else if (heard) {
             said.push(copy);
-            if (now - lastVoice >= SILENCE_MS) { finishProcessor('silence'); return; }
+            if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
           }
           if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
@@ -272,7 +311,12 @@ export function recordUtterance(opts){
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
     });
     Promise.resolve(streamP).then(s => {
-      if (settled) { stopStream(s); return; }
+      if (settled) { if (s) stopStream(s); return; }
+      if (!s) {
+        return navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
+        }).then(openGraph);
+      }
       return openGraph(s);
     }).catch(reject);
   });
@@ -321,10 +365,26 @@ export async function warmUp(){
   warmed = true;
 }
 
+function cleanText(out){
+  let t = String((out && out.text) || '').replace(/\s+/g, ' ').trim();
+  if (t.length > 80) t = t.slice(0, 80).trim();
+  return t;
+}
+
 export async function transcribe(audio, tag){
   const language = whisperName(tag);
-  const opts = { task: 'transcribe', return_timestamps: false };
+  const opts = {
+    task: 'transcribe',
+    return_timestamps: false,
+    max_new_tokens: 12,
+    no_repeat_ngram_size: 3,
+  };
   if (language) opts.language = language;
-  const out = await pipe(audio, opts);
-  return String((out && out.text) || '').replace(/\s+/g, ' ').trim();
+  try {
+    return cleanText(await pipe(audio, opts));
+  } catch (_) {
+    const plain = { task: 'transcribe', return_timestamps: false };
+    if (language) plain.language = language;
+    return cleanText(await pipe(audio, plain));
+  }
 }

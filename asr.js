@@ -456,10 +456,12 @@ export function recordUtterance(opts){
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); proc = null; } } catch (_) {}
       try { if (source) { source.disconnect(); source = null; } } catch (_) {}
       try { if (mute) { mute.disconnect(); mute = null; } } catch (_) {}
-      stopStream(stream);
-      stream = null;
-      try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
-      ctx = null;
+      if (!keep) {
+        stopStream(stream);
+        stream = null;
+        try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+        ctx = null;
+      }
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
       let trimmed = trimSilence(full, TARGET_RATE);
       let slice = trimmed.samples;
@@ -526,13 +528,20 @@ export function recordUtterance(opts){
         let preSamples = 0;
         let voiced = false;
         let lastVoice = 0;
+        let voiceAt = 0;
+        let sawSample = false;
         const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
           const copy = new Float32Array(ev.inputBuffer.getChannelData(0));
           const now = performance.now();
           const level = rms(copy);
+          const before = count;
           measure(copy);
+          if (!sawSample && count > before) {
+            sawSample = true;
+            try { if (opts && opts.onFirstSample) opts.onFirstSample(); } catch (_) {}
+          }
           all.push(copy);
           if (!heard) {
             pre.push(copy);
@@ -545,6 +554,7 @@ export function recordUtterance(opts){
           if (level >= VOICE_RMS) {
             if (!heard) {
               heard = true;
+              voiceAt = now;
               lastVoice = now;
               for (const c of pre) said.push(c);
               pre.length = 0;
@@ -555,7 +565,8 @@ export function recordUtterance(opts){
             }
           } else if (heard) {
             said.push(copy);
-            if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
+            const spokeFor = voiceAt ? (now - voiceAt) : 0;
+            if (now - lastVoice >= SILENCE_MS && spokeFor >= 1800) { finishProcessor('pause'); return; }
           }
           if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
@@ -739,6 +750,20 @@ export function scoreBest(scores, min){
   real.sort((a, b) => b.score - a.score);
   return real[0].score > floor ? real[0] : null;
 }
+export function learnPick(raw, scores){
+  const fold = heFold(String(raw || '').replace(/[^\u05D0-\u05EA]/g, ''));
+  const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -3);
+  if (!real.length) return '';
+  const rawHit = real.find(s => heFold(s.text) === fold);
+  const longer = real.filter(s => heFold(s.text).length > fold.length);
+  longer.sort((a, b) => b.score - a.score);
+  if (fold.length <= 2 && longer.length) {
+    const base = rawHit ? rawHit.score : -99;
+    if (longer[0].score >= base - 1) return longer[0].text;
+  }
+  real.sort((a, b) => b.score - a.score);
+  return real[0].text;
+}
 const HE_FIN = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
 function heFold(w){
   return String(w || '').replace(/[\u0591-\u05C7]/g, '').replace(/[ךםןףץ]/g, ch => HE_FIN[ch] || ch);
@@ -767,8 +792,10 @@ export function nearWords(raw, letter, words){
   const tokens = heToks(raw).map(heFold);
   const seeds = tokens.slice();
   if (tokens.length > 1) seeds.push(tokens.join(''));
+  const heads = ['א', 'ה', 'ע', 'י'];
   const out = [];
   const seen = new Set();
+  const known = new Set((words || []).map(heFold));
   const add = (w) => {
     const n = heFold(w);
     if (!n || seen.has(n)) return;
@@ -777,8 +804,18 @@ export function nearWords(raw, letter, words){
     out.push(n);
   };
   if (tokens.length > 1) out.push(tokens.join(' '));
-  for (const t of tokens) add(t);
+  for (const t of tokens) {
+    if (known.has(t)) add(t);
+    for (const h of heads) if (known.has(h + t)) add(h + t);
+  }
   const list = words || [];
+  for (const w of list) {
+    const n = heFold(w);
+    if (!n) continue;
+    for (const seed of seeds) {
+      if (seed && n.endsWith(seed) && n.length > seed.length && n.length - seed.length <= 2) add(n);
+    }
+  }
   for (const seed of seeds) {
     if (!seed || seed.length < 2 || seed.length > 14) continue;
     const hits = [];

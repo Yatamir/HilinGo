@@ -2,7 +2,7 @@
  * HilinGo — known-answer scoring uses the tokenizer's real encode call.
  *   node tests_score.mjs
  */
-import { tokenIds, scoreDecision, scoreBest, nearWords } from './asr.js';
+import { tokenIds, scoreDecision, scoreBest, nearWords, learnPick } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -66,6 +66,19 @@ else ok('the best score above -3 is אחד, not the raw phrase');
 const none = scoreBest([{ text: 'איך', score: -6 }], -3);
 if (none) bad('weak score accepted');
 else ok('a weak score is not committed');
+
+const fromAd = nearWords('עד', '', ['אחד', 'עד', 'חד', 'שלום']);
+const fromHad = nearWords('חד', '', ['אחד', 'עד', 'חד', 'שלום']);
+if (fromAd.indexOf('אחד') < 0) bad('עד candidates ' + fromAd.join(','));
+else ok('עד can be אחד');
+if (fromHad.indexOf('אחד') < 0) bad('חד candidates ' + fromHad.join(','));
+else ok('חד can be אחד');
+const grew = learnPick('חד', [{ text: 'חד', score: -1.2 }, { text: 'אחד', score: -1.8 }]);
+if (grew !== 'אחד') bad('learn pick חד ' + grew);
+else ok('a short חד prefers the longer אחד when the scores are close');
+const grew2 = learnPick('עד', [{ text: 'עד', score: -1.0 }, { text: 'אחד', score: -1.7 }]);
+if (grew2 !== 'אחד') bad('learn pick עד ' + grew2);
+else ok('a short עד prefers אחד when the scores are close');
 
 if (problems.length) {
   console.log('\n' + problems.length + ' failure(s)');

@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.9" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.10" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -275,6 +275,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 /* mic: idle / listening pulse / heard */
 .mic{width:56px;height:56px;border-radius:50%;background:var(--c);color:#fff;font-size:26px;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c) 70%, #000),0 8px 16px color-mix(in srgb, var(--c) 35%, transparent);position:relative}
 .mic.on{animation:listenpulse .7s infinite;background:var(--bad);box-shadow:0 0 0 0 rgba(255,91,110,.55)}
+.mic.cap-go{transform:scale(1.12)}
 @keyframes listenpulse{0%{box-shadow:0 0 0 0 rgba(255,91,110,.55)}70%{box-shadow:0 0 0 14px rgba(255,91,110,0)}100%{box-shadow:0 0 0 0 rgba(255,91,110,0)}}
 .mic.heard{background:var(--ok);animation:heardpop .45s ease}
 @keyframes heardpop{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
@@ -643,6 +644,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
  #learn .mic.ptt{width:auto;min-width:44px;height:44px}
  .speakbtn{height:44px;min-width:44px;padding:0 10px}
  #learnSpeakLbl{display:none}
+ #learnSpeak.need-tap #learnSpeakLbl{display:inline}
 }
 @media (max-height:520px) and (orientation:landscape){
  #learnHalves{flex-direction:row;align-items:stretch}
@@ -829,11 +831,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.9"></script>
-<script src="words.js?v=4.13.9" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.9"></script>
-<script src="cat_hints.js?v=4.13.9"></script>
-<script src="learn_dict.js?v=4.13.9"></script>
+<script src="config.js?v=4.13.10"></script>
+<script src="words.js?v=4.13.10" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.10"></script>
+<script src="cat_hints.js?v=4.13.10"></script>
+<script src="learn_dict.js?v=4.13.10"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1042,7 +1044,11 @@ const WG = (()=>{
       out.push(w);
     };
     if(tokens.length>1) out.push(tokens.join(' '));
-    for(const t of tokens) if(isWord(t)) add(t);
+    const heads=['א','ה','ע','י'];
+    for(const t of tokens){
+      if(isWord(t)) add(t);
+      for(const h of heads) if(isWord(h+t)) add(h+t);
+    }
     const dict=DICTS.he;
     if(dict){
       for(const seed of seeds){
@@ -1052,7 +1058,7 @@ const WG = (()=>{
           if(!w || Math.abs(w.length-seed.length)>2) continue;
           if(letter && firstLetter(w)!==letter) continue;
           const d=editAtMost(seed, w, 2);
-          if(d<=2) hits.push({w, d});
+          if(d<=2 || (w.endsWith(seed) && w.length-seed.length>0 && w.length-seed.length<=2)) hits.push({w, d:d<=2?d:1});
         }
         hits.sort((a,b)=>a.d-b.d);
         for(const h of hits.slice(0, 6)) add(h.w);
@@ -1178,7 +1184,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.9';
+const HILINGO_VERSION='4.13.10';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -4109,14 +4115,22 @@ async function whisperListen(r){
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
+  const learning=!!($('#learn') && !$('#learn').classList.contains('hidden'));
+  const tapAt=performance.now();
+  let cued=false;
   const grab=async (fresh)=>{
     const primed=await captureForListen(!!fresh);
     if(!primed || !primed.stream) throw new Error('no-stream');
     return asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
-      keep:false,
+      keep:learning,
       onVoice:()=>{ diag('speechstart'); },
+      onFirstSample:()=>{
+        const ms=Math.round(performance.now()-tapAt);
+        diag('cap first sample ms='+ms);
+        if(!cued && ms>300){ cued=true; capReadyCue(); }
+      },
       log:diag
     });
   };
@@ -4126,9 +4140,11 @@ async function whisperListen(r){
     try{ recd=await grab(attempt>0); }
     catch(_){ recd=null; }
   }
-  releaseCapture('done');
+  if(!learning) releaseCapture('done');
+  else diag('cap hold learn');
   logWhisperAudio(recd);
   if(whisperNearSilent(recd)){
+    if(learning) releaseCapture('silent');
     whisperNotHeard();
     return;
   }
@@ -4172,7 +4188,32 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
-  if(!exp && text && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
+  const learningHe=learning && (LANG==='he' || (typeof learnState!=='undefined' && learnState!=='LISTEN_TARGET'));
+  if(!exp && text && learningHe && asrMod.learnPick && asrMod.scoreTexts){
+    const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
+    const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
+    const one=tokens.length===1?tokens[0]:'';
+    const short=one.length<=2;
+    const known=!!(one && !short && WG.isWord(one));
+    if(!known){
+      let pool=[];
+      try{ pool=WG.nearHebrew ? WG.nearHebrew(cleaned, '') : []; }catch(_){}
+      let hit='', hitScore='none';
+      try{
+        if(pool.length){
+          const scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 8));
+          if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+          hit=asrMod.learnPick(one||cleaned, scores)||'';
+          const row=hit && scores ? scores.find(s=>s.text===hit) : null;
+          if(row) hitScore=row.score;
+        }
+      }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
+      diag('learn rescore raw="'+cleaned+'" best="'+hit+'" score='+hitScore);
+      if(hit) text=hit;
+      else if(short || tokens.length!==1){ audio=null; whisperNotHeard(); return; }
+    }
+  }
+  if(!exp && text && !learning && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
     const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
     const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
     const one=tokens.length===1?tokens[0]:'';
@@ -5264,6 +5305,21 @@ function showLearnDeaf(){
   setLearnStatus(line);
   diag('deaf retry skipped');
 }
+function capReadyCue(){
+  const btn=document.querySelector('#learnMic.on, #learnRepeatMic.on, #game .mic.on');
+  if(btn){ btn.classList.add('cap-go'); setTimeout(()=>{ try{ btn.classList.remove('cap-go'); }catch(_){} }, 200); }
+  try{
+    const ctx=capCtx;
+    if(!ctx || ctx.state!=='running') return;
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    g.gain.value=0.03;
+    o.frequency.value=880;
+    o.connect(g); g.connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime+0.03);
+  }catch(_){}
+}
 function flashListening(el){
   if(!el) return;
   const t0=el._downAt||performance.now();
@@ -6097,10 +6153,18 @@ async function playAudioOnly(text, langCode, gen){
   let res=await playLocalMp3(localTtsUrl(text, langCode));
   if(gen!==aloudGen){ ttsNote('dropped'); return false; }
   if(res.ok){ lastSpeakPath='local-mp3'; ttsNote('end local-mp3'); return true; }
-  if(/NotAllowed|not-allowed/i.test(res.why||'')){ ttsNote('error not-allowed'); return false; }
+  const blocked=/NotAllowed|not-allowed/i.test(res.why||'');
+  if(!blocked && res.why!=='missing'){ ttsNote('error '+(res.why||'none')); }
   res=await playTtsUrl(ttsUrl(text, langCode));
   if(gen!==aloudGen){ ttsNote('dropped'); return false; }
   if(res.ok){ lastSpeakPath='audio-url'; learnLog('audio-url used'); ttsNote('end audio-url'); return true; }
+  if(/NotAllowed|not-allowed/i.test(res.why||'') || blocked){
+    ttsNote('retry primed');
+    res=await playTtsUrl(ttsUrl(text, langCode));
+    if(gen!==aloudGen){ ttsNote('dropped'); return false; }
+    if(res.ok){ lastSpeakPath='audio-url'; ttsNote('end audio-url'); return true; }
+    ttsNote('tap to hear');
+  }
   ttsNote('error '+(res.why||'none'));
   return false;
 }
@@ -6150,11 +6214,16 @@ function speakTarget(text, langCode, after){
   audioReleasedAt=0;
   const gen=++speechGen;
   showSpeaker(text, langCode);
+  const hear=$('#learnSpeak'); if(hear) hear.classList.remove('need-tap');
   setState('SPEAK_TARGET');
   setOwner('audio');
   setLearnStatus(S.learnSpeaking||'');
   micOff();
   releaseMicTracks();
+  if(asrChoice()==='whisper'){
+    releaseCapture('before tts');
+    setAudioSession('playback', 'learn-tts');
+  }
   const done=(path)=>{
     if(gen!==speechGen) return;
     ttsEndedAt=performance.now();
@@ -6176,10 +6245,15 @@ function speakTarget(text, langCode, after){
       synthCancel();
       try{ if(learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
     }
+    if(asrChoice()==='whisper' && $('#learn') && !$('#learn').classList.contains('hidden')){
+      setAudioSession('play-and-record', 'after-tts');
+      primeCapture();
+    }
     postTtsRoute();
     if(!ok){
       learnLog('speech missed');
       showSpeaker(text, langCode);
+      const sp=$('#learnSpeak'); if(sp) sp.classList.add('need-tap');
     }
     done(ok?lastSpeakPath:'none');
   };

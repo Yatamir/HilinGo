@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.8" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.9" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -829,11 +829,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.8"></script>
-<script src="words.js?v=4.13.8" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.8"></script>
-<script src="cat_hints.js?v=4.13.8"></script>
-<script src="learn_dict.js?v=4.13.8"></script>
+<script src="config.js?v=4.13.9"></script>
+<script src="words.js?v=4.13.9" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.9"></script>
+<script src="cat_hints.js?v=4.13.9"></script>
+<script src="learn_dict.js?v=4.13.9"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1029,6 +1029,37 @@ const WG = (()=>{
     }
     return bestD<=2 ? best : '';
   }
+  function nearHebrew(raw, letter){
+    const tokens=(String(raw||'').replace(/[\u0591-\u05C7]/g,'').match(/[\u05D0-\u05EA]+/g)||[]).map(normalize).filter(Boolean);
+    const seeds=tokens.slice();
+    if(tokens.length>1) seeds.push(tokens.join(''));
+    const out=[];
+    const seen=new Set();
+    const add=w=>{
+      if(!w || seen.has(w)) return;
+      if(letter && firstLetter(w)!==letter) return;
+      seen.add(w);
+      out.push(w);
+    };
+    if(tokens.length>1) out.push(tokens.join(' '));
+    for(const t of tokens) if(isWord(t)) add(t);
+    const dict=DICTS.he;
+    if(dict){
+      for(const seed of seeds){
+        if(!seed || seed.length<2 || seed.length>14) continue;
+        const hits=[];
+        for(const w of dict){
+          if(!w || Math.abs(w.length-seed.length)>2) continue;
+          if(letter && firstLetter(w)!==letter) continue;
+          const d=editAtMost(seed, w, 2);
+          if(d<=2) hits.push({w, d});
+        }
+        hits.sort((a,b)=>a.d-b.d);
+        for(const h of hits.slice(0, 6)) add(h.w);
+      }
+    }
+    return out.slice(0, 8);
+  }
   const MAX_MISSES = 6;              // 2 players: 6 consecutive misses (unchanged)
   const maxMissesFor = n => n===2 ? MAX_MISSES : 2*n;   // 3–4 players: two full rounds
   // v3.0 hints: at most MAX_HINTS per turn. A turn in which the player used ≥1 hint never deletes a letter.
@@ -1144,10 +1175,10 @@ const WG = (()=>{
   }
   return { get LETTERS(){ return L.letters; }, get lang(){ return lang; }, LANGS:Object.keys(LANGS), setLang, hasDict,
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
-    addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew };
+    addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.8';
+const HILINGO_VERSION='4.13.9';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -1201,7 +1232,7 @@ const STR = {
   endEmpty:'הלוח התרוקן! ', endMisses:'יותר מדי החמצות ברצף. ', endManual:'המשחק הסתיים. ', letters:'אותיות', words:'מילים',
   srNA:'זיהוי דיבור לא זמין – אפשר להקליד', listening:'מקשיב…', notHeard:'לא שמעתי מילה – נסו שוב', noPerm:'אין הרשאה למיקרופון – אפשר להקליד', micBlocked:'המיקרופון חסום',
   noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤', micRestart:'לחצו להפעלת המיקרופון',
-  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו', learnDeaf:'לא שמעתי, לחצו שוב',
+  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו', learnDeaf:'לא שמעתי, נסו שוב', notGot:'לא הבנתי, נסו שוב',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו", hintNoCat:"אין מילה כזאת באות הזו. אפשר לדלג", veil:"הסתרת הלוח",
   hintNoDel:"<span class='rules-hint'>💡 רמז</span> נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`<span class='rules-hint'>💡 רמז</span> בשני תורות ברצף – האות ${l} חזרה ללוח`,
@@ -1251,7 +1282,7 @@ const STR = {
   endEmpty:'Board cleared! ', endMisses:'Too many misses in a row. ', endManual:'Game over. ', letters:'letters', words:'words',
   srNA:'Speech recognition unavailable – please type', listening:'Listening…', notHeard:"Didn't catch a word – try again", noPerm:'No microphone permission – please type', micBlocked:'Mic blocked',
   noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤", micRestart:'Tap to restart mic',
-  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak", learnDeaf:"I didn't hear you, tap again",
+  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak", learnDeaf:"I didn't hear you, tap again", notGot:"I didn't get that, try again",
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter", hintNoCat:"No word like that with this letter. You can pass", veil:"Hide board",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> used – no letter crossed off this turn", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> two turns in a row – ${l} is back on your board`,
@@ -1301,7 +1332,7 @@ const STR = {
   endEmpty:'Bord leeg! ', endMisses:'Te veel missers op rij. ', endManual:'Spel afgelopen. ', letters:'letters', words:'woorden',
   srNA:'Spraakherkenning niet beschikbaar – typ maar', listening:'Luistert…', notHeard:'Geen woord gehoord – probeer opnieuw', noPerm:'Geen toegang tot de microfoon – typ maar', micBlocked:'Microfoon geblokkeerd',
   noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤', micRestart:'Tik om de microfoon te herstarten',
-  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg', learnDeaf:'Ik hoorde je niet, tik nog eens',
+  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg', learnDeaf:'Ik hoorde je niet, tik nog eens', notGot:'Ik begreep het niet, probeer opnieuw',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter", hintNoCat:"Geen zulk woord met deze letter. Je mag passen", veil:"Bord verbergen",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> twee beurten op rij – de ${l} staat weer op je bord`,
@@ -1351,7 +1382,7 @@ const STR = {
   endEmpty:'Tabuleiro vazio! ', endMisses:'Erros demais em seguida. ', endManual:'O jogo terminou. ', letters:'letras', words:'palavras',
   srNA:'Reconhecimento de voz indisponível – digite a palavra', listening:'Ouvindo…', notHeard:'Não ouvi uma palavra – tente de novo', noPerm:'Sem permissão para o microfone – digite a palavra', micBlocked:'Microfone bloqueado',
   noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤', micRestart:'Toque para religar o microfone',
-  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale', learnDeaf:'Não ouvi, toque de novo',
+  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale', learnDeaf:'Não ouvi, toque de novo', notGot:'Não entendi, tente de novo',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra", hintNoCat:"Não tem palavra assim com esta letra. Pode pular", veil:"Esconder tabuleiro",
   hintNoDel:"<span class='rules-hint'>💡 Dica</span> usada – nenhuma letra foi apagada neste turno", hintRestored:l=>`<span class='rules-hint'>💡 Dica</span> em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
@@ -1465,7 +1496,7 @@ const STR = {
   ptt:"Toca y habla",
   pttOn:"Estoy escuchando",
   tapToTalk:"Toca y habla",
-  tapAgain:"No oí nada. Toca y habla", learnDeaf:"No te oí, toca otra vez",
+  tapAgain:"No oí nada. Toca y habla", learnDeaf:"No te oí, toca otra vez", notGot:"No entendí, prueba otra vez",
   deaf:"El micrófono se abrió, pero el sonido no llega. Prueba: cierra Safari del todo y ábrelo otra vez · apaga Sonidos en la pantalla inicial · mira Ajustes del sistema → Sonido → Entrada.",
   hint:"💡 Pista",
   hintTitle:"Pista: una frase corta de una palabra con la letra buena (hasta 3 por turno). Con pista no se tacha letra.",
@@ -1598,7 +1629,7 @@ const STR = {
   ptt:"Tocca e parla",
   pttOn:"Sto ascoltando",
   tapToTalk:"Tocca e parla",
-  tapAgain:"Non ho sentito niente. Tocca e parla", learnDeaf:"Non ti ho sentito, tocca ancora",
+  tapAgain:"Non ho sentito niente. Tocca e parla", learnDeaf:"Non ti ho sentito, tocca ancora", notGot:"Non ho capito, riprova",
   deaf:"Il microfono si è aperto, ma il suono non arriva. Prova: chiudi Safari del tutto e riaprilo · spegni Suoni nella schermata iniziale · controlla Impostazioni di sistema → Suono → Ingresso.",
   hint:"💡 Indizio",
   hintTitle:"Indizio: una frase corta per una parola con la lettera giusta (fino a 3 a turno). Con un indizio non si cancella una lettera.",
@@ -3519,7 +3550,7 @@ function abortAllRecs(why){
   return Promise.all(list.map(r=>abortRecognizer(r, why))).then(()=>{ logRecCensus('after-abort'); });
 }
 function showGameDeaf(){
-  const line=(S&&S.learnDeaf)||'לא שמעתי, לחצו שוב';
+  const line=(S&&S.learnDeaf)||'לא שמעתי, נסו שוב';
   diag('deaf retry skipped');
   try{ if(rec){ rec.onend=null; rec.onerror=null; } }catch(_){}
   rec=null; recFor=null;
@@ -3900,7 +3931,10 @@ function primeCapture(){
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
 }
 async function captureForListen(forceFresh){
-  if(forceFresh) releaseCapture('retry');
+  if(forceFresh){
+    releaseCapture('retry');
+    await new Promise(r=>setTimeout(r, 160));
+  }
   if(clipPlaying()){
     diag('cap wait playback');
     const t0=performance.now();
@@ -3993,14 +4027,25 @@ function whisperPreferExpected(text){
   }catch(_){}
   return raw;
 }
+function whisperNotUnderstood(){
+  diag('whisper not understood');
+  whisperOwns=false;
+  const line=(S&&S.notGot)||'לא הבנתי, נסו שוב';
+  if(G && typeof G.turn==='number'){
+    const m=$('#mic'+G.turn); if(m) m.classList.remove('on');
+    setHeard(G.turn, line);
+  }
+}
 function whisperNotHeard(){
   diag('whisper skip silent');
   whisperOwns=false;
   const learn=$('#learn');
   if(learn && !learn.classList.contains('hidden')){
     try{ srRunning=false; learnRec=null; learnSession++; }catch(_){}
+    const side=(typeof learnState!=='undefined' && (learnState==='LISTEN_TARGET'||learnState==='RETRY'||learnState==='IDLE_TARGET'))?'target':'native';
+    try{ if(side==='target') enterIdleTarget(false); else enterIdleNative(false); }catch(_){}
     micOff();
-    const line=(S&&S.learnDeaf)||'';
+    const line=(S&&S.learnDeaf)||'לא שמעתי, נסו שוב';
     setLearnStatus(line);
     setLearnHeard(line);
     return;
@@ -4127,6 +4172,35 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
+  if(!exp && text && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
+    const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
+    const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
+    const one=tokens.length===1?tokens[0]:'';
+    const known=!!(one && WG.isWord(one) && (!G.required || WG.firstLetter(one)===G.required));
+    if(known) text=one;
+    else {
+      const pool=[];
+      try{
+        const dict=WG.nearHebrew ? WG.nearHebrew(cleaned, G.required) : [];
+        dict.forEach(w=>{ if(pool.indexOf(w)<0) pool.push(w); });
+      }catch(_){}
+      if(!pool.length){
+        audio=null;
+        whisperNotUnderstood();
+        return;
+      }
+      let best=null;
+      try{
+        const scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 8));
+        if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+        best=asrMod.scoreBest(scores, -3);
+      }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
+      diag('game rescore raw="'+cleaned+'" best="'+(best&&best.text||'')+'" score='+(best?best.score:'none'));
+      audio=null;
+      if(!best){ whisperNotUnderstood(); return; }
+      text=best.text;
+    }
+  }
   audio=null;
   if(whisperJunk(text)){
     diag('whisper junk "'+text+'"');
@@ -5185,7 +5259,7 @@ function showSpeaker(text, lang){
 function hideSpeaker(){ const sp=$('#learnSpeak'); if(sp) sp.classList.add('hidden'); }
 function micOff(){ [$('#learnMic'),$('#learnRepeatMic')].forEach(m=>{ if(m) m.classList.remove('on'); }); }
 function showLearnDeaf(){
-  const line=(S&&S.learnDeaf)||'לא שמעתי, לחצו שוב';
+  const line=(S&&S.learnDeaf)||'לא שמעתי, נסו שוב';
   setLearnHeard(line);
   setLearnStatus(line);
   diag('deaf retry skipped');
@@ -5555,7 +5629,34 @@ function wireSession(r, side, tag, isRetry, deafN){
     endSession(false);
   };
 }
+function startWhisperLearn(side, langTag, isRetry, deafN){
+  if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); revertListening(side==='target'?$('#learnRepeatMic'):$('#learnMic')); return; }
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('whisper tap ignored '+learnState); revertListening(side==='target'?$('#learnRepeatMic'):$('#learnMic')); return; }
+  const r={ lang:langTag, continuous:false, interimResults:true, maxAlternatives:5, __whisper:true, start(){}, stop(){}, abort(){} };
+  learnRec=r;
+  learnPrevRec=r;
+  learnPrevEnded=false;
+  wireSession(r, side, langTag, !!isRetry, deafN||0);
+  setState(side==='target'?'LISTEN_TARGET':'LISTEN_NATIVE');
+  srRunning=true;
+  setOwner('mic');
+  paintListening(side==='target'?LEARN_TARGET:LANG);
+  learnLog('whisper '+langTag+' no native');
+  diag('learn whisper '+langTag);
+  const err=beginStart(r, deafN||0);
+  if(err){
+    srRunning=false;
+    learnRec=null;
+    if(side==='target') enterIdleTarget(false); else enterIdleNative(false);
+  }
+}
 function startLearnTarget(tag, isRetry, deafN){
+  if(asrChoice()==='whisper'){
+    const code=LEARN_TARGET;
+    const langTag=tag || (code==='pt'?'pt-BR':(SPEECH_TAG[code]||'en-US'));
+    startWhisperLearn('target', langTag, isRetry, deafN);
+    return;
+  }
   // Same start as the game translation tap: synchronous, no audio release, no delay.
   if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); revertListening($('#learnRepeatMic')); return; }
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); revertListening($('#learnRepeatMic')); return; }
@@ -5592,6 +5693,12 @@ function startLearnTarget(tag, isRetry, deafN){
 }
 function beginListen(side, tag, isRetry, released, deafN){
   if(side==='target'){ startLearnTarget(tag, isRetry, deafN); return; }
+  if(asrChoice()==='whisper'){
+    const code=LANG;
+    const langTag=tag || (SPEECH_TAG[code]||'he-IL');
+    startWhisperLearn('native', langTag, isRetry, deafN);
+    return;
+  }
   if(learnOwner==='audio' || learnOwner==='tts'){ learnLog('refuse mic while '+learnOwner); revertListening($('#learnMic')); return; }
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('refuse mic in '+learnState); revertListening($('#learnMic')); return; }
   if(!SR){ setLearnHeard(S.srNA); setLearnStatus(S.srNA); revertListening($('#learnMic')); return; }

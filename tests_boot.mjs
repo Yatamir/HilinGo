@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.8 — the home screen must load with no page error.
+ * HilinGo v4.13.9 — the home screen must load with no page error.
  * A saved solo record used to read SOLO_CAP before its const ran.
  *   node tests_boot.mjs
  */
@@ -118,7 +118,7 @@ try {
       const fresh = await open(browser, null);
       await assertClean(fresh.page, fresh.errors, tag + ' fresh');
       const ver = await fresh.page.evaluate(() => document.querySelector('meta[name="hilingo-version"]').content);
-      if (tag === 'chromium' && ver !== '4.13.8') bad('version ' + ver);
+      if (tag === 'chromium' && ver !== '4.13.9') bad('version ' + ver);
       if (tag === 'chromium') {
         const labels = await fresh.page.evaluate(() => {
           const want = ['he','en','nl','pt','es','it'];

@@ -2,7 +2,7 @@
  * HilinGo — known-answer scoring uses the tokenizer's real encode call.
  *   node tests_score.mjs
  */
-import { tokenIds, scoreDecision } from './asr.js';
+import { tokenIds, scoreDecision, scoreBest, nearWords } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -52,6 +52,20 @@ const close = scoreDecision([
 ], 'uno');
 if (close) bad('loser accepted ' + close);
 else ok('a better distractor is not accepted');
+
+const cands = nearWords('איך עד?', 'א', ['אחד', 'איך', 'עד', 'שלום', 'בית']);
+if (cands.indexOf('אחד') < 0) bad('אחד missing ' + cands.join(','));
+else ok('איך עד suggests אחד when the letter is א');
+const picked = scoreBest([
+  { text: 'איך עד', score: -5 },
+  { text: 'איך', score: -4.2 },
+  { text: 'אחד', score: -1.1 },
+], -3);
+if (!picked || picked.text !== 'אחד') bad('rescore ' + (picked && picked.text));
+else ok('the best score above -3 is אחד, not the raw phrase');
+const none = scoreBest([{ text: 'איך', score: -6 }], -3);
+if (none) bad('weak score accepted');
+else ok('a weak score is not committed');
 
 if (problems.length) {
   console.log('\n' + problems.length + ' failure(s)');

@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.8 — iPad aborts the Italian challenge immediately, and
+ * HilinGo v4.13.9 — iPad aborts the Italian challenge immediately, and
  * משחק חדש starts the same game again.
  *   node tests_ipad.mjs
  */

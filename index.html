@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.13" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.14" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,9 +267,9 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .note:empty{display:none}
 .tile.boom{animation:boom .7s}
 @keyframes boom{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.4) rotate(-12deg);background-color:#FF5B6E;background-image:none;color:#fff;box-shadow:0 0 0 8px rgba(255,91,110,.28)}55%{transform:scale(1.08) rotate(8deg)}100%{transform:scale(.8) rotate(0)}}
-.inputs{display:flex;gap:6px;flex-shrink:0;min-width:0;position:relative;z-index:2}
+.inputs{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;min-width:0;position:relative;z-index:2}
 .hhead,.word,.hrow,.msg,.note{flex-shrink:0;min-width:0}
-.inputs input{flex:1;min-width:0;font-size:22px;padding:10px;border-radius:14px;border:2px solid #E6E0F8;font-family:inherit;text-align:center;background:#fff}
+.inputs input{flex:1 1 8em;min-width:8em;font-size:16px;padding:10px;border-radius:14px;border:2px solid #E6E0F8;font-family:inherit;text-align:center;background:#fff}
 .inputs input:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent)}
 
 /* mic: idle / listening pulse / heard */
@@ -629,7 +629,8 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 .learn-wordrow{position:relative}
 #learnClear{position:absolute;z-index:2;top:8px;inset-inline-start:8px;border:2px solid #7C5CFF;background:#fff;color:#2A2152}
 #learn .word.bigok{font-size:clamp(72px,12vw,140px);min-height:140px;color:var(--ok)}
-#learn .inputs input{font-size:18px}
+#learn .inputs{flex-wrap:wrap}
+#learn .inputs input{font-size:16px;min-width:8em;flex:1 1 8em}
 .speakbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;width:auto;padding:0 14px;border-radius:24px;background:var(--c,var(--blue));color:#fff;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c,var(--blue)) 70%, #000)}
 .speakbtn .sp-ico{font-size:22px;line-height:1}
 .speakbtn:active{transform:translateY(2px)}
@@ -808,7 +809,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div id="learnGuess" class="hidden"><p id="learnGuessAsk"></p><div id="learnGuessBtns"></div></div>
       <div class="inputs">
         <button type="button" class="mic ptt" id="learnMic" aria-label="microphone"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="ml ml-off">לחצו ודברו</span><span class="ml ml-on">אני מקשיב</span></button>
-        <input id="learnIn" autocomplete="off" enterkeyhint="send" dir="auto">
+        <input id="learnIn" lang="he" dir="rtl" inputmode="text" autocapitalize="off" autocomplete="off" enterkeyhint="send">
         <button type="button" class="send" id="learnSend"></button>
       </div>
     </div>
@@ -837,11 +838,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.13"></script>
-<script src="words.js?v=4.13.13" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.13"></script>
-<script src="cat_hints.js?v=4.13.13"></script>
-<script src="learn_dict.js?v=4.13.13"></script>
+<script src="config.js?v=4.13.14"></script>
+<script src="words.js?v=4.13.14" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.14"></script>
+<script src="cat_hints.js?v=4.13.14"></script>
+<script src="learn_dict.js?v=4.13.14"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1205,7 +1206,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.13';
+const HILINGO_VERSION='4.13.14';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -1925,13 +1926,14 @@ function buildHalves(){
       <button type="button" class="veilbtn" id="vb${p}" aria-label="${esc(S.veil||'')}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M4 5l16 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <div class="veil hidden" id="vl${p}"><span class="veilnum"></span></div>
       <div class="inputs"><button class="mic${(PTT||!micIsAuto())?' ptt':''}" id="mic${p}" title="${esc(S.micTitle)}"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="ml ml-off">${esc(S.ptt)}</span><span class="ml ml-on">${esc(S.pttOn)}</span></button>
-        <input id="in${p}" placeholder="${esc(S.inputPh)}" autocomplete="off" enterkeyhint="send"><button class="send" id="send${p}">${esc(S.send)}</button></div>`;
+        <input id="in${p}" lang="he" dir="rtl" inputmode="text" autocapitalize="off" placeholder="${esc(S.inputPh)}" autocomplete="off" enterkeyhint="send"><button class="send" id="send${p}">${esc(S.send)}</button></div>`;
     h.appendChild(d);
-    $('#send'+p).onclick=()=>submit(p,$('#in'+p).value);
+    $('#send'+p).onclick=()=>sendOrType(p);
     $('#in'+p).onkeydown=e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault();
         if(SR && !e.target.value.trim()) micToggle(p,'enter');   // Enter in an empty box = talk (a real user gesture)
         else submit(p,e.target.value); } else enterTyping(p); };
     $('#in'+p).addEventListener('input',()=>enterTyping(p));
+    $('#in'+p).addEventListener('pointerdown', ()=>{ releaseForType(); typing=true; });
     $('#mic'+p).onclick=()=>micToggle(p,'click');   // synchronous: recognition.start() runs inside the click
     $('#mic'+p).addEventListener('pointerdown', ()=>{ $('#mic'+p)._downAt=performance.now(); });
     $('#mic'+p).addEventListener('pointerup', ()=>{ if(recFor!==p && micArmP!==p) flashListening($('#mic'+p)); });
@@ -2004,6 +2006,36 @@ function enterTyping(p){
   if(!G||G.over||p!==G.turn||typing) return;
   typing=true; if(recFor===p) stopRec();
   if(SR) setHeard(p,S.typing);
+}
+function focusHebrew(inp){
+  if(!inp) return;
+  inp.lang='he';
+  inp.setAttribute('dir','rtl');
+  inp.setAttribute('inputmode','text');
+  inp.setAttribute('autocapitalize','off');
+  try{ inp.focus({preventScroll:false}); }catch(_){ try{ inp.focus(); }catch(__){} }
+  try{ inp.scrollIntoView({block:'nearest'}); }catch(_){}
+}
+function releaseForType(){
+  diag('type open');
+  try{ releaseCapture('type'); }catch(_){}
+  capGen++;
+  capBusy=false;
+  try{ if(srRunning && typeof stopSession==='function') stopSession('type'); }catch(_){}
+  try{ stopRec(); }catch(_){}
+  try{ micOff(); }catch(_){}
+}
+function sendOrType(p){
+  const inp=$('#in'+p);
+  const raw=inp?stripInvis(inp.value).trim():'';
+  if(!raw){ releaseForType(); typing=true; focusHebrew(inp); diag('type open game '+p); return; }
+  submit(p, inp.value);
+}
+function learnSendTap(){
+  const inp=$('#learnIn');
+  const raw=inp?stripInvis(inp.value).trim():'';
+  if(!raw){ releaseForType(); focusHebrew(inp); diag('type open learn'); return; }
+  submitLearnTyped();
 }
 const finePointer = window.matchMedia && matchMedia('(pointer:fine)').matches;
 function focusInput(p){ if(!finePointer) return; const e=$('#in'+p); if(e){ try{ e.focus({preventScroll:true}); }catch(_){ e.focus(); } } }
@@ -3441,7 +3473,7 @@ function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
-let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0, gumAfterTts=false, gumDenied=false, gumFlight=null, startedAfterGum=false, sessionNeedsSettle=false;
+let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0, gumAfterTts=false, gumDenied=false, gumFlight=null, startedAfterGum=false;
 function setAudioSession(type, reason){
   let api=null;
   try{ if('audioSession' in navigator && navigator.audioSession) api=navigator.audioSession; }catch(_){ api=null; }
@@ -3452,7 +3484,6 @@ function setAudioSession(type, reason){
   try{
     const why=reason||'unknown';
     if(type==='playback') diag('audioSession playback by '+why);
-    if(type==='play-and-record' && audioSessionNow==='playback') sessionNeedsSettle=true;
     if(api.type!==type) api.type=type;
     const now=String(api.type||type);
     audioSessionNow=now;
@@ -3896,9 +3927,7 @@ function watchTrack(track){
   try{
     track.addEventListener('mute', ()=>{
       diag('cap track mute');
-      setTimeout(()=>{
-        if(track.muted && primedCapture && captureTrack(primedCapture.stream)===track) releaseCapture('mute');
-      }, 400);
+      if(primedCapture && captureTrack(primedCapture.stream)===track) releaseCapture('mute');
     });
     track.addEventListener('unmute', ()=>{ diag('cap track unmute'); });
     track.addEventListener('ended', ()=>{
@@ -3941,92 +3970,68 @@ function takeStream(stream){
   }
   return stream;
 }
-function primeDecision(state){
-  const s=state||{};
-  if(s.playing) return {act:'skip', settleMs:0};
-  if(s.bad) return {act:'drop', settleMs:0};
-  if(s.live) return {act:'reuse', settleMs:0};
-  if(s.inFlight && !s.forceFresh) return {act:'wait', settleMs:0};
-  const settle=(s.forceFresh || s.fromPlayback) ? 400 : 0;
-  return {act:'open', settleMs:settle};
-}
-function afterCapture(attempt, peak, tapped){
-  if(!tapped) return 'ignore';
-  if(Number(peak)>=0.02) return 'commit';
-  if(attempt<2) return 'retry';
-  return 'silent';
-}
-function primeCapture(opts){
-  opts=opts||{};
+function primeCapture(){
   if(asrChoice()!=='whisper') return;
-  const playing=clipPlaying();
+  if(clipPlaying()){ diag('cap skip playback'); return; }
   const live=heldStreamNow();
-  const bad=!!(live && trackBad(live));
-  const inFlight=!!(primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function');
-  let decision=primeDecision({
-    playing:playing, bad:bad, live:!!(live && !bad), inFlight:inFlight,
-    forceFresh:!!opts.forceFresh, fromPlayback:!!sessionNeedsSettle
-  });
-  diag('cap prime '+decision.act+(decision.settleMs?(' settle='+decision.settleMs):''));
-  if(decision.act==='skip' || decision.act==='reuse' || decision.act==='wait') return;
-  if(decision.act==='drop'){
-    releaseCapture('bad');
-    decision=primeDecision({ playing:clipPlaying(), bad:false, live:false, inFlight:false, forceFresh:!!opts.forceFresh, fromPlayback:!!sessionNeedsSettle });
-    if(decision.act!=='open') return;
-  }
+  const bad=live && trackBad(live);
+  if(bad) releaseCapture(bad);
+  else if(live) return;
   setAudioSession('play-and-record', 'capture');
-  const fromPlayback=!!sessionNeedsSettle || !!opts.forceFresh;
-  sessionNeedsSettle=false;
-  const wait=decision.settleMs||0;
-  if(wait) diag('cap settle '+wait+'ms before context');
   try{
-    const holder={ ctx:null, stream:null };
-    primedCapture=holder;
-    holder.stream=(async()=>{
-      if(wait) await new Promise(r=>setTimeout(r, wait));
-      if(primedCapture!==holder) return null;
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(!capCtx || capCtx.state==='closed') capCtx=new AC();
-      const ctx=capCtx;
-      holder.ctx=ctx;
-      if(ctx.state==='suspended' && ctx.resume){ try{ await ctx.resume(); }catch(_){} }
-      diag('cap ctx state '+ctx.state);
-      let s=null;
-      try{ s=await gumAudio(); }
-      catch(err){
-        const msg=String(err&&(err.message||err.name)||err||'');
-        diag('cap gum '+msg);
-        if(/AudioSession|compatible|category/i.test(msg)){
-          setAudioSession('play-and-record', 'capture-retry');
-          if(fromPlayback) await new Promise(r=>setTimeout(r, 400));
-          s=await gumAudio();
-        } else return null;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!capCtx || capCtx.state==='closed') capCtx=new AC();
+    const ctx=capCtx;
+    if(ctx.state==='suspended' && ctx.resume) ctx.resume();
+    diag('cap ctx state '+ctx.state);
+    const epoch=capGen;
+    const p=gumAudio().catch(err=>{
+      const msg=String(err&&(err.message||err.name)||err||'');
+      if(/AudioSession|compatible|category/i.test(msg)){
+        setAudioSession('play-and-record', 'capture-retry');
+        return gumAudio();
       }
-      if(primedCapture!==holder){
+      throw err;
+    }).then(s=>{
+      if(epoch!==capGen || !primedCapture || primedCapture.stream!==p){
         try{ if(s) s.getTracks().forEach(t=>{ try{ t.stop(); }catch(_){} }); }catch(_){}
         return null;
       }
       return takeStream(s);
-    })();
+    }).catch(err=>{
+      diag('cap gum '+(err&&(err.message||err.name)||err));
+      return null;
+    });
+    primedCapture={ ctx, stream:p };
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
 }
 async function captureForListen(forceFresh){
-  if(forceFresh) releaseCapture('retry');
+  const epoch=capGen;
+  if(forceFresh){
+    releaseCapture('retry');
+    await new Promise(r=>setTimeout(r, 160));
+  }
   if(clipPlaying()){
     diag('cap wait playback');
     const t0=performance.now();
     while(clipPlaying() && performance.now()-t0<3000) await new Promise(r=>setTimeout(r, 40));
   }
-  if(!forceFresh && primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function'){
-    try{ await primedCapture.stream; }catch(_){}
-  }
-  const live=heldStreamNow();
-  if(!forceFresh && live && !trackBad(live)) return primedCapture;
-  if(primedCapture) releaseCapture(trackBad(live)||'stale');
-  primeCapture({ forceFresh:!!forceFresh });
   if(primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function'){
     try{ await primedCapture.stream; }catch(_){}
   }
+  const live=heldStreamNow();
+  if(live && !trackBad(live)) return primedCapture;
+  if(epoch!==capGen) return null;
+  if(primedCapture) releaseCapture(trackBad(live)||'stale');
+  primeCapture();
+  if(!primedCapture && !clipPlaying()){
+    setAudioSession('play-and-record', 'capture');
+    primeCapture();
+  }
+  if(primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function'){
+    try{ await primedCapture.stream; }catch(_){}
+  }
+  if(epoch!==capGen) return null;
   const again=heldStreamNow();
   if(again && !trackBad(again)) return primedCapture;
   if(primedCapture) releaseCapture(trackBad(again)||'muted');
@@ -4156,7 +4161,7 @@ function whisperBudget(promise, ms){
     promise.then(v=>{ clearTimeout(t); resolve(v); }, e=>{ clearTimeout(t); reject(e); });
   });
 }
-let capBusy=false, lastUserTap=0;
+let capBusy=false, lastUserTap=0, capGen=0;
 function noteUserTap(){ lastUserTap=performance.now(); }
 function asrModCommitAllowed(tapAt, now){
   return !!(tapAt && now>=tapAt && (now-tapAt)<4000);
@@ -4168,6 +4173,7 @@ async function whisperListen(r){
   capBusy=true;
   const listenGen=learnSession;
   const dropped=()=>learningNow && learnSession!==listenGen;
+  let watchT=0;
   try{
   r.__whisper=true;
   whisperOwns=true;
@@ -4192,16 +4198,27 @@ async function whisperListen(r){
   }
   const learning=!!($('#learn') && !$('#learn').classList.contains('hidden'));
   const tapAt=performance.now();
+  const myGen=++capGen;
+  let heardLive=false;
   let cued=false;
+  watchT=setTimeout(()=>{
+    if(myGen!==capGen || heardLive) return;
+    diag('cap watch 8s');
+    capGen++;
+    try{ releaseCapture('watch'); }catch(_){}
+    capBusy=false;
+    whisperNotHeard();
+  }, 8000);
+  const alive=()=>myGen===capGen;
   const grab=async (fresh)=>{
     const primed=await captureForListen(!!fresh);
+    if(!alive()) throw new Error('watch');
     if(!primed || !primed.stream) throw new Error('no-stream');
     return asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
       keep:false,
-      maxMs:learning?7000:5000,
-      onVoice:()=>{ diag('speechstart'); },
+      onVoice:()=>{ heardLive=true; diag('speechstart'); },
       onFirstSample:()=>{
         const ms=Math.round(performance.now()-tapAt);
         diag('cap first sample ms='+ms);
@@ -4211,25 +4228,18 @@ async function whisperListen(r){
     });
   };
   let recd=null;
-  let attempt=0;
-  while(attempt<2){
-    attempt++;
-    if(attempt>1) diag(recd&&recd.why==='deaf'?'cap deaf early':'cap retry silent');
-    try{ recd=await grab(attempt>1); }
-    catch(err){ diag('cap grab '+(err&&(err.message||err.name)||err)); recd=null; }
-    const next=afterCapture(attempt, recd&&recd.peak, true);
-    diag('cap plan '+next+' peak='+Number(recd&&recd.peak||0).toFixed(4)+' attempt='+attempt);
-    if(next==='commit') break;
-    if(next!=='retry'){
-      releaseCapture('silent');
-      logWhisperAudio(recd);
-      whisperNotHeard();
-      return;
-    }
+  for(let attempt=0; attempt<2 && whisperNearSilent(recd); attempt++){
+    if(!alive() || performance.now()-tapAt>=8000) break;
+    if(attempt) diag('cap retry silent');
+    try{ recd=await grab(attempt>0); }
+    catch(err){ if(!alive()) return; diag('cap grab '+(err&&(err.message||err.name)||err)); recd=null; }
+    if(recd && Number(recd.peak)>=0.02) heardLive=true;
   }
+  if(!alive()) return;
+  clearTimeout(watchT);
   releaseCapture('done');
   logWhisperAudio(recd);
-  if(afterCapture(attempt, recd&&recd.peak, true)!=='commit'){
+  if(whisperNearSilent(recd)){
     whisperNotHeard();
     return;
   }
@@ -4338,7 +4348,7 @@ async function whisperListen(r){
   if(dropped()){ diag('cap drop stale'); audio=null; return; }
   deliverWhisper(r, text);
   whisperOwns=false;
-  } finally { capBusy=false; }
+  } finally { clearTimeout(watchT); capBusy=false; }
 }
 function unloadSpokenAudio(){
   const a=learnTtsAudio;
@@ -6118,6 +6128,7 @@ function unlockTts(){
 }
 document.addEventListener('pointerdown', (ev)=>{
   const t=ev.target;
+  if(t && t.closest && t.closest('input,textarea,.send,.inputs')) return;
   const onMic=t && t.closest && t.closest('.mic,#trTap,#dbgPt');
   if(onMic) sessionForListen('pointerdown');
   else sessionForSpeak('pointerdown');
@@ -6359,9 +6370,7 @@ function speakTarget(text, langCode, after){
       try{ if(learnTtsAudio) learnTtsAudio.pause(); }catch(_){}
     }
     if(asrChoice()==='whisper' && $('#learn') && !$('#learn').classList.contains('hidden')){
-      setAudioSession('play-and-record', 'after-tts');
       diag('cap no preopen after tts');
-      setTimeout(()=>{ sessionNeedsSettle=false; }, 400);
     }
     postTtsRoute();
     if(!ok){
@@ -7639,7 +7648,8 @@ document.querySelectorAll('#learnTargets .opt').forEach(b=>b.onclick=()=>{
 });
 $('#learnBack').onclick=leaveLearn;
 $('#learnWordsBtn').onclick=openMyWords;
-$('#learnSend').onclick=submitLearnTyped;
+$('#learnSend').onclick=learnSendTap;
+$('#learnIn').addEventListener('pointerdown', ()=>{ releaseForType(); });
 $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
 $('#learnMic').onclick=()=>learnMicTap();

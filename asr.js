@@ -171,6 +171,29 @@ function resample(input, fromRate){
   return out;
 }
 
+function captureTrack(stream){
+  return stream && stream.getAudioTracks ? stream.getAudioTracks()[0] : null;
+}
+function trackUnusable(stream){
+  const t = captureTrack(stream);
+  if (!t) return 'none';
+  if (t.readyState === 'ended') return 'ended';
+  if (t.muted) return 'muted';
+  return '';
+}
+function watchTrack(track, log){
+  if (!track || track.__capWatch) return;
+  track.__capWatch = true;
+  try {
+    track.addEventListener('mute', () => { try { log('cap track mute'); } catch (_) {} });
+    track.addEventListener('unmute', () => { try { log('cap track unmute'); } catch (_) {} });
+  } catch (_) {}
+}
+function freshMic(){
+  return navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
+  });
+}
 function stopStream(stream){
   try { stream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} }); } catch (_) {}
 }
@@ -229,6 +252,7 @@ export function recordUtterance(opts){
     let count = 0;
     let heard = false;
     let usedRecorder = false;
+    let replaced = false;
     const all = [];
     const said = [];
     const t0 = performance.now();
@@ -256,9 +280,9 @@ export function recordUtterance(opts){
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
       try { if (source) source.disconnect(); } catch (_) {}
       try { if (mute) mute.disconnect(); } catch (_) {}
-      if (!keep) {
+      if (!keep || replaced) {
         stopStream(stream);
-        try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+        if (!keep) { try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {} }
       }
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
       let out = trimSilence(full, TARGET_RATE);
@@ -285,8 +309,16 @@ export function recordUtterance(opts){
       } catch (_) {}
     };
     cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, MAX_MS + 2000);
-    const openGraph = (s) => {
+    const openGraph = async (s) => {
       stream = s;
+      const bad = trackUnusable(stream);
+      if (bad) {
+        try { log('cap track ' + bad + ', fresh'); } catch (_) {}
+        try { stopStream(stream); } catch (_) {}
+        replaced = true;
+        stream = await freshMic();
+      }
+      watchTrack(captureTrack(stream), log);
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!ctx || ctx.state === 'closed') ctx = new AC();
       const resume = (ctx.state === 'suspended' && ctx.resume) ? ctx.resume() : Promise.resolve();

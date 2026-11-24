@@ -1,7 +1,13 @@
 /* Caches the category lists so a later game can use them offline. */
-const CACHE = 'hilingo-cats-v4134';
+const CACHE = 'hilingo-cats-v4135';
 self.addEventListener('install', event => { self.skipWaiting(); event.waitUntil(Promise.resolve()); });
-self.addEventListener('activate', event => { event.waitUntil(self.clients.claim()); });
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    await self.clients.claim();
+  })());
+});
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (!url.pathname.includes('/cats/')) return;

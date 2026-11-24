@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.16" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.17" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -772,6 +772,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
   <button type="button" class="verlbl" id="verLblStart"></button>
+  <button type="button" class="linkbtn" id="homeLog">העתק לוג</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -838,11 +839,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.16"></script>
-<script src="words.js?v=4.13.16" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.16"></script>
-<script src="cat_hints.js?v=4.13.16"></script>
-<script src="learn_dict.js?v=4.13.16"></script>
+<script src="config.js?v=4.13.17"></script>
+<script src="words.js?v=4.13.17" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.17"></script>
+<script src="cat_hints.js?v=4.13.17"></script>
+<script src="learn_dict.js?v=4.13.17"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1206,7 +1207,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.16';
+const HILINGO_VERSION='4.13.17';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -3451,9 +3452,12 @@ const diagLog=[]; const diagT0=performance.now();
 var learnDbgLines=[];
 const PREV_LOG_KEY='hilingo_prev_log';
 const CUR_LOG_KEY='hilingo_cur_log';
+const STAGE_KEY='hilingo_stage';
 let previousLog='';
+let diedStage='';
 try{
   const cur=localStorage.getItem(CUR_LOG_KEY)||'';
+  diedStage=localStorage.getItem(STAGE_KEY)||'';
   let fresh=true;
   try{ fresh=sessionStorage.getItem('hilingo_log_gen')!=='1'; }catch(_){}
   if(fresh){
@@ -3461,16 +3465,29 @@ try{
     localStorage.removeItem(CUR_LOG_KEY);
     try{ sessionStorage.setItem('hilingo_log_gen','1'); }catch(_){}
   }
+  if(diedStage) localStorage.removeItem(STAGE_KEY);
   previousLog=localStorage.getItem(PREV_LOG_KEY)||'';
 }catch(_){}
 let lastMicAt=performance.now(), lastResultAt=0, micArmedAt=0, micSawStart=false, restartTimer=0;
 function persistDiag(){
-  try{ localStorage.setItem(CUR_LOG_KEY, diagLog.slice(-200).join('\n')); }catch(_){}
+  try{
+    let text=diagLog.slice(-80).join('\n');
+    if(text.length>12000) text=text.slice(-12000);
+    localStorage.setItem(CUR_LOG_KEY, text);
+  }catch(_){}
 }
-function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>800) diagLog.shift();
+function markStage(name){
+  try{
+    if(name) localStorage.setItem(STAGE_KEY, name);
+    else localStorage.removeItem(STAGE_KEY);
+  }catch(_){}
+  if(name) diag('stage '+name);
+}
+function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()-diagT0)/1000).toFixed(1)+' '+ev); if(diagLog.length>200) diagLog.shift();
   persistDiag();
   drawDiag();
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
+if(diedStage) diag('previous session died at stage '+diedStage);
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
 let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0, gumAfterTts=false, gumDenied=false, gumFlight=null, startedAfterGum=false;
@@ -3962,6 +3979,7 @@ function takeStream(stream){
   if(t){
     watchTrack(t);
     diag('cap track muted='+(t.muted?'true':'false')+' ready='+(t.readyState||''));
+    markStage('gUM ok');
   }
   if(bad){
     diag('cap track '+bad+', fresh');
@@ -4112,6 +4130,7 @@ function whisperNotUnderstood(){
   }
 }
 function whisperNotHeard(){
+  markStage('');
   diag('whisper skip silent');
   whisperOwns=false;
   const learn=$('#learn');
@@ -4178,6 +4197,7 @@ async function whisperListen(r){
   clearTimeout(trTapT); trTapT=0;
   clearTimeout(trDeafT); trDeafT=0;
   diag('asr engine=whisper');
+  markStage('capture start');
   showWhisperListen();
   const leaveApple=why=>{
     whisperOwns=false;
@@ -4240,6 +4260,7 @@ async function whisperListen(r){
   showWhisperThink();
   let audio=(recd&&recd.audio)||new Float32Array(0);
   recd=null;
+  markStage('transcribe start');
   diag('whisper transcribe start n='+audio.length);
   const tag=whisperLangTag(r);
   const exp=whisperExpected();
@@ -4255,6 +4276,7 @@ async function whisperListen(r){
           diag('whisper transcribe ms 0');
           if(dropped()){ diag('cap drop stale'); return; }
           deliverWhisper(r, hit);
+          markStage('');
           whisperOwns=false;
           return;
         }
@@ -4269,6 +4291,7 @@ async function whisperListen(r){
     diag('whisper transcribe '+(e&&(e.message||e.name)||e));
     text='';
   }
+  markStage('transcribe end');
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
   const learningHe=learningNow && LANG==='he' && !(typeof learnState!=='undefined' && learnState==='LISTEN_TARGET');
   if(!exp && text && learningHe && asrMod.decideLearn && asrMod.cheapScores){
@@ -4333,6 +4356,7 @@ async function whisperListen(r){
   text=whisperPreferExpected(text);
   if(dropped()){ diag('cap drop stale'); audio=null; return; }
   deliverWhisper(r, text);
+  markStage('');
   whisperOwns=false;
   } catch(err){
     diag('whisper flow '+(err&&(err.message||err.name)||err));
@@ -7756,7 +7780,7 @@ function testPtMic(){
   startPt();
 }
 $('#dbgCopy').onclick=()=>copyLearnLog();
-$('#diagCopy').onclick=()=>{
+function copyShownLog(){
   const text=fullLogText();
   const show=worked=>{
     const note=$('#diagCopied'); if(!note) return;
@@ -7776,7 +7800,9 @@ $('#diagCopy').onclick=()=>{
   if(ok){ show(true); return; }
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>show(true), ()=>show(false)); return; }
   show(false);
-};
+}
+$('#diagCopy').onclick=copyShownLog;
+$('#homeLog').onclick=()=>{ try{ openMicLog('home log'); }catch(_){} copyShownLog(); };
 $('#dbgClear').onclick=()=>clearLearnLog();
 $('#dbgPt').onclick=e=>{ try{ e.preventDefault(); e.currentTarget.blur(); }catch(_){} testPtMic(); };
 $('#learnIn').addEventListener('input', ()=>{

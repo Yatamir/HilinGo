@@ -141,6 +141,12 @@ try {
   else ok('the mic is idle and the thinking line is gone');
   if (!snap.other || snap.other === '…') bad('translation did not speak ' + snap.other);
   else ok('the translation is shown (' + snap.other.trim() + ')');
+  const saved = await page.evaluate(() => localStorage.getItem('hilingo_cur_log') || '');
+  if (!saved.includes('capture start') && !saved.includes('asr engine=whisper')) bad('log not persisted');
+  else ok('the session log is saved for the next launch');
+  const home = await page.locator('#homeLog').count();
+  if (!home) bad('home log button missing');
+  else ok('the home screen has a log copy button');
   if (errors.length) bad('page error ' + errors.join('; '));
   else ok('no page error');
 } catch (err) {

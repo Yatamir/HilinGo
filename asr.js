@@ -137,7 +137,7 @@ async function baseFilesReady(){
 async function cacheOne(id, file){
   const url = fileUrl(id, file);
   const cache = await caches.open(FILE_CACHE);
-  try { if (await cache.match(url)) { note('whisper download ' + id + ' ' + file + ' 100%'); return true; } } catch (_) {}
+  try { if (await cache.match(url)) return true; } catch (_) {}
   let res;
   try { res = await fetch(url, { priority: 'low' }); } catch (_) { return false; }
   if (!res || !res.ok || !res.body) return false;
@@ -165,23 +165,17 @@ async function cacheOne(id, file){
   return true;
 }
 
+let warmStarted = false;
 export function prefetch(){
+  if (warmStarted) return;
+  warmStarted = true;
   noteCrashOnce();
   lowerModelFetch();
-  const want = (wantsTiny() || baseBanned) ? TINY : BASE;
+  const want = modelsToWarm({ tiny: wantsTiny(), banned: baseBanned, ios: isIOS() })[0];
   (async () => {
-    if (want === TINY) {
-      for (const file of weightFiles(TINY)) { try { await cacheOne(TINY, file); } catch (_) {} }
-      const info = await ensureModel();
-      note('whisper warm ready ' + ((info && info.model) || TINY));
-      return;
-    }
-    for (const file of weightFiles(TINY)) { try { await cacheOne(TINY, file); } catch (_) {} }
-    let info = await ensureModel();
-    note('whisper warm ready ' + ((info && info.model) || TINY));
-    for (const file of weightFiles(BASE)) { try { await cacheOne(BASE, file); } catch (_) {} }
-    info = await ensureModel();
-    note('whisper warm ready ' + ((info && info.model) || ''));
+    for (const file of weightFiles(want)) { try { await cacheOne(want, file); } catch (_) {} }
+    const info = await ensureModel();
+    note('whisper warm ready ' + ((info && info.model) || want));
   })().catch(err => { note('whisper warm fail ' + (err && err.message || err)); });
 }
 
@@ -244,9 +238,10 @@ async function buildPipe(id, device, spec){
 }
 
 async function createPipe(id){
+  if (isIOS()) id = TINY;
   if (pipe && pipeId === id) return pipeInfo;
   if (pipe) await disposePipe('switch');
-  let model = (baseBanned && id === BASE) ? TINY : id;
+  let model = (isIOS() || (baseBanned && id === BASE)) ? TINY : id;
   let device = 'wasm';
   let spec = 'q8';
   let label = 'q8';
@@ -291,13 +286,16 @@ async function createPipe(id){
 }
 
 export function modelForSession(opts){
-  return (opts && (opts.tiny || opts.banned)) ? TINY : BASE;
+  return (opts && (opts.ios || opts.tiny || opts.banned)) ? TINY : BASE;
+}
+export function modelsToWarm(opts){
+  return [modelForSession(opts)];
 }
 export async function ensureModel(){
   return locked(async () => {
     noteCrashOnce();
     lowerModelFetch();
-    if (modelForSession({ tiny: wantsTiny(), banned: baseBanned }) === TINY) {
+    if (modelForSession({ tiny: wantsTiny(), banned: baseBanned, ios: isIOS() }) === TINY) {
       if (pipe && pipeId !== TINY) await disposePipe('tiny');
       return createPipe(TINY);
     }
@@ -504,8 +502,8 @@ export function recordUtterance(opts){
       let trimmed = trimSilence(full, TARGET_RATE);
       let slice = trimmed.samples;
       if (!slice.length && full.length) { slice = full; trimmed = { samples: full, start: 0, end: full.length }; }
-      if (slice.length > TARGET_RATE * 3) {
-        slice = slice.subarray(0, TARGET_RATE * 3);
+      if (slice.length > TARGET_RATE * 5) {
+        slice = slice.subarray(0, TARGET_RATE * 5);
         trimmed = { samples: slice, start: trimmed.start, end: trimmed.start + slice.length };
       }
       const out = new Float32Array(slice.length);
@@ -692,7 +690,7 @@ async function runPipe(audio, tag){
   const opts = {
     task: 'transcribe',
     return_timestamps: false,
-    max_new_tokens: 12,
+    max_new_tokens: 16,
     no_repeat_ngram_size: 3,
   };
   if (language) opts.language = language;

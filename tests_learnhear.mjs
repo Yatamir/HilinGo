@@ -2,7 +2,7 @@
  * HilinGo — learning trim, early deaf check, and commit decision.
  *   node tests_learnhear.mjs
  */
-import { trimPcm, deafEarly, decideLearn, nearWords, commitAllowed, SCORE_CAP, modelForSession } from './asr.js';
+import { trimPcm, deafEarly, decideLearn, nearWords, commitAllowed, SCORE_CAP, modelForSession, modelsToWarm } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -65,6 +65,11 @@ else ok('the cheap match אחד stays inside the cap');
 
 if (modelForSession({ banned: true }) !== 'Xenova/whisper-tiny') bad('crash still wants base');
 else ok('after a crash the session stays on tiny');
+if (modelForSession({ ios: true }) !== 'Xenova/whisper-tiny') bad('ios wants base');
+else ok('an iPhone session uses tiny only');
+const warm = modelsToWarm({ ios: true });
+if (warm.length !== 1 || warm[0] !== 'Xenova/whisper-tiny') bad('ios warm ' + warm.join(','));
+else ok('iOS warms one pipeline, and it is tiny');
 if (modelForSession({ tiny: false, banned: false }) !== 'Xenova/whisper-base') bad('fresh session model');
 else ok('a fresh session may use base');
 

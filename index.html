@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.14" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.15" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -838,11 +838,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.14"></script>
-<script src="words.js?v=4.13.14" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.14"></script>
-<script src="cat_hints.js?v=4.13.14"></script>
-<script src="learn_dict.js?v=4.13.14"></script>
+<script src="config.js?v=4.13.15"></script>
+<script src="words.js?v=4.13.15" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.15"></script>
+<script src="cat_hints.js?v=4.13.15"></script>
+<script src="learn_dict.js?v=4.13.15"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1206,7 +1206,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.14';
+const HILINGO_VERSION='4.13.15';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -3977,6 +3977,7 @@ function primeCapture(){
   const bad=live && trackBad(live);
   if(bad) releaseCapture(bad);
   else if(live) return;
+  if(primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function') return;
   setAudioSession('play-and-record', 'capture');
   try{
     const AC=window.AudioContext||window.webkitAudioContext;
@@ -3984,7 +3985,6 @@ function primeCapture(){
     const ctx=capCtx;
     if(ctx.state==='suspended' && ctx.resume) ctx.resume();
     diag('cap ctx state '+ctx.state);
-    const epoch=capGen;
     const p=gumAudio().catch(err=>{
       const msg=String(err&&(err.message||err.name)||err||'');
       if(/AudioSession|compatible|category/i.test(msg)){
@@ -3993,7 +3993,7 @@ function primeCapture(){
       }
       throw err;
     }).then(s=>{
-      if(epoch!==capGen || !primedCapture || primedCapture.stream!==p){
+      if(!primedCapture || primedCapture.stream!==p){
         try{ if(s) s.getTracks().forEach(t=>{ try{ t.stop(); }catch(_){} }); }catch(_){}
         return null;
       }
@@ -4006,7 +4006,6 @@ function primeCapture(){
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
 }
 async function captureForListen(forceFresh){
-  const epoch=capGen;
   if(forceFresh){
     releaseCapture('retry');
     await new Promise(r=>setTimeout(r, 160));
@@ -4021,7 +4020,6 @@ async function captureForListen(forceFresh){
   }
   const live=heldStreamNow();
   if(live && !trackBad(live)) return primedCapture;
-  if(epoch!==capGen) return null;
   if(primedCapture) releaseCapture(trackBad(live)||'stale');
   primeCapture();
   if(!primedCapture && !clipPlaying()){
@@ -4031,7 +4029,6 @@ async function captureForListen(forceFresh){
   if(primedCapture && primedCapture.stream && typeof primedCapture.stream.then==='function'){
     try{ await primedCapture.stream; }catch(_){}
   }
-  if(epoch!==capGen) return null;
   const again=heldStreamNow();
   if(again && !trackBad(again)) return primedCapture;
   if(primedCapture) releaseCapture(trackBad(again)||'muted');
@@ -4196,11 +4193,8 @@ async function whisperListen(r){
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
-  const learning=!!($('#learn') && !$('#learn').classList.contains('hidden'));
-  const tapAt=performance.now();
-  const myGen=++capGen;
+  const myGen=capGen;
   let heardLive=false;
-  let cued=false;
   watchT=setTimeout(()=>{
     if(myGen!==capGen || heardLive) return;
     diag('cap watch 8s');
@@ -4210,30 +4204,22 @@ async function whisperListen(r){
     whisperNotHeard();
   }, 8000);
   const alive=()=>myGen===capGen;
-  const grab=async (fresh)=>{
-    const primed=await captureForListen(!!fresh);
-    if(!alive()) throw new Error('watch');
+  let recd=null;
+  try{
+    const primed=await captureForListen(false);
+    if(!alive()) return;
     if(!primed || !primed.stream) throw new Error('no-stream');
-    return asrMod.recordUtterance({
+    recd=await asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
       keep:false,
       onVoice:()=>{ heardLive=true; diag('speechstart'); },
-      onFirstSample:()=>{
-        const ms=Math.round(performance.now()-tapAt);
-        diag('cap first sample ms='+ms);
-        if(!cued && ms>300){ cued=true; capReadyCue(); }
-      },
       log:diag
     });
-  };
-  let recd=null;
-  for(let attempt=0; attempt<2 && whisperNearSilent(recd); attempt++){
-    if(!alive() || performance.now()-tapAt>=8000) break;
-    if(attempt) diag('cap retry silent');
-    try{ recd=await grab(attempt>0); }
-    catch(err){ if(!alive()) return; diag('cap grab '+(err&&(err.message||err.name)||err)); recd=null; }
-    if(recd && Number(recd.peak)>=0.02) heardLive=true;
+  }catch(err){
+    if(!alive()) return;
+    diag('cap grab '+(err&&(err.message||err.name)||err));
+    recd=null;
   }
   if(!alive()) return;
   clearTimeout(watchT);
@@ -6569,13 +6555,13 @@ function dropNativeRound(){
 function learnMicTap(){
   try{
   diag('learn tap state='+learnState+' owner='+learnOwner);
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); return; }
   noteUserTap();
   primeCapture();
   if(deafEscalating){ learnLog('mic tap during escalate'); return; }
   if(!SR){ revertListening($('#learnMic')); return; }
   primeLearnAudio();
   learnTyping=false;
-  if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('mic tap ignored '+learnState); revertListening($('#learnMic')); return; }
   if(srRunning && learnState==='LISTEN_NATIVE'){
     stopSession('tap').then(()=>enterIdleNative(false));
     return;
@@ -7654,7 +7640,10 @@ $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
 $('#learnMic').onclick=()=>learnMicTap();
 $('#learnMic').addEventListener('pointerdown', ()=>{ primeCapture(); $('#learnMic')._downAt=performance.now(); });
-$('#learnMic').addEventListener('pointerup', ()=>{ if(!srRunning) flashListening($('#learnMic')); });
+$('#learnMic').addEventListener('pointerup', ()=>{
+  if(learnState==='INTRO' || learnState==='SPEAK_TARGET') return;
+  if(!srRunning) flashListening($('#learnMic'));
+});
 wirePress($('#learnRepeatMic'), ()=>learnRepeatTap());
 $('#learnClear').onclick=()=>clearLearnRound();
 $('#learnSaid').onclick=()=>{ if(learnPair) acceptRepeat([learnPair.t]); };

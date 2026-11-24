@@ -290,11 +290,14 @@ async function createPipe(id){
   }
 }
 
+export function modelForSession(opts){
+  return (opts && (opts.tiny || opts.banned)) ? TINY : BASE;
+}
 export async function ensureModel(){
   return locked(async () => {
     noteCrashOnce();
     lowerModelFetch();
-    if (wantsTiny() || baseBanned) {
+    if (modelForSession({ tiny: wantsTiny(), banned: baseBanned }) === TINY) {
       if (pipe && pipeId !== TINY) await disposePipe('tiny');
       return createPipe(TINY);
     }
@@ -404,6 +407,10 @@ function trimSilence(audio, rate){
 }
 export function trimPcm(audio, rate){ return trimSilence(audio, rate); }
 export function deafEarly(peak, elapsedMs){ return elapsedMs >= 600 && peak < 0.001; }
+export function commitAllowed(tapAt, now){
+  return !!(tapAt && now >= tapAt && (now - tapAt) < 4000);
+}
+export const SCORE_CAP = 8;
 
 export function recordUtterance(opts){
   const onVoice = opts && opts.onVoice;
@@ -840,17 +847,23 @@ export function nearWords(raw, letter, words){
   for (const seed of seeds) {
     if (!seed || seed.length < 2 || seed.length > 14) continue;
     const hits = [];
+    const keep = (n, d) => {
+      let i = 0;
+      while (i < hits.length && (hits[i].d < d || (hits[i].d === d && hits[i].n.length <= n.length))) i++;
+      if (i >= SCORE_CAP) return;
+      hits.splice(i, 0, { n, d });
+      if (hits.length > SCORE_CAP) hits.pop();
+    };
     for (const w of list) {
       const n = heFold(w);
       if (!n || Math.abs(n.length - seed.length) > 2) continue;
       if (letter && n[0] !== letter) continue;
       const d = edits(seed, n, 2);
-      if (d <= 2) hits.push({ n, d });
+      if (d <= 2) keep(n, d);
     }
-    hits.sort((a, b) => a.d - b.d || a.n.length - b.n.length);
-    for (const h of hits.slice(0, 6)) add(h.n);
+    for (const h of hits) add(h.n);
   }
-  return out.filter(Boolean).slice(0, 8);
+  return out.filter(Boolean).slice(0, SCORE_CAP);
 }
 
 async function scoreOnce(audio, tag, texts){
@@ -868,7 +881,7 @@ async function scoreOnce(audio, tag, texts){
     features = await current.processor(audio);
   } catch (_) { return null; }
   const input_features = features && features.input_features;
-  if (!input_features) return null;
+  if (!input_features) { dropTensor(features); return null; }
   const eos = cfg.eos_token_id || 50257;
   const out = [];
   for (const text of texts) {
@@ -885,12 +898,17 @@ async function scoreOnce(audio, tag, texts){
         const T = input_features.constructor;
         const data = BigInt64Array.from(row.map(n => BigInt(n)));
         result = await current.model({ input_features, decoder_input_ids: new T('int64', data, [1, row.length]) });
-      } catch (__) { return null; }
+      } catch (__) { dropTensor(result && result.logits); dropTensor(input_features); return null; }
     }
     const logits = result && result.logits;
     const data = logits && logits.data;
     const dims = logits && logits.dims;
-    if (!data || !dims) { out.push({ text: String(text), score: -99 }); continue; }
+    if (!data || !dims) {
+      out.push({ text: String(text), score: -99 });
+      dropTensor(logits);
+      result = null;
+      continue;
+    }
     const vocab = dims[dims.length - 1];
     const from = Math.max(0, init.length - 1);
     let sum = 0, n = 0;
@@ -902,17 +920,25 @@ async function scoreOnce(audio, tag, texts){
       n++;
     }
     out.push({ text: String(text), score: n ? Math.round((sum / n) * 1000) / 1000 : -99 });
+    dropTensor(logits);
+    result = null;
   }
+  dropTensor(input_features);
+  features = null;
   return out;
+}
+function dropTensor(t){
+  try { if (t && typeof t.dispose === 'function') t.dispose(); } catch (_) {}
 }
 
 export async function scoreTexts(audio, tag, texts){
+  const capped = (texts || []).slice(0, SCORE_CAP);
   return locked(async () => {
     const model = pipeId;
     if (model === BASE) markBase();
     note('whisper infer start score ' + (model || 'none') + ' ' + memLine());
     try {
-      const scored = await scoreOnce(audio, tag, texts);
+      const scored = await scoreOnce(audio, tag, capped);
       if (model === BASE) clearBase();
       note('whisper infer end score ' + memLine());
       return scored;
@@ -922,7 +948,7 @@ export async function scoreTexts(audio, tag, texts){
       if (model && model !== TINY) {
         try {
           await fallBackTiny();
-          return await scoreOnce(audio, tag, texts);
+          return await scoreOnce(audio, tag, capped);
         } catch (_) { return null; }
       }
       return null;

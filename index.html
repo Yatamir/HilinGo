@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.10" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.11" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -275,6 +275,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 /* mic: idle / listening pulse / heard */
 .mic{width:56px;height:56px;border-radius:50%;background:var(--c);color:#fff;font-size:26px;flex-shrink:0;box-shadow:0 4px 0 color-mix(in srgb, var(--c) 70%, #000),0 8px 16px color-mix(in srgb, var(--c) 35%, transparent);position:relative}
 .mic.on{animation:listenpulse .7s infinite;background:var(--bad);box-shadow:0 0 0 0 rgba(255,91,110,.55)}
+#learnGuess{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+#learnGuess.hidden{display:none}
+#learnGuess p{margin:0;font-weight:800}
+#learnGuess button{font:inherit;font-size:22px;font-weight:800;border:0;border-radius:16px;padding:12px 14px;background:#4060E0;color:#fff}
+#learnGuess button.again{background:var(--bad)}
 .mic.cap-go{transform:scale(1.12)}
 @keyframes listenpulse{0%{box-shadow:0 0 0 0 rgba(255,91,110,.55)}70%{box-shadow:0 0 0 14px rgba(255,91,110,0)}100%{box-shadow:0 0 0 0 rgba(255,91,110,0)}}
 .mic.heard{background:var(--ok);animation:heardpop .45s ease}
@@ -800,6 +805,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="learn-wordrow"><div class="word" id="learnOwnWord" dir="auto">&nbsp;</div><button type="button" class="smallbtn hidden" id="learnClear">נקה</button></div>
       <div class="msg" id="learnOwnMsg"></div>
       <div class="hrow"><span id="learnListenMark" class="listen-mark hidden" aria-hidden="true"><svg class="ico-listen" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><div class="heard" id="learnHeard"></div></div>
+      <div id="learnGuess" class="hidden"><p id="learnGuessAsk"></p><div id="learnGuessBtns"></div></div>
       <div class="inputs">
         <button type="button" class="mic ptt" id="learnMic" aria-label="microphone"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="ml ml-off">לחצו ודברו</span><span class="ml ml-on">אני מקשיב</span></button>
         <input id="learnIn" autocomplete="off" enterkeyhint="send" dir="auto">
@@ -831,11 +837,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.10"></script>
-<script src="words.js?v=4.13.10" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.10"></script>
-<script src="cat_hints.js?v=4.13.10"></script>
-<script src="learn_dict.js?v=4.13.10"></script>
+<script src="config.js?v=4.13.11"></script>
+<script src="words.js?v=4.13.11" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.11"></script>
+<script src="cat_hints.js?v=4.13.11"></script>
+<script src="learn_dict.js?v=4.13.11"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1184,7 +1190,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.10';
+const HILINGO_VERSION='4.13.11';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -1238,7 +1244,7 @@ const STR = {
   endEmpty:'הלוח התרוקן! ', endMisses:'יותר מדי החמצות ברצף. ', endManual:'המשחק הסתיים. ', letters:'אותיות', words:'מילים',
   srNA:'זיהוי דיבור לא זמין – אפשר להקליד', listening:'מקשיב…', notHeard:'לא שמעתי מילה – נסו שוב', noPerm:'אין הרשאה למיקרופון – אפשר להקליד', micBlocked:'המיקרופון חסום',
   noSpeech:'לא נשמע דיבור – מקשיב שוב…', micErr:'שגיאת מיקרופון: ', micStopped:'המיקרופון נעצר – לחצו על 🎤 כדי לדבר, או הקלידו', cantStart:'לא ניתן להפעיל מיקרופון – לחצו על 🎤', micRestart:'לחצו להפעלת המיקרופון',
-  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו', learnDeaf:'לא שמעתי, נסו שוב', notGot:'לא הבנתי, נסו שוב',
+  ptt:'לחצו ודברו', pttOn:'אני מקשיב', tapToTalk:'לחצו ודברו', tapAgain:'לא שמעתי. לחצו ודברו', learnDeaf:'לא שמעתי, נסו שוב', notGot:'לא הבנתי, נסו שוב', guessAsk:'התכוונת ל...?', guessRetry:'נסו שוב',
   deaf:'המיקרופון נפתח אבל לא מגיע קול לזיהוי. נסו: לסגור את Safari לגמרי (Cmd+Q) ולפתוח שוב · לכבות "צלילים" במסך הפתיחה · לבדוק בהגדרות המערכת ← סאונד ← קלט שהמיקרופון הנכון נבחר.',
   hint:"💡 רמז", hintTitle:"רמז: משפט קצר שמתאר מילה באות הנדרשת (עד 3 בתור). מי שנעזר ברמז – לא נמחקת לו אות בתור הזה.", hintTag:n=>`רמז ${n}/3 · לא תימחק אות בתור הזה`, hintNone:"אין עוד רמזים לאות הזו", hintNoCat:"אין מילה כזאת באות הזו. אפשר לדלג", veil:"הסתרת הלוח",
   hintNoDel:"<span class='rules-hint'>💡 רמז</span> נעזרת ברמז – לא נמחקה אות בתור הזה", hintRestored:l=>`<span class='rules-hint'>💡 רמז</span> בשני תורות ברצף – האות ${l} חזרה ללוח`,
@@ -1288,7 +1294,7 @@ const STR = {
   endEmpty:'Board cleared! ', endMisses:'Too many misses in a row. ', endManual:'Game over. ', letters:'letters', words:'words',
   srNA:'Speech recognition unavailable – please type', listening:'Listening…', notHeard:"Didn't catch a word – try again", noPerm:'No microphone permission – please type', micBlocked:'Mic blocked',
   noSpeech:'No speech heard – listening again…', micErr:'Mic error: ', micStopped:'Mic stopped – tap 🎤 to speak, or type', cantStart:"Can't start the mic – tap 🎤", micRestart:'Tap to restart mic',
-  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak", learnDeaf:"I didn't hear you, tap again", notGot:"I didn't get that, try again",
+  ptt:'Tap and speak', pttOn:"I'm listening", tapToTalk:'Tap and speak', tapAgain:"I didn't hear you. Tap and speak", learnDeaf:"I didn't hear you, tap again", notGot:"I didn't get that, try again", guessAsk:'Did you mean...?', guessRetry:'Try again',
   deaf:"The mic opened but no sound reaches the recognizer. Try: quit Safari completely (Cmd+Q) and reopen · turn off \"Sounds\" on the start screen · check System Settings → Sound → Input.",
   hint:"💡 Hint", hintTitle:"Hint: a short clue for a word with the required letter (up to 3 per turn). Using a hint means no letter is crossed off this turn.", hintTag:n=>`Hint ${n}/3 · no letter crossed off this turn`, hintNone:"No more hints for this letter", hintNoCat:"No word like that with this letter. You can pass", veil:"Hide board",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> used – no letter crossed off this turn", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> two turns in a row – ${l} is back on your board`,
@@ -1338,7 +1344,7 @@ const STR = {
   endEmpty:'Bord leeg! ', endMisses:'Te veel missers op rij. ', endManual:'Spel afgelopen. ', letters:'letters', words:'woorden',
   srNA:'Spraakherkenning niet beschikbaar – typ maar', listening:'Luistert…', notHeard:'Geen woord gehoord – probeer opnieuw', noPerm:'Geen toegang tot de microfoon – typ maar', micBlocked:'Microfoon geblokkeerd',
   noSpeech:'Geen spraak gehoord – luistert opnieuw…', micErr:'Microfoonfout: ', micStopped:'Microfoon gestopt – tik op 🎤 om te spreken, of typ', cantStart:'Kan de microfoon niet starten – tik op 🎤', micRestart:'Tik om de microfoon te herstarten',
-  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg', learnDeaf:'Ik hoorde je niet, tik nog eens', notGot:'Ik begreep het niet, probeer opnieuw',
+  ptt:'Tik en zeg', pttOn:'Ik luister', tapToTalk:'Tik en zeg', tapAgain:'Ik hoorde niets. Tik en zeg', learnDeaf:'Ik hoorde je niet, tik nog eens', notGot:'Ik begreep het niet, probeer opnieuw', guessAsk:'Bedoelde je...?', guessRetry:'Probeer opnieuw',
   deaf:'De microfoon staat aan maar er komt geen geluid bij de herkenning. Probeer: Safari helemaal stoppen (Cmd+Q) en opnieuw openen · "Geluid" uitzetten op het startscherm · Systeeminstellingen → Geluid → Invoer controleren.',
   hint:"💡 Hint", hintTitle:"Hint: een korte omschrijving van een woord met de juiste letter (max. 3 per beurt). Met een hint wordt er deze beurt geen letter geschrapt.", hintTag:n=>`Hint ${n}/3 · deze beurt wordt geen letter geschrapt`, hintNone:"Geen hints meer voor deze letter", hintNoCat:"Geen zulk woord met deze letter. Je mag passen", veil:"Bord verbergen",
   hintNoDel:"<span class='rules-hint'>💡 Hint</span> gebruikt – deze beurt geen letter geschrapt", hintRestored:l=>`<span class='rules-hint'>💡 Hint</span> twee beurten op rij – de ${l} staat weer op je bord`,
@@ -1388,7 +1394,7 @@ const STR = {
   endEmpty:'Tabuleiro vazio! ', endMisses:'Erros demais em seguida. ', endManual:'O jogo terminou. ', letters:'letras', words:'palavras',
   srNA:'Reconhecimento de voz indisponível – digite a palavra', listening:'Ouvindo…', notHeard:'Não ouvi uma palavra – tente de novo', noPerm:'Sem permissão para o microfone – digite a palavra', micBlocked:'Microfone bloqueado',
   noSpeech:'Nenhuma fala ouvida – ouvindo de novo…', micErr:'Erro do microfone: ', micStopped:'O microfone parou – toque em 🎤 para falar, ou digite', cantStart:'Não foi possível ligar o microfone – toque em 🎤', micRestart:'Toque para religar o microfone',
-  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale', learnDeaf:'Não ouvi, toque de novo', notGot:'Não entendi, tente de novo',
+  ptt:'Toque e fale', pttOn:'Estou ouvindo', tapToTalk:'Toque e fale', tapAgain:'Não ouvi. Toque e fale', learnDeaf:'Não ouvi, toque de novo', notGot:'Não entendi, tente de novo', guessAsk:'Você quis dizer...?', guessRetry:'Tente de novo',
   deaf:'O microfone abriu, mas o som não chega ao reconhecimento. Tente: fechar o Safari por completo (Cmd+Q) e abrir de novo · desligar "Sons" na tela inicial · conferir em Ajustes do Sistema → Som → Entrada se o microfone certo está selecionado.',
   hint:"💡 Dica", hintTitle:"Dica: uma frase curta que descreve uma palavra com a letra certa (até 3 por turno). Quem usa dica não apaga letra neste turno.", hintTag:n=>`Dica ${n}/3 · nenhuma letra será apagada neste turno`, hintNone:"Não há mais dicas para esta letra", hintNoCat:"Não tem palavra assim com esta letra. Pode pular", veil:"Esconder tabuleiro",
   hintNoDel:"<span class='rules-hint'>💡 Dica</span> usada – nenhuma letra foi apagada neste turno", hintRestored:l=>`<span class='rules-hint'>💡 Dica</span> em dois turnos seguidos – a letra ${l} voltou ao tabuleiro`,
@@ -1502,7 +1508,7 @@ const STR = {
   ptt:"Toca y habla",
   pttOn:"Estoy escuchando",
   tapToTalk:"Toca y habla",
-  tapAgain:"No oí nada. Toca y habla", learnDeaf:"No te oí, toca otra vez", notGot:"No entendí, prueba otra vez",
+  tapAgain:"No oí nada. Toca y habla", learnDeaf:"No te oí, toca otra vez", notGot:"No entendí, prueba otra vez", guessAsk:'¿Querías decir...?', guessRetry:'Prueba otra vez',
   deaf:"El micrófono se abrió, pero el sonido no llega. Prueba: cierra Safari del todo y ábrelo otra vez · apaga Sonidos en la pantalla inicial · mira Ajustes del sistema → Sonido → Entrada.",
   hint:"💡 Pista",
   hintTitle:"Pista: una frase corta de una palabra con la letra buena (hasta 3 por turno). Con pista no se tacha letra.",
@@ -1635,7 +1641,7 @@ const STR = {
   ptt:"Tocca e parla",
   pttOn:"Sto ascoltando",
   tapToTalk:"Tocca e parla",
-  tapAgain:"Non ho sentito niente. Tocca e parla", learnDeaf:"Non ti ho sentito, tocca ancora", notGot:"Non ho capito, riprova",
+  tapAgain:"Non ho sentito niente. Tocca e parla", learnDeaf:"Non ti ho sentito, tocca ancora", notGot:"Non ho capito, riprova", guessAsk:'Volevi dire...?', guessRetry:'Riprova',
   deaf:"Il microfono si è aperto, ma il suono non arriva. Prova: chiudi Safari del tutto e riaprilo · spegni Suoni nella schermata iniziale · controlla Impostazioni di sistema → Suono → Ingresso.",
   hint:"💡 Indizio",
   hintTitle:"Indizio: una frase corta per una parola con la lettera giusta (fino a 3 a turno). Con un indizio non si cancella una lettera.",
@@ -3225,6 +3231,9 @@ function releaseIntro(why){
   if(introHold===hold) introHold=null;
   try{ diag('intro '+why); }catch(_){}
   if(fn){ try{ fn(); }catch(_){} }
+  if(finished && typeof MODE!=='undefined' && MODE==='learn'){
+    setTimeout(()=>{ try{ if(asrChoice()==='whisper'){ setAudioSession('play-and-record','after-intro'); primeCapture(); } }catch(_){} }, 200);
+  }
 }
 function playIntro(){
   // Never throw: a broken audio element must not stop the click from starting the game.
@@ -3405,7 +3414,7 @@ function diag(ev){ lastMicAt=performance.now(); diagLog.push(((performance.now()
   if($('#learn') && !$('#learn').classList.contains('hidden') && typeof learnLog==='function'){ try{ learnLog('mic '+ev); }catch(_){} } }
 // Safari Audio Session. playback is heard with the ring switch off, but it blocks the mic.
 // play-and-record is set only in the moment before start(). If that start throws, later listens stay on auto.
-let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0, gumAfterTts=false, gumDenied=false, gumFlight=null, startedAfterGum=false;
+let listenSessionType='play-and-record', audioSessionNow='', audioSessionLoggedNone=false, postTtsReadyAt=0, gumAfterTts=false, gumDenied=false, gumFlight=null, startedAfterGum=false, sessionNeedsSettle=false;
 function setAudioSession(type, reason){
   let api=null;
   try{ if('audioSession' in navigator && navigator.audioSession) api=navigator.audioSession; }catch(_){ api=null; }
@@ -3416,6 +3425,7 @@ function setAudioSession(type, reason){
   try{
     const why=reason||'unknown';
     if(type==='playback') diag('audioSession playback by '+why);
+    if(type==='play-and-record' && audioSessionNow==='playback') sessionNeedsSettle=true;
     if(api.type!==type) api.type=type;
     const now=String(api.type||type);
     audioSessionNow=now;
@@ -3916,7 +3926,10 @@ function primeCapture(){
     const ctx=capCtx;
     if(ctx.state==='suspended' && ctx.resume) ctx.resume();
     diag('cap ctx state '+ctx.state);
-    const p=gumAudio().catch(err=>{
+    const wait=sessionNeedsSettle?300:0;
+    sessionNeedsSettle=false;
+    if(wait) diag('cap settle '+wait+'ms');
+    const p=new Promise(r=>setTimeout(r, wait)).then(()=>gumAudio()).catch(err=>{
       const msg=String(err&&(err.message||err.name)||err||'');
       if(/AudioSession|compatible|category/i.test(msg)){
         setAudioSession('play-and-record', 'capture-retry');
@@ -4125,6 +4138,7 @@ async function whisperListen(r){
       ctx:primed.ctx,
       stream:primed.stream,
       keep:learning,
+      maxMs:learning?7000:5000,
       onVoice:()=>{ diag('speechstart'); },
       onFirstSample:()=>{
         const ms=Math.round(performance.now()-tapAt);
@@ -4136,7 +4150,7 @@ async function whisperListen(r){
   };
   let recd=null;
   for(let attempt=0; attempt<2 && whisperNearSilent(recd); attempt++){
-    if(attempt) diag('cap retry silent');
+    if(attempt) diag(recd&&recd.why==='deaf'?'cap deaf early':'cap retry silent');
     try{ recd=await grab(attempt>0); }
     catch(_){ recd=null; }
   }
@@ -4188,29 +4202,27 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
-  const learningHe=learning && (LANG==='he' || (typeof learnState!=='undefined' && learnState!=='LISTEN_TARGET'));
-  if(!exp && text && learningHe && asrMod.learnPick && asrMod.scoreTexts){
+  const learningHe=learning && LANG==='he' && !(typeof learnState!=='undefined' && learnState==='LISTEN_TARGET');
+  if(!exp && text && learningHe && asrMod.decideLearn && asrMod.scoreTexts){
     const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
-    const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
-    const one=tokens.length===1?tokens[0]:'';
-    const short=one.length<=2;
-    const known=!!(one && !short && WG.isWord(one));
-    if(!known){
-      let pool=[];
-      try{ pool=WG.nearHebrew ? WG.nearHebrew(cleaned, '') : []; }catch(_){}
-      let hit='', hitScore='none';
-      try{
-        if(pool.length){
-          const scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 8));
-          if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
-          hit=asrMod.learnPick(one||cleaned, scores)||'';
-          const row=hit && scores ? scores.find(s=>s.text===hit) : null;
-          if(row) hitScore=row.score;
-        }
-      }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
-      diag('learn rescore raw="'+cleaned+'" best="'+hit+'" score='+hitScore);
-      if(hit) text=hit;
-      else if(short || tokens.length!==1){ audio=null; whisperNotHeard(); return; }
+    const one=(cleaned.match(/[\u05D0-\u05EA]+/g)||[])[0]||'';
+    const inDict=!!(one && WG.isWord(one));
+    let scores=[];
+    let pool=[one].filter(Boolean);
+    try{ (WG.nearHebrew?WG.nearHebrew(cleaned,''):[]).forEach(w=>{ if(pool.indexOf(w)<0) pool.push(w); }); }catch(_){}
+    try{
+      if(pool.length && (!inDict || one.length<=2 || pool.length>1)){
+        scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 8))||[];
+        scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+      }
+    }catch(e){ diag('whisper score fail '+(e&&e.message||e)); scores=[]; }
+    const choice=asrMod.decideLearn(one||cleaned, scores, inDict);
+    diag('learn rescore raw="'+cleaned+'" best="'+(choice.best||'')+'" score='+choice.score+' candidates='+pool.length);
+    audio=null;
+    if(choice.commit && choice.text && WG.isWord(choice.text)){ text=choice.text; }
+    else {
+      showLearnChoices(choice.ask && choice.ask.length ? choice.ask : pool.filter(w=>w && w!==one && WG.isWord(w)).slice(0,3));
+      return;
     }
   }
   if(!exp && text && !learning && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
@@ -4218,7 +4230,7 @@ async function whisperListen(r){
     const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
     const one=tokens.length===1?tokens[0]:'';
     const known=!!(one && WG.isWord(one) && (!G.required || WG.firstLetter(one)===G.required));
-    if(known) text=one;
+    if(known){ diag('game rescore raw="'+one+'" best="'+one+'" score=exact candidates=0'); text=one; }
     else {
       const pool=[];
       try{
@@ -4236,7 +4248,7 @@ async function whisperListen(r){
         if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
         best=asrMod.scoreBest(scores, -3);
       }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
-      diag('game rescore raw="'+cleaned+'" best="'+(best&&best.text||'')+'" score='+(best?best.score:'none'));
+      diag('game rescore raw="'+cleaned+'" best="'+(best&&best.text||'')+'" score='+(best?best.score:'none')+' candidates='+pool.length);
       audio=null;
       if(!best){ whisperNotUnderstood(); return; }
       text=best.text;
@@ -5298,6 +5310,33 @@ function showSpeaker(text, lang){
   if(!learnSpeakText) sp.classList.add('hidden');
 }
 function hideSpeaker(){ const sp=$('#learnSpeak'); if(sp) sp.classList.add('hidden'); }
+function hideLearnChoices(){ const box=$('#learnGuess'); if(box) box.classList.add('hidden'); }
+function showLearnChoices(cands){
+  whisperOwns=false;
+  try{ srRunning=false; learnRec=null; learnSession++; }catch(_){}
+  micOff();
+  try{ enterIdleNative(false); }catch(_){}
+  const box=$('#learnGuess'); const ask=$('#learnGuessAsk'); const row=$('#learnGuessBtns');
+  if(!box || !row){ setLearnHeard((S&&S.notGot)||''); return; }
+  if(ask) ask.textContent=(S&&S.guessAsk)||'התכוונת ל...?';
+  row.innerHTML='';
+  (cands||[]).slice(0,3).forEach(w=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=w;
+    b.onclick=()=>{ hideLearnChoices(); acceptNative(w); };
+    row.appendChild(b);
+  });
+  const again=document.createElement('button');
+  again.type='button';
+  again.className='again';
+  again.textContent=(S&&S.guessRetry)||'נסו שוב';
+  again.onclick=()=>{ hideLearnChoices(); beginListen('native'); };
+  row.appendChild(again);
+  box.classList.remove('hidden');
+  setLearnStatus((S&&S.guessAsk)||'');
+  setLearnHeard((S&&S.guessAsk)||'');
+}
 function micOff(){ [$('#learnMic'),$('#learnRepeatMic')].forEach(m=>{ if(m) m.classList.remove('on'); }); }
 function showLearnDeaf(){
   const line=(S&&S.learnDeaf)||'לא שמעתי, נסו שוב';
@@ -5697,6 +5736,7 @@ function startWhisperLearn(side, langTag, isRetry, deafN){
   srRunning=true;
   setOwner('mic');
   paintListening(side==='target'?LEARN_TARGET:LANG);
+  hideLearnChoices();
   learnLog('whisper '+langTag+' no native');
   diag('learn whisper '+langTag);
   const err=beginStart(r, deafN||0);

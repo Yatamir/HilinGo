@@ -11,6 +11,7 @@ const TARGET_RATE = 16000;
 const VOICE_RMS = 0.012;
 const SILENCE_MS = 700;
 const MAX_MS = 5000;
+const LEARN_MAX_MS = 7000;
 const PRE_MS = 300;
 const BASE_FILES = [
   'config.json',
@@ -396,17 +397,13 @@ function trimSilence(audio, rate){
   }
   if (first < 0) return { samples: new Float32Array(0), start: 0, end: 0 };
   const pad = Math.round(rate * 0.3);
-  let a = Math.max(0, first - pad);
+  const a = Math.max(0, first - pad);
   let b = Math.min(audio.length, last + pad);
-  const minKeep = Math.min(audio.length, Math.round(rate * 1.2));
-  if (b - a < minKeep) {
-    const mid = Math.floor((first + last) / 2);
-    a = Math.max(0, mid - Math.floor(minKeep / 2));
-    b = Math.min(audio.length, a + minKeep);
-    if (b - a < minKeep) a = Math.max(0, b - minKeep);
-  }
+  if (last >= audio.length - frame) b = audio.length;
   return { samples: audio.subarray(a, b), start: a, end: b };
 }
+export function trimPcm(audio, rate){ return trimSilence(audio, rate); }
+export function deafEarly(peak, elapsedMs){ return elapsedMs >= 600 && peak < 0.001; }
 
 export function recordUtterance(opts){
   const onVoice = opts && opts.onVoice;
@@ -414,6 +411,7 @@ export function recordUtterance(opts){
   const givenCtx = opts && opts.ctx;
   const givenStream = opts && opts.stream;
   const keep = !!(opts && opts.keep);
+  const maxMs = (opts && opts.maxMs) || MAX_MS;
   return new Promise((resolve, reject) => {
     let stream = null;
     let ctx = givenCtx || null;
@@ -495,7 +493,7 @@ export function recordUtterance(opts){
         log('cap track ' + trackLine(stream));
       } catch (_) {}
     };
-    cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, MAX_MS + 2000);
+    cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, maxMs + 2000);
     const openGraph = async (s) => {
       stream = s;
       const bad = trackUnusable(stream);
@@ -530,6 +528,7 @@ export function recordUtterance(opts){
         let lastVoice = 0;
         let voiceAt = 0;
         let sawSample = false;
+        let deafChecked = false;
         const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
@@ -543,6 +542,12 @@ export function recordUtterance(opts){
             try { if (opts && opts.onFirstSample) opts.onFirstSample(); } catch (_) {}
           }
           all.push(copy);
+          if (!deafChecked && now - captureStart >= 600 && count > 0 && deafEarly(peak, now - captureStart)) {
+            deafChecked = true;
+            try { log('cap deaf early'); } catch (_) {}
+            finishProcessor('deaf');
+            return;
+          }
           if (!heard) {
             pre.push(copy);
             preSamples += copy.length;
@@ -568,7 +573,7 @@ export function recordUtterance(opts){
             const spokeFor = voiceAt ? (now - voiceAt) : 0;
             if (now - lastVoice >= SILENCE_MS && spokeFor >= 1800) { finishProcessor('pause'); return; }
           }
-          if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
+          if (now - captureStart >= maxMs) finishProcessor(heard ? 'max' : 'no-speech');
         };
         tick = setInterval(report, 1000);
         setTimeout(() => {
@@ -751,18 +756,34 @@ export function scoreBest(scores, min){
   return real[0].score > floor ? real[0] : null;
 }
 export function learnPick(raw, scores){
+  const picked = decideLearn(raw, scores, false);
+  return picked.commit ? picked.text : '';
+}
+export function decideLearn(raw, scores, inDict){
   const fold = heFold(String(raw || '').replace(/[^\u05D0-\u05EA]/g, ''));
-  const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -3);
-  if (!real.length) return '';
-  const rawHit = real.find(s => heFold(s.text) === fold);
-  const longer = real.filter(s => heFold(s.text).length > fold.length);
-  longer.sort((a, b) => b.score - a.score);
-  if (fold.length <= 2 && longer.length) {
-    const base = rawHit ? rawHit.score : -99;
-    if (longer[0].score >= base - 1) return longer[0].text;
+  const ranked = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20)
+    .slice().sort((a, b) => b.score - a.score);
+  const rawHit = ranked.find(s => heFold(s.text) === fold);
+  const good = ranked.filter(s => s.score > -3);
+  let pick = null;
+  if (fold.length <= 2) {
+    const longer = good.filter(s => heFold(s.text).length > fold.length);
+    if (longer.length && longer[0].score >= (rawHit ? rawHit.score : -99) - 1) pick = longer[0];
   }
-  real.sort((a, b) => b.score - a.score);
-  return real[0].text;
+  if (!pick && good.length) {
+    const top = good[0];
+    if (!inDict || fold.length <= 2 || heFold(top.text) !== fold) pick = top;
+    else if (rawHit && top.text !== rawHit.text && top.score >= rawHit.score + 1) pick = top;
+    else if (inDict && fold.length > 2) pick = rawHit || { text: fold, score: 'exact' };
+  } else if (!pick && inDict && fold.length > 2) {
+    pick = rawHit || { text: fold, score: 'exact' };
+  }
+  const text = pick ? pick.text : '';
+  const score = pick ? pick.score : 'none';
+  const sameRaw = text && heFold(text) === fold;
+  const commit = !!(text && ((inDict && sameRaw && fold.length > 2) || (typeof score === 'number' && score > -3 && !sameRaw) || (inDict && sameRaw && typeof score === 'number' && score > -3)));
+  const ask = commit ? [] : ranked.slice(0, 3).map(s => s.text).filter(w => heFold(w) !== fold);
+  return { commit, text, best: text, score, candidates: ranked.length, ask };
 }
 const HE_FIN = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
 function heFold(w){

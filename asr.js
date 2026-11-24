@@ -13,6 +13,7 @@ const PRE_MS = 300;
 
 let pipe = null;
 let loading = null;
+let warmed = false;
 
 function whisperName(tag){
   const t = String(tag || '').toLowerCase();
@@ -107,16 +108,38 @@ export function recordUtterance(onVoice){
     let proc = null;
     let settled = false;
     let cap = 0;
-    const finish = (result) => {
+    let peak = 0;
+    let sumSq = 0;
+    let count = 0;
+    let heard = false;
+    const said = [];
+    const t0 = performance.now();
+    const measure = (copy) => {
+      for (let i = 0; i < copy.length; i++) {
+        const v = copy[i];
+        const a = v < 0 ? -v : v;
+        if (a > peak) peak = a;
+        sumSq += v * v;
+      }
+      count += copy.length;
+    };
+    const stats = () => ({
+      durationMs: Math.round(performance.now() - t0),
+      peak,
+      rms: count ? Math.sqrt(sumSq / count) : 0,
+    });
+    const finish = (why) => {
       if (settled) return;
       settled = true;
       clearTimeout(cap);
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
       stopStream(stream);
+      const rate = (ctx && ctx.sampleRate) || 48000;
       try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
-      resolve(result);
+      const audio = said.length ? resample(concat(said), rate) : new Float32Array(0);
+      resolve(Object.assign({ heard: heard && audio.length > 0, why, audio }, stats()));
     };
-    cap = setTimeout(() => finish({ heard: false, why: 'timeout', audio: new Float32Array(0) }), MAX_MS + 1000);
+    cap = setTimeout(() => finish('timeout'), MAX_MS + 1500);
     navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
     }).then(s => {
@@ -137,16 +160,16 @@ export function recordUtterance(onVoice){
         const preMax = Math.round(rate * PRE_MS / 1000);
         const pre = [];
         let preSamples = 0;
-        const said = [];
-        let heard = false;
         let voiced = false;
         let lastVoice = 0;
-        const t0 = performance.now();
+        const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
+          if (settled) return;
           const input = ev.inputBuffer.getChannelData(0);
           const copy = new Float32Array(input);
           const now = performance.now();
           const level = rms(copy);
+          measure(copy);
           if (!heard) {
             pre.push(copy);
             preSamples += copy.length;
@@ -168,22 +191,22 @@ export function recordUtterance(onVoice){
             }
           } else if (heard) {
             said.push(copy);
-            if (now - lastVoice >= SILENCE_MS) {
-              finish({ heard: true, why: 'silence', audio: resample(concat(said), rate) });
-              return;
-            }
+            if (now - lastVoice >= SILENCE_MS) { finish('silence'); return; }
           }
-          if (now - t0 >= MAX_MS) {
-            finish({
-              heard,
-              why: heard ? 'max' : 'no-speech',
-              audio: heard ? resample(concat(said), rate) : new Float32Array(0),
-            });
-          }
+          if (now - captureStart >= MAX_MS) finish(heard ? 'max' : 'no-speech');
         };
       });
     }).catch(reject);
   });
+}
+
+export async function warmUp(){
+  if (warmed || !pipe) return;
+  const n = TARGET_RATE;
+  const audio = new Float32Array(n);
+  for (let i = 0; i < n; i++) audio[i] = (Math.random() * 2 - 1) * 0.01;
+  await pipe(audio, { task: 'transcribe', language: 'hebrew', return_timestamps: false });
+  warmed = true;
 }
 
 export async function transcribe(audio, tag){

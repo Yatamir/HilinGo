@@ -1,13 +1,12 @@
-// On-device speech for iPhone after a clip has played.
-// Whisper tiny (multilingual, 8-bit) runs in the browser. Weights come from
-// the public Hugging Face CDN once, then the Cache API keeps them.
+// On-device speech for iPhone. Whisper base is fetched when the page opens
+// and kept in the Cache API. A listen uses tiny only until base is ready.
 // No server and no paid API.
 
 function modelId(){
   try {
-    if (/[?&]model=base(?:&|$)/.test(location.search || '')) return 'Xenova/whisper-base';
+    if (/[?&]model=tiny(?:&|$)/.test(location.search || '')) return 'Xenova/whisper-tiny';
   } catch (_) {}
-  return 'Xenova/whisper-tiny';
+  return 'Xenova/whisper-base';
 }
 const RUNTIME = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const TARGET_RATE = 16000;
@@ -16,9 +15,11 @@ const SILENCE_MS = 700;
 const MAX_MS = 5000;
 const PRE_MS = 300;
 
-let pipe = null;
-let loading = null;
-let warmed = false;
+const pipes = {};
+const loadings = {};
+let logger = function () {};
+export function setLogger(fn){ logger = typeof fn === 'function' ? fn : function () {}; }
+function note(msg){ try { logger(msg); } catch (_) {} }
 
 function whisperName(tag){
   const t = String(tag || '').toLowerCase();
@@ -54,19 +55,59 @@ async function dtypePlan(device){
   return { spec: { encoder_model: 'fp32', decoder_model_merged: 'q4' }, label: 'encoder=fp32 decoder=q4' };
 }
 
+function pipeOf(id){ return pipes[id] || null; }
+
+export function prefetch(id){
+  ensure(id || modelId()).catch(() => {});
+}
+
+let fetchLowered = false;
+function lowerModelFetch(){
+  if (fetchLowered || typeof fetch !== 'function') return;
+  fetchLowered = true;
+  const orig = fetch.bind(globalThis);
+  globalThis.fetch = function (url, opts){
+    const u = String((url && url.url) || url || '');
+    if (/huggingface\.co|cdn-lfs|\.onnx/i.test(u)) {
+      const next = Object.assign({}, opts || {});
+      if (!next.priority) next.priority = 'low';
+      return orig(url, next);
+    }
+    return orig(url, opts);
+  };
+}
+
 export async function ensureModel(){
-  if (pipe) return { ms: 0, cached: true, device: pipe.__device || '', dtype: pipe.__dtype || '', model: pipe.__model || '' };
-  if (loading) return loading;
+  const want = modelId();
+  if (want.endsWith('tiny')) return ensure(want);
+  if (pipeOf(want)) return ensure(want);
+  ensure(want).catch(() => {});
+  note('whisper base not ready, using tiny');
+  return ensure('Xenova/whisper-tiny');
+}
+
+async function ensure(id){
+  lowerModelFetch();
+  if (pipes[id]) return { ms: 0, cached: true, device: pipes[id].__device || '', dtype: pipes[id].__dtype || '', model: id };
+  if (loadings[id]) return loadings[id];
   const t0 = performance.now();
-  loading = (async () => {
+  loadings[id] = (async () => {
     const { pipeline, env } = await import(RUNTIME);
     env.allowLocalModels = false;
     env.useBrowserCache = true;
     let device = await pickDevice();
-    const id = modelId();
     const plan = await dtypePlan(device);
-    const make = (dev, spec) => pipeline('automatic-speech-recognition', id, { dtype: spec, device: dev });
+    const make = (dev, spec) => pipeline('automatic-speech-recognition', id, {
+      dtype: spec,
+      device: dev,
+      progress_callback: (p) => {
+        if (!p) return;
+        const pct = p.progress != null ? Math.round(p.progress) : (p.total ? Math.round(100 * (p.loaded || 0) / p.total) : 0);
+        if (p.status === 'progress' || p.status === 'done' || p.status === 'initiate') note('whisper download ' + id + ' ' + (p.file || '') + ' ' + pct + '%');
+      },
+    });
     let label = plan.label;
+    let pipe;
     try {
       pipe = await make(device, plan.spec);
     } catch (err) {
@@ -84,14 +125,19 @@ export async function ensureModel(){
     pipe.__device = device;
     pipe.__dtype = label;
     pipe.__model = id;
+    pipes[id] = pipe;
     return { ms: Math.round(performance.now() - t0), cached: false, device, dtype: label, model: id };
   })();
   try {
-    return await loading;
+    return await loadings[id];
   } catch (err) {
-    loading = null;
+    delete loadings[id];
     throw err;
   }
+}
+
+function activePipe(){
+  return pipes[modelId()] || pipes['Xenova/whisper-tiny'] || null;
 }
 
 function rms(samples){
@@ -168,6 +214,7 @@ export function recordUtterance(opts){
   const log = (opts && opts.log) || function () {};
   const givenCtx = opts && opts.ctx;
   const givenStream = opts && opts.stream;
+  const keep = !!(opts && opts.keep);
   return new Promise((resolve, reject) => {
     let stream = null;
     let ctx = givenCtx || null;
@@ -209,8 +256,10 @@ export function recordUtterance(opts){
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
       try { if (source) source.disconnect(); } catch (_) {}
       try { if (mute) mute.disconnect(); } catch (_) {}
-      stopStream(stream);
-      try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+      if (!keep) {
+        stopStream(stream);
+        try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+      }
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
       let out = trimSilence(full, TARGET_RATE);
       if (!out.length && full.length) out = full;
@@ -241,7 +290,11 @@ export function recordUtterance(opts){
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!ctx || ctx.state === 'closed') ctx = new AC();
       const resume = (ctx.state === 'suspended' && ctx.resume) ? ctx.resume() : Promise.resolve();
-      return Promise.resolve(resume).then(() => {
+      return Promise.resolve(resume).then(async () => {
+        for (let i = 0; i < 12 && ctx.state !== 'running'; i++) {
+          try { if (ctx.resume) await ctx.resume(); } catch (_) {}
+          await new Promise(r => setTimeout(r, 40));
+        }
         report();
         source = ctx.createMediaStreamSource(stream);
         proc = ctx.createScriptProcessor(4096, 1, 1);
@@ -311,7 +364,7 @@ export function recordUtterance(opts){
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
     });
     Promise.resolve(streamP).then(s => {
-      if (settled) { if (s) stopStream(s); return; }
+      if (settled) { if (s && !keep) stopStream(s); return; }
       if (!s) {
         return navigator.mediaDevices.getUserMedia({
           audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
@@ -357,12 +410,12 @@ function recordWithRecorder(stream, ctx, log){
 }
 
 export async function warmUp(){
-  if (warmed || !pipe) return;
+  const pipe = activePipe();
+  if (!pipe) return;
   const n = TARGET_RATE;
   const audio = new Float32Array(n);
   for (let i = 0; i < n; i++) audio[i] = (Math.random() * 2 - 1) * 0.01;
-  await pipe(audio, { task: 'transcribe', language: 'hebrew', return_timestamps: false });
-  warmed = true;
+  await pipe(audio, { task: 'transcribe', language: 'hebrew', return_timestamps: false, max_new_tokens: 4 });
 }
 
 function cleanText(out){
@@ -372,6 +425,8 @@ function cleanText(out){
 }
 
 export async function transcribe(audio, tag){
+  const pipe = activePipe();
+  if (!pipe) throw new Error('no model');
   const language = whisperName(tag);
   const opts = {
     task: 'transcribe',
@@ -387,4 +442,73 @@ export async function transcribe(audio, tag){
     if (language) plain.language = language;
     return cleanText(await pipe(audio, plain));
   }
+}
+
+function logSumExp(data, offset, vocab){
+  let max = -Infinity;
+  for (let i = 0; i < vocab; i++) {
+    const v = data[offset + i];
+    if (v > max) max = v;
+  }
+  let sum = 0;
+  for (let i = 0; i < vocab; i++) sum += Math.exp(data[offset + i] - max);
+  return max + Math.log(sum);
+}
+
+function tokenList(tok, text){
+  let ids = [];
+  try {
+    if (tok.encode) ids = tok.encode(String(text), null, { add_special_tokens: false });
+  } catch (_) {}
+  if (!ids || !ids.length) return [];
+  if (ids.data) ids = Array.from(ids.data);
+  return ids.map(Number).filter(id => id >= 0 && id < 50257);
+}
+
+export async function scoreTexts(audio, tag, texts){
+  const pipe = activePipe();
+  if (!pipe || !pipe.model || !audio || !audio.length) return null;
+  const lang = whisperName(tag) || 'english';
+  let cfg, init;
+  try {
+    cfg = pipe.model._prepare_generation_config(null, { language: lang, task: 'transcribe', return_timestamps: false });
+    init = pipe.model._retrieve_init_tokens(cfg);
+  } catch (_) { return null; }
+  if (!init || !init.length) return null;
+  let features;
+  try {
+    features = await pipe.processor(audio);
+  } catch (_) { return null; }
+  const input_features = features && features.input_features;
+  if (!input_features) return null;
+  const eos = cfg.eos_token_id || 50257;
+  const out = [];
+  for (const text of texts) {
+    const word = tokenList(pipe.tokenizer, text);
+    if (!word.length) { out.push({ text: String(text), score: -99 }); continue; }
+    const ids = init.concat(word, [eos]);
+    let result;
+    try {
+      result = await pipe.model({ input_features, decoder_input_ids: ids.slice(0, -1) });
+    } catch (_) {
+      try { result = await pipe.model({ input_features, decoder_input_ids: [ids.slice(0, -1)] }); }
+      catch (_) { return null; }
+    }
+    const logits = result && result.logits;
+    const data = logits && logits.data;
+    const dims = logits && logits.dims;
+    if (!data || !dims) { out.push({ text: String(text), score: -99 }); continue; }
+    const vocab = dims[dims.length - 1];
+    const from = Math.max(0, init.length - 1);
+    let sum = 0, n = 0;
+    for (let pos = from; pos < ids.length - 1; pos++) {
+      const offset = pos * vocab;
+      const target = ids[pos + 1];
+      if (target < 0 || target >= vocab) continue;
+      sum += data[offset + target] - logSumExp(data, offset, vocab);
+      n++;
+    }
+    out.push({ text: String(text), score: n ? Math.round((sum / n) * 1000) / 1000 : -99 });
+  }
+  return out;
 }

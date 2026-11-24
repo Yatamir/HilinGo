@@ -101,17 +101,59 @@ function stopStream(stream){
   try { stream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} }); } catch (_) {}
 }
 
-export function recordUtterance(onVoice){
+function trackLine(stream){
+  const t = stream && stream.getAudioTracks && stream.getAudioTracks()[0];
+  if (!t) return 'none';
+  return 'muted=' + (t.muted ? 'true' : 'false') + ' ready=' + (t.readyState || '');
+}
+
+function mimeForRecorder(){
+  const list = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+  if (!window.MediaRecorder) return '';
+  for (const t of list) {
+    try { if (MediaRecorder.isTypeSupported(t)) return t; } catch (_) {}
+  }
+  return '';
+}
+
+function trimSilence(audio, rate){
+  if (!audio || !audio.length) return audio;
+  const frame = Math.max(1, Math.round(rate * 0.03));
+  let first = -1;
+  let last = -1;
+  for (let i = 0; i < audio.length; i += frame) {
+    const slice = audio.subarray(i, Math.min(audio.length, i + frame));
+    if (rms(slice) >= VOICE_RMS) {
+      if (first < 0) first = i;
+      last = i + slice.length;
+    }
+  }
+  if (first < 0) return new Float32Array(0);
+  const pad = Math.round(rate * 0.2);
+  const a = Math.max(0, first - pad);
+  const b = Math.min(audio.length, last + pad);
+  return audio.subarray(a, b);
+}
+
+export function recordUtterance(opts){
+  const onVoice = opts && opts.onVoice;
+  const log = (opts && opts.log) || function () {};
+  const givenCtx = opts && opts.ctx;
+  const givenStream = opts && opts.stream;
   return new Promise((resolve, reject) => {
     let stream = null;
-    let ctx = null;
+    let ctx = givenCtx || null;
     let proc = null;
+    let source = null;
+    let mute = null;
     let settled = false;
     let cap = 0;
+    let tick = 0;
     let peak = 0;
     let sumSq = 0;
     let count = 0;
     let heard = false;
+    let usedRecorder = false;
     const said = [];
     const t0 = performance.now();
     const measure = (copy) => {
@@ -123,35 +165,49 @@ export function recordUtterance(onVoice){
       }
       count += copy.length;
     };
-    const stats = () => ({
+    const stats = (extra) => Object.assign({
       durationMs: Math.round(performance.now() - t0),
       peak,
       rms: count ? Math.sqrt(sumSq / count) : 0,
-    });
-    const finish = (why) => {
+      samples: count,
+      via: usedRecorder ? 'recorder' : 'processor',
+    }, extra || {});
+    const finishAudio = (why, audio, rate) => {
       if (settled) return;
       settled = true;
       clearTimeout(cap);
+      clearInterval(tick);
       try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
+      try { if (source) source.disconnect(); } catch (_) {}
+      try { if (mute) mute.disconnect(); } catch (_) {}
       stopStream(stream);
-      const rate = (ctx && ctx.sampleRate) || 48000;
       try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
-      const audio = said.length ? resample(concat(said), rate) : new Float32Array(0);
-      resolve(Object.assign({ heard: heard && audio.length > 0, why, audio }, stats()));
+      const out = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
+      resolve(Object.assign({ heard: !!(out && out.length), why, audio: out }, stats()));
     };
-    cap = setTimeout(() => finish('timeout'), MAX_MS + 1500);
-    navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
-    }).then(s => {
-      if (settled) { stopStream(s); return; }
+    const finishProcessor = (why) => {
+      const rate = (ctx && ctx.sampleRate) || 48000;
+      const audio = said.length ? concat(said) : new Float32Array(0);
+      finishAudio(why, audio, rate);
+    };
+    const report = () => {
+      try {
+        log('cap ctx state ' + (ctx && ctx.state || 'none'));
+        log('cap samples ' + count);
+        log('cap track ' + trackLine(stream));
+      } catch (_) {}
+    };
+    cap = setTimeout(() => { if (!usedRecorder) finishProcessor('timeout'); }, MAX_MS + 2000);
+    const openGraph = (s) => {
       stream = s;
       const AC = window.AudioContext || window.webkitAudioContext;
-      ctx = new AC();
-      const resume = ctx.state === 'suspended' && ctx.resume ? ctx.resume() : Promise.resolve();
+      if (!ctx || ctx.state === 'closed') ctx = new AC();
+      const resume = (ctx.state === 'suspended' && ctx.resume) ? ctx.resume() : Promise.resolve();
       return Promise.resolve(resume).then(() => {
-        const source = ctx.createMediaStreamSource(stream);
+        report();
+        source = ctx.createMediaStreamSource(stream);
         proc = ctx.createScriptProcessor(4096, 1, 1);
-        const mute = ctx.createGain();
+        mute = ctx.createGain();
         mute.gain.value = 0;
         source.connect(proc);
         proc.connect(mute);
@@ -164,9 +220,8 @@ export function recordUtterance(onVoice){
         let lastVoice = 0;
         const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
-          if (settled) return;
-          const input = ev.inputBuffer.getChannelData(0);
-          const copy = new Float32Array(input);
+          if (settled || usedRecorder) return;
+          const copy = new Float32Array(ev.inputBuffer.getChannelData(0));
           const now = performance.now();
           const level = rms(copy);
           measure(copy);
@@ -191,12 +246,69 @@ export function recordUtterance(onVoice){
             }
           } else if (heard) {
             said.push(copy);
-            if (now - lastVoice >= SILENCE_MS) { finish('silence'); return; }
+            if (now - lastVoice >= SILENCE_MS) { finishProcessor('silence'); return; }
           }
-          if (now - captureStart >= MAX_MS) finish(heard ? 'max' : 'no-speech');
+          if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
+        tick = setInterval(report, 1000);
+        setTimeout(() => {
+          if (settled || usedRecorder) return;
+          if (count > 0 && peak > 0) return;
+          usedRecorder = true;
+          clearTimeout(cap);
+          cap = setTimeout(() => { if (!settled) finishProcessor('recorder-timeout'); }, MAX_MS + 3000);
+          try { log('cap recorder fallback'); } catch (_) {}
+          try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
+          recordWithRecorder(stream, ctx, log).then(done => {
+            if (done && done.audio && done.audio.length) {
+              peak = Math.max(peak, done.peak || 0);
+              finishAudio('recorder', done.audio, done.rate || TARGET_RATE);
+            } else finishProcessor('recorder-empty');
+          }, () => finishProcessor('recorder-fail'));
+        }, 1000);
       });
+    };
+    const streamP = givenStream || navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
+    });
+    Promise.resolve(streamP).then(s => {
+      if (settled) { stopStream(s); return; }
+      return openGraph(s);
     }).catch(reject);
+  });
+}
+
+function recordWithRecorder(stream, ctx, log){
+  return new Promise((resolve, reject) => {
+    let rec;
+    const chunks = [];
+    try {
+      const mime = mimeForRecorder();
+      rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    } catch (err) { reject(err); return; }
+    rec.ondataavailable = (ev) => { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    rec.onerror = () => reject(new Error('recorder'));
+    rec.onstop = () => {
+      const blob = new Blob(chunks, { type: rec.mimeType || 'audio/mp4' });
+      blob.arrayBuffer().then(buf => ctx.decodeAudioData(buf.slice(0))).then(decoded => {
+        const rate = decoded.sampleRate || TARGET_RATE;
+        const audio = decoded.getChannelData(0);
+        const copy = new Float32Array(audio.length);
+        copy.set(audio);
+        let peak = 0;
+        let sum = 0;
+        for (let i = 0; i < copy.length; i++) {
+          const a = copy[i] < 0 ? -copy[i] : copy[i];
+          if (a > peak) peak = a;
+          sum += copy[i] * copy[i];
+        }
+        try { log('cap samples ' + copy.length); } catch (_) {}
+        const kept = trimSilence(copy, rate);
+        resolve({ audio: kept.length ? kept : copy, rate, peak, rms: copy.length ? Math.sqrt(sum / copy.length) : 0 });
+      }).catch(reject);
+    };
+    try { rec.start(); } catch (err) { reject(err); return; }
+    setTimeout(() => { try { if (rec.state === 'recording') rec.stop(); } catch (_) {} }, MAX_MS);
   });
 }
 

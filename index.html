@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.13.1">
+<meta name="hilingo-version" content="4.13.2">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.1" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.2" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -759,7 +759,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.13.1</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.13.2</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -785,7 +785,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.13.1</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.13.2</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -825,11 +825,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.1"></script>
-<script src="words.js?v=4.13.1" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.1"></script>
-<script src="cat_hints.js?v=4.13.1"></script>
-<script src="learn_dict.js?v=4.13.1"></script>
+<script src="config.js?v=4.13.2"></script>
+<script src="words.js?v=4.13.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.2"></script>
+<script src="cat_hints.js?v=4.13.2"></script>
+<script src="learn_dict.js?v=4.13.2"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1106,7 +1106,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.13.1';
+window.WG = WG; window.HILINGO_VERSION='4.13.2';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1651,7 +1651,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.1';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.2';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -2019,12 +2019,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4131';
+const CAT_CACHE='hilingo-cats-v4132';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.13.1'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.13.2'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3050,7 +3050,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.13.1');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.13.2');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3633,7 +3633,6 @@ function preMicAudio(){
   diag('pre-mic cancel speaking='+speaking+' pending='+pending);
 }
 function appleStart(r){
-  warmWhisper();
   trackRec(r, r&&r.lang);
   logRecCensus('start');
   const step=startStep||'tap';
@@ -3663,7 +3662,7 @@ function asrChoice(){
   if(/[?&]asr=apple-reset(?:&|$)/.test(q)) return 'apple-reset';
   if(/[?&]asr=apple(?:&|$)/.test(q)) return 'apple';
   if(/[?&]asr=whisper(?:&|$)/.test(q)) return 'whisper';
-  if(isIOSDevice() && mediaPlayed && nativeRecognizer()) return 'whisper';
+  if(isIOSDevice() && nativeRecognizer()) return 'whisper';
   return 'apple';
 }
 function shouldWarmWhisper(){
@@ -3698,16 +3697,38 @@ function showWhisperListen(){
 function showWhisperThink(){
   showWhisperLine((S&&S.asrThink)||'', true);
 }
+let primedCapture=null;
+function primeCapture(){
+  if(asrChoice()!=='whisper') return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!primedCapture || !primedCapture.ctx || primedCapture.ctx.state==='closed'){
+      primedCapture={ ctx:new AC(), stream:null };
+    }
+    const ctx=primedCapture.ctx;
+    if(ctx.state==='suspended' && ctx.resume) ctx.resume();
+    diag('cap ctx state '+ctx.state);
+    if(!primedCapture.stream){
+      primedCapture.stream=navigator.mediaDevices.getUserMedia({
+        audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 }
+      });
+    }
+  }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
+}
+function takePrimedCapture(){
+  const held=primedCapture;
+  primedCapture=null;
+  return held;
+}
 function warmWhisper(){
   if(whisperWarm || !shouldWarmWhisper()) return;
+  const t0=performance.now();
   whisperWarm=(async()=>{
     try{
       if(!asrMod) asrMod=await import('./asr.js');
       const info=await asrMod.ensureModel();
       diag('whisper load ms '+(info&&info.ms||0)+(info&&info.device?(' '+info.device):''));
-      const t0=performance.now();
-      await asrMod.warmUp();
-      diag('whisper warm ms '+Math.round(performance.now()-t0));
+      diag('whisper warm skipped');
     }catch(e){
       diag('whisper fail '+(e&&(e.message||e.name)||e));
       whisperWarm=null;
@@ -3724,7 +3745,7 @@ function logWhisperAudio(recd){
   const d=recd||{};
   const peak=Number(d.peak||0).toFixed(4);
   const level=Number(d.rms||0).toFixed(4);
-  diag('whisper audio '+(d.durationMs||0)+'ms peak='+peak+' rms='+level+' '+(d.why||''));
+  diag('whisper audio '+(d.durationMs||0)+'ms peak='+peak+' rms='+level+' samples='+(d.samples||0)+' '+(d.via||'')+' '+(d.why||''));
 }
 function deliverWhisper(r, text){
   r.__whisper=true;
@@ -3751,7 +3772,6 @@ async function whisperListen(r){
   clearTimeout(trDeafT); trDeafT=0;
   diag('asr engine=whisper');
   showWhisperListen();
-  let cap=null;
   const leaveApple=why=>{
     whisperOwns=false;
     r.__whisper=false;
@@ -3759,23 +3779,25 @@ async function whisperListen(r){
     diag('asr engine=apple');
     appleStart(r);
   };
+  const primed=takePrimedCapture();
+  let info=null;
   try{
     if(!asrMod) asrMod=await import('./asr.js');
-    cap=asrMod.recordUtterance(()=>{ diag('speechstart'); });
+    info=await asrMod.ensureModel();
   }catch(e){
-    leaveApple(e&&(e.message||e.name)||e);
-    return;
-  }
-  let info=null;
-  try{ info=await asrMod.ensureModel(); }
-  catch(e){
-    try{ if(cap&&cap.cancel) cap.cancel(); }catch(_){}
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
   diag('whisper load ms '+(info&&info.ms||0)+(info&&info.device?(' '+info.device):''));
   let recd=null;
-  try{ recd=await cap; }
+  try{
+    recd=await asrMod.recordUtterance({
+      ctx:primed&&primed.ctx,
+      stream:primed&&primed.stream,
+      onVoice:()=>{ diag('speechstart'); },
+      log:diag
+    });
+  }
   catch(e){
     logWhisperAudio({ why:'mic', durationMs:0, peak:0, rms:0 });
     diag('whisper text ""');
@@ -3861,7 +3883,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.13.1 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  e.textContent='HilinGo v4.13.2 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -3926,6 +3948,7 @@ function pickWord(alts){
 }
 // user gesture (click / Enter / Space): toggle the mic for player p — MUST stay synchronous (Safari)
 function micToggle(p,how){
+  primeCapture();
   if(trLock && !trScored && p===trSpeaker){
     trTryUntil=performance.now()+8000;
     diag('tr tap retry');
@@ -5383,7 +5406,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.1';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.2';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';
@@ -5911,6 +5934,7 @@ function dropNativeRound(){
   const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
 }
 function learnMicTap(){
+  primeCapture();
   if(deafEscalating){ learnLog('mic tap during escalate'); return; }
   if(!SR){ revertListening($('#learnMic')); return; }
   primeLearnAudio();
@@ -5937,6 +5961,7 @@ function learnMicTap(){
   go();
 }
 function learnRepeatTap(){
+  primeCapture();
   if(deafEscalating){ learnLog('repeat tap during escalate'); return; }
   if(!SR){ revertListening($('#learnRepeatMic')); return; }
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); revertListening($('#learnRepeatMic')); return; }
@@ -6214,6 +6239,7 @@ function wirePress(b, fn){
     fn();
   };
   b.addEventListener('pointerdown', ev=>{
+    if(b.id==='trTap' || (b.classList && b.classList.contains('mic'))) primeCapture();
     trPressEl=b;
     b._downAt=performance.now();
     try{ ev.stopPropagation(); }catch(_){}
@@ -6981,7 +7007,7 @@ $('#learnSend').onclick=submitLearnTyped;
 $('#learnSkip').onclick=skipLearn;
 $('#learnSpeak').onclick=replayLearn;
 $('#learnMic').onclick=()=>learnMicTap();
-$('#learnMic').addEventListener('pointerdown', ()=>{ $('#learnMic')._downAt=performance.now(); });
+$('#learnMic').addEventListener('pointerdown', ()=>{ primeCapture(); $('#learnMic')._downAt=performance.now(); });
 $('#learnMic').addEventListener('pointerup', ()=>{ if(!srRunning) flashListening($('#learnMic')); });
 wirePress($('#learnRepeatMic'), ()=>learnRepeatTap());
 $('#learnClear').onclick=()=>clearLearnRound();

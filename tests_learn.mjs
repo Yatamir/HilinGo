@@ -220,7 +220,7 @@ function ttsOk(src, tl, text) {
   try { return decodeURIComponent(src).includes(text); } catch (_) { return src.includes(text); }
 }
 function localOk(src, lang) {
-  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.13.18');
+  return !!src && src.includes('audio/tts/' + lang + '/') && src.includes('.mp3?v=4.13.19');
 }
 
 try {
@@ -344,17 +344,22 @@ try {
     await shot(page, 'learn-listening-phone');
 
     await page.evaluate(() => window.__emit('gato'));
-    await page.waitForFunction(() => document.getElementById('learnOwnWord').textContent.includes('gato'));
+    await page.waitForFunction(() => document.getElementById('learnOtherWord').textContent.includes('gato'));
     s = await page.evaluate(() => ({
       own: document.getElementById('learnOwnWord').textContent,
+      ownClass: document.getElementById('learnOwnWord').className,
+      ownMsg: document.getElementById('learnOwnMsg').textContent,
       heard: document.getElementById('learnHeard').textContent,
       other: document.getElementById('learnOtherWord').textContent,
+      otherClass: document.getElementById('learnOtherWord').className,
+      otherMsg: document.getElementById('learnOtherMsg').textContent,
+      otherHeard: document.getElementById('learnOtherHeard').textContent,
       skip: !document.getElementById('learnSkip').classList.contains('hidden'),
       speak: !document.getElementById('learnSpeak').classList.contains('hidden'),
-      check: document.getElementById('learnOtherWord').textContent.includes('✅'),
     }));
-    if (!s.own.includes('gato') || !s.heard.includes('gato') || s.other !== 'cachorro' || !s.skip || !s.speak || s.check) bad('mismatch ' + JSON.stringify(s));
-    else ok('mismatch shows what was heard, 🔊 and skip');
+    if (!s.own.includes('כלב') || /bad/.test(s.ownClass) || /gato/i.test(s.heard) || /לא אותו/.test(s.ownMsg)) bad('hebrew mismatch ' + JSON.stringify(s));
+    else if (!/gato/i.test(s.other) || !/bad/.test(s.otherClass) || !/לא אותו/.test(s.otherMsg) || !/gato/i.test(s.otherHeard) || !s.skip || !s.speak) bad('mismatch ' + JSON.stringify(s));
+    else ok('mismatch shows what was heard on the target card, with the speaker and skip');
     {
       const before = await page.evaluate(() => ({ sr: window.__srStarts, n: window.__utts.length }));
       await page.click('#learnSpeak');

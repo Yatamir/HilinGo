@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="hilingo-version" content="4.13.2">
+<meta name="hilingo-version" content="4.13.3">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>HilinGo</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.2" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.3" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -701,7 +701,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
 // show any JS error on screen (so problems are visible without dev tools)
 (function(){ function show(m){ var e=document.getElementById('errbar'); if(!e) return; e.classList.remove('hidden'); e.textContent=(e.textContent?e.textContent+'\n':'')+'⚠️ שגיאה: '+m; e.onclick=function(){e.classList.add('hidden');e.textContent='';}; }
   window.addEventListener('error',function(ev){ show((ev.message||'error')+(ev.filename?' @ '+String(ev.filename).split('/').pop()+':'+ev.lineno:'')); });
-  window.addEventListener('unhandledrejection',function(ev){ show('promise: '+(ev.reason&&ev.reason.message||ev.reason)); });
+  window.addEventListener('unhandledrejection',function(ev){
+    var msg=String(ev.reason&&ev.reason.message||ev.reason||'');
+    if(/AudioSession|not compatible with audio capture/i.test(msg)){ if(ev.preventDefault) ev.preventDefault(); return; }
+    show('promise: '+msg);
+  });
   window.__showErr=show; })();
 </script>
 <section id="gate" class="hidden" dir="rtl">
@@ -759,7 +763,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <button type="button" class="linkbtn" id="myWordsBtn">המילים שלי</button>
   <button type="button" class="linkbtn" id="bankBtn">בנק המילים שלי</button>
-  <button type="button" class="verlbl" id="verLblStart">v4.13.2</button>
+  <button type="button" class="verlbl" id="verLblStart">v4.13.3</button>
   <button class="big" id="go">יאללה, מתחילים!</button>
   <p id="speechNote"></p>
   <div id="rules"></div>
@@ -785,7 +789,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   <div class="ltop">
     <button type="button" class="smallbtn" id="learnBack">חזרה</button>
     <div id="learnStatus"></div>
-    <button type="button" class="verlbl" id="verLblLearn">v4.13.2</button>
+    <button type="button" class="verlbl" id="verLblLearn">v4.13.3</button>
     <button type="button" class="smallbtn" id="learnWordsBtn">המילים שלי</button>
   </div>
   <div id="learnHalves">
@@ -825,11 +829,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.2"></script>
-<script src="words.js?v=4.13.2" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.2"></script>
-<script src="cat_hints.js?v=4.13.2"></script>
-<script src="learn_dict.js?v=4.13.2"></script>
+<script src="config.js?v=4.13.3"></script>
+<script src="words.js?v=4.13.3" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.3"></script>
+<script src="cat_hints.js?v=4.13.3"></script>
+<script src="learn_dict.js?v=4.13.3"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1106,7 +1110,7 @@ const WG = (()=>{
     base, normalize, firstLetter, lastLetter, loadDict, isWord, newGame, check, play, timeout, tick, finish, MAX_MISSES, maxMissesFor, latin, MAX_HINTS, useHint,
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter };
 })();
-window.WG = WG; window.HILINGO_VERSION='4.13.2';
+window.WG = WG; window.HILINGO_VERSION='4.13.3';
 WG.loadDict(window.HEB_WORDS||'', 'he');
 
 /* ======================= UI TEXT ======================= */
@@ -1651,7 +1655,7 @@ function ensureDict(code){
   const v={en:'EN_WORDS',nl:'NL_WORDS',pt:'PT_WORDS',es:'ES_WORDS',it:'IT_WORDS'}[code];
   if(window[v]) { WG.loadDict(window[v], code); return Promise.resolve(true); }
   return dictLoading[code] || (dictLoading[code]=new Promise(res=>{
-    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.2';
+    const sc=document.createElement('script'); sc.src='words_'+code+'.js?v=4.13.3';
     sc.onload=()=>{ WG.loadDict(window[v]||'', code); res(WG.hasDict(code)); };
     sc.onerror=()=>{ delete dictLoading[code]; res(false); };
     document.head.appendChild(sc); }));
@@ -2019,12 +2023,12 @@ function tileBack(p,l){ const t=$(`#t${p} .tile[data-l="${l}"]`); if(!t) return;
 
 let sent=null, sentOffer=null, sentFlash='', sentPoints=[0,0,0,0];
 let cat=null, catJudge=null, stripFrom=0, crazyArmed=false, crazyUsed=false, crazyFor=-1, catChecking=false, arm=null;
-const CAT_CACHE='hilingo-cats-v4132';
+const CAT_CACHE='hilingo-cats-v4133';
 const catMemo={};
 const catLoads={};
 window.__catsReady='';
 function foldCat(w){ return LANG==='he' ? String(w||'').replace(/[ךםןףץ]/g,ch=>HE_FINALS[ch]||ch) : String(w||''); }
-function catUrl(code){ return 'cats/'+code+'.json?v=4.13.2'; }
+function catUrl(code){ return 'cats/'+code+'.json?v=4.13.3'; }
 function prefetchCats(code){ loadCats(code).catch(()=>{}); }
 async function loadCats(code){
   if(catMemo[code]) return catMemo[code];
@@ -3050,7 +3054,7 @@ function burstConfetti(){
 // or fight the audio session. A blocked/failed play is ignored and the game goes on.
 let introAudio=null, introHold=null;
 try{
-  introAudio=new Audio('audio/hilingo.mp3?v=4.13.2');
+  introAudio=new Audio('audio/hilingo.mp3?v=4.13.3');
   introAudio.preload='auto';
   introAudio.load();
 }catch(_){ introAudio=null; }
@@ -3698,8 +3702,14 @@ function showWhisperThink(){
   showWhisperLine((S&&S.asrThink)||'', true);
 }
 let primedCapture=null;
+function gumAudio(){
+  return navigator.mediaDevices.getUserMedia({
+    audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 }
+  });
+}
 function primeCapture(){
   if(asrChoice()!=='whisper') return;
+  setAudioSession('play-and-record', 'capture');
   try{
     const AC=window.AudioContext||window.webkitAudioContext;
     if(!primedCapture || !primedCapture.ctx || primedCapture.ctx.state==='closed'){
@@ -3709,8 +3719,16 @@ function primeCapture(){
     if(ctx.state==='suspended' && ctx.resume) ctx.resume();
     diag('cap ctx state '+ctx.state);
     if(!primedCapture.stream){
-      primedCapture.stream=navigator.mediaDevices.getUserMedia({
-        audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 }
+      primedCapture.stream=gumAudio().catch(err=>{
+        const msg=String(err&&(err.message||err.name)||err||'');
+        if(/AudioSession|compatible|category/i.test(msg)){
+          setAudioSession('play-and-record', 'capture-retry');
+          return gumAudio();
+        }
+        throw err;
+      }).catch(err=>{
+        diag('cap gum '+(err&&(err.message||err.name)||err));
+        return null;
       });
     }
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
@@ -3727,7 +3745,7 @@ function warmWhisper(){
     try{
       if(!asrMod) asrMod=await import('./asr.js');
       const info=await asrMod.ensureModel();
-      diag('whisper load ms '+(info&&info.ms||0)+(info&&info.device?(' '+info.device):''));
+      diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
       diag('whisper warm skipped');
     }catch(e){
       diag('whisper fail '+(e&&(e.message||e.name)||e));
@@ -3741,6 +3759,16 @@ function noteMediaPlayed(){
   diag('asr media played');
 }
 function whisperLangTag(r){ return (r&&r.lang)||''; }
+function whisperPreferExpected(text){
+  const raw=text||'';
+  try{
+    if(typeof trLock!=='undefined' && trLock && trTarget && trMatch([raw], trTarget, TR)) return trTarget;
+  }catch(_){}
+  try{
+    if(learnPair && learnPair.t && learnMatch([raw], learnPair.t)) return learnPair.t;
+  }catch(_){}
+  return raw;
+}
 function logWhisperAudio(recd){
   const d=recd||{};
   const peak=Number(d.peak||0).toFixed(4);
@@ -3788,7 +3816,7 @@ async function whisperListen(r){
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
-  diag('whisper load ms '+(info&&info.ms||0)+(info&&info.device?(' '+info.device):''));
+  diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
   let recd=null;
   try{
     recd=await asrMod.recordUtterance({
@@ -3818,6 +3846,7 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
+  text=whisperPreferExpected(text);
   deliverWhisper(r, text);
   whisperOwns=false;
 }
@@ -3883,7 +3912,7 @@ function openMicLog(why){
 }
 function drawDiag(){ const e=$('#diagText')||$('#diag'); if(!e) return;
   const micMode=($('#autoMic') && $('#autoMic').checked)?'auto':'tap-to-talk';
-  e.textContent='HilinGo v4.13.2 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
+  e.textContent='HilinGo v4.13.3 · mic log ['+micMode+(PTT?' safari':'')+', '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'no SR')+', '+(S&&S.speech)+', '+((navigator.userAgent.match(/Version\/[\d.]+/)||navigator.userAgent.match(/Chrome\/[\d.]+/)||[''])[0])+']: '+diagLog.slice(-30).join(' · ');
   const box=$('#diag'); if(box) box.scrollTop=1e6; }
 (function(){ try{ localStorage.removeItem('wg_diag'); }catch(_){} drawDiag(); })();   // always starts hidden
 function altsOf(res){ const a=[]; for(let i=0;i<res.length;i++){ const t=res[i]&&res[i].transcript; if(t&&t.trim()) a.push(t.trim()); } return a; }
@@ -5406,7 +5435,7 @@ function ttsSlug(text){
   return h.toString(16).padStart(16,'0');
 }
 function localTtsUrl(text, langCode){
-  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.2';
+  return 'audio/tts/'+(langCode||'en')+'/'+ttsSlug(text)+'.mp3?v=4.13.3';
 }
 function ttsUrl(text, langCode){
   const tl=TTS_TL[langCode]||'en';

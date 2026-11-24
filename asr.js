@@ -1,25 +1,86 @@
-// On-device speech for iPhone. Whisper base is fetched when the page opens
-// and kept in the Cache API. A listen uses tiny only until base is ready.
+// On-device speech for iPhone. Page load only caches Whisper base files.
+// One pipeline is created on the first listen and reused. Never two at once.
 // No server and no paid API.
 
-function modelId(){
-  try {
-    if (/[?&]model=tiny(?:&|$)/.test(location.search || '')) return 'Xenova/whisper-tiny';
-  } catch (_) {}
-  return 'Xenova/whisper-base';
-}
+const TINY = 'Xenova/whisper-tiny';
+const BASE = 'Xenova/whisper-base';
+const CRASH_KEY = 'hilingo_whisper_base_crash';
+const FILE_CACHE = 'transformers-cache';
 const RUNTIME = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const TARGET_RATE = 16000;
 const VOICE_RMS = 0.012;
 const SILENCE_MS = 700;
 const MAX_MS = 5000;
 const PRE_MS = 300;
+const BASE_FILES = [
+  'config.json',
+  'generation_config.json',
+  'preprocessor_config.json',
+  'tokenizer_config.json',
+  'tokenizer.json',
+  'vocab.json',
+  'merges.txt',
+  'normalizer.json',
+  'added_tokens.json',
+  'special_tokens_map.json',
+  'onnx/encoder_model_fp16.onnx',
+  'onnx/decoder_model_merged_q4f16.onnx',
+];
 
-const pipes = {};
-const loadings = {};
+let pipe = null;
+let pipeId = '';
+let pipeInfo = null;
+let baseBanned = false;
+let crashNoted = false;
+let busy = Promise.resolve();
 let logger = function () {};
 export function setLogger(fn){ logger = typeof fn === 'function' ? fn : function () {}; }
 function note(msg){ try { logger(msg); } catch (_) {} }
+
+function memLine(){
+  try {
+    const m = performance && performance.memory;
+    if (!m || !m.usedJSHeapSize) return 'mem=na';
+    const mb = n => Math.round(n / 1048576);
+    return 'mem used=' + mb(m.usedJSHeapSize) + ' total=' + mb(m.totalJSHeapSize) + ' limit=' + mb(m.jsHeapSizeLimit);
+  } catch (_) { return 'mem=na'; }
+}
+function locked(fn){
+  const run = busy.then(fn, fn);
+  busy = run.then(() => {}, () => {});
+  return run;
+}
+function wantsTiny(){
+  try { return /[?&]model=tiny(?:&|$)/.test(location.search || ''); } catch (_) { return false; }
+}
+function isIOS(){
+  try {
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/.test(ua)) return true;
+    if (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1) return true;
+  } catch (_) {}
+  return false;
+}
+function noteCrashOnce(){
+  if (crashNoted) return;
+  crashNoted = true;
+  try {
+    if (sessionStorage.getItem(CRASH_KEY) === '1') {
+      baseBanned = true;
+      sessionStorage.removeItem(CRASH_KEY);
+      note('whisper base crashed previously, using tiny');
+    }
+  } catch (_) {}
+}
+function markBase(){
+  try { sessionStorage.setItem(CRASH_KEY, '1'); } catch (_) {}
+}
+function clearBase(){
+  try { sessionStorage.removeItem(CRASH_KEY); } catch (_) {}
+}
+function fileUrl(id, file){
+  return 'https://huggingface.co/' + id + '/resolve/main/' + file;
+}
 
 function whisperName(tag){
   const t = String(tag || '').toLowerCase();
@@ -32,33 +93,6 @@ function whisperName(tag){
   if (t.startsWith('fr')) return 'french';
   if (t.startsWith('de')) return 'german';
   return null;
-}
-
-async function pickDevice(){
-  try {
-    if (navigator.gpu) {
-      const adapter = await navigator.gpu.requestAdapter();
-      if (adapter) return 'webgpu';
-    }
-  } catch (_) {}
-  return 'wasm';
-}
-
-async function dtypePlan(device){
-  if (device !== 'webgpu') return { spec: 'q8', label: 'q8' };
-  let fp16 = false;
-  try {
-    const adapter = await navigator.gpu.requestAdapter();
-    fp16 = !!(adapter && adapter.features && adapter.features.has('shader-f16'));
-  } catch (_) {}
-  if (fp16) return { spec: { encoder_model: 'fp16', decoder_model_merged: 'q4f16' }, label: 'encoder=fp16 decoder=q4f16' };
-  return { spec: { encoder_model: 'fp32', decoder_model_merged: 'q4' }, label: 'encoder=fp32 decoder=q4' };
-}
-
-function pipeOf(id){ return pipes[id] || null; }
-
-export function prefetch(id){
-  ensure(id || modelId()).catch(() => {});
 }
 
 let fetchLowered = false;
@@ -77,68 +111,182 @@ function lowerModelFetch(){
   };
 }
 
-export async function ensureModel(){
-  const want = modelId();
-  if (want.endsWith('tiny')) return ensure(want);
-  if (pipeOf(want)) return ensure(want);
-  ensure(want).catch(() => {});
-  note('whisper base not ready, using tiny');
-  return ensure('Xenova/whisper-tiny');
+async function baseFilesReady(){
+  if (baseBanned || wantsTiny()) return false;
+  try {
+    const cache = await caches.open(FILE_CACHE);
+    const enc = await cache.match(fileUrl(BASE, 'onnx/encoder_model_fp16.onnx'));
+    const dec = await cache.match(fileUrl(BASE, 'onnx/decoder_model_merged_q4f16.onnx'));
+    return !!(enc && dec);
+  } catch (_) { return false; }
 }
 
-async function ensure(id){
-  lowerModelFetch();
-  if (pipes[id]) return { ms: 0, cached: true, device: pipes[id].__device || '', dtype: pipes[id].__dtype || '', model: id };
-  if (loadings[id]) return loadings[id];
-  const t0 = performance.now();
-  loadings[id] = (async () => {
-    const { pipeline, env } = await import(RUNTIME);
-    env.allowLocalModels = false;
-    env.useBrowserCache = true;
-    let device = await pickDevice();
-    const plan = await dtypePlan(device);
-    const make = (dev, spec) => pipeline('automatic-speech-recognition', id, {
-      dtype: spec,
-      device: dev,
-      progress_callback: (p) => {
-        if (!p) return;
-        const pct = p.progress != null ? Math.round(p.progress) : (p.total ? Math.round(100 * (p.loaded || 0) / p.total) : 0);
-        if (p.status === 'progress' || p.status === 'done' || p.status === 'initiate') note('whisper download ' + id + ' ' + (p.file || '') + ' ' + pct + '%');
-      },
-    });
-    let label = plan.label;
-    let pipe;
-    try {
-      pipe = await make(device, plan.spec);
-    } catch (err) {
-      if (device === 'webgpu') {
-        try {
-          label = 'encoder=fp32 decoder=q4';
-          pipe = await make('webgpu', { encoder_model: 'fp32', decoder_model_merged: 'q4' });
-        } catch (_) {
-          device = 'wasm';
-          label = 'q8';
-          pipe = await make('wasm', 'q8');
-        }
-      } else throw err;
-    }
-    pipe.__device = device;
-    pipe.__dtype = label;
-    pipe.__model = id;
-    pipes[id] = pipe;
-    return { ms: Math.round(performance.now() - t0), cached: false, device, dtype: label, model: id };
-  })();
+async function cacheOne(id, file){
+  const url = fileUrl(id, file);
+  const cache = await caches.open(FILE_CACHE);
+  try { if (await cache.match(url)) { note('whisper download ' + id + ' ' + file + ' 100%'); return true; } } catch (_) {}
+  let res;
+  try { res = await fetch(url, { priority: 'low' }); } catch (_) { return false; }
+  if (!res || !res.ok || !res.body) return false;
+  const total = Number(res.headers.get('content-length') || 0);
+  let loaded = 0;
+  let last = -1;
+  const stream = new TransformStream({
+    transform(chunk, controller){
+      loaded += chunk.byteLength || chunk.length || 0;
+      const pct = total ? Math.min(99, Math.round(100 * loaded / total)) : 0;
+      if (pct >= last + 25) { last = pct; note('whisper download ' + id + ' ' + file + ' ' + pct + '%'); }
+      controller.enqueue(chunk);
+    },
+  });
   try {
-    return await loadings[id];
+    await cache.put(url, new Response(res.body.pipeThrough(stream), { status: 200, headers: { 'Content-Type': res.headers.get('content-type') || 'application/octet-stream' } }));
+  } catch (_) {
+    try {
+      const again = await fetch(url, { priority: 'low' });
+      if (!again.ok) return false;
+      await cache.put(url, again);
+    } catch (__) { return false; }
+  }
+  note('whisper download ' + id + ' ' + file + ' 100%');
+  return true;
+}
+
+export function prefetch(){
+  noteCrashOnce();
+  lowerModelFetch();
+  if (wantsTiny() || baseBanned) return;
+  (async () => {
+    for (const file of BASE_FILES) {
+      try { await cacheOne(BASE, file); } catch (_) {}
+    }
+  })().catch(() => {});
+}
+
+async function webgpuPlan(){
+  try {
+    if (!navigator.gpu) return null;
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) return null;
+    const fp16 = !!(adapter.features && adapter.features.has('shader-f16'));
+    if (!fp16) return null;
+    return { spec: { encoder_model: 'fp16', decoder_model_merged: 'q4f16' }, label: 'encoder=fp16 decoder=q4f16' };
+  } catch (_) { return null; }
+}
+
+function watchLost(session){
+  try {
+    const dev = session && (session.device || (session.handler && (session.handler.device || session.handler.gpuDevice)));
+    if (!dev || !dev.lost || !dev.lost.then) return;
+    dev.lost.then(info => {
+      baseBanned = true;
+      note('whisper gpu lost ' + ((info && info.message) || '') + ' ' + memLine());
+    }).catch(() => {});
+  } catch (_) {}
+}
+
+function hookLost(obj){
+  try {
+    const sessions = obj && obj.model && obj.model.sessions;
+    if (!sessions) return;
+    Object.keys(sessions).forEach(k => watchLost(sessions[k]));
+  } catch (_) {}
+}
+
+async function disposePipe(why){
+  const old = pipe;
+  const id = pipeId;
+  pipe = null;
+  pipeId = '';
+  pipeInfo = null;
+  if (!old) return;
+  note('whisper dispose ' + id + ' ' + (why || '') + ' ' + memLine());
+  try { if (old.dispose) await old.dispose(); } catch (_) {}
+  try { if (old.model && old.model.dispose) await old.model.dispose(); } catch (_) {}
+}
+
+async function buildPipe(id, device, spec){
+  const { pipeline, env } = await import(RUNTIME);
+  env.allowLocalModels = false;
+  env.useBrowserCache = true;
+  const made = await pipeline('automatic-speech-recognition', id, {
+    dtype: spec,
+    device: device,
+    progress_callback: (p) => {
+      if (!p || p.status === 'progress') return;
+      if (p.status === 'done' || p.status === 'initiate') note('whisper download ' + id + ' ' + (p.file || '') + ' ' + (p.status === 'done' ? '100' : '0') + '%');
+    },
+  });
+  hookLost(made);
+  return made;
+}
+
+async function createPipe(id){
+  if (pipe && pipeId === id) return pipeInfo;
+  if (pipe) await disposePipe('switch');
+  let model = id;
+  let device = 'wasm';
+  let spec = 'q8';
+  let label = 'q8';
+  if (model === BASE) {
+    const plan = await webgpuPlan();
+    if (!plan || baseBanned) {
+      note('whisper webgpu unavailable, using tiny');
+      model = TINY;
+    } else {
+      device = 'webgpu';
+      spec = plan.spec;
+      label = plan.label;
+    }
+  }
+  if (isIOS() && device === 'webgpu' && spec && spec.encoder_model === 'fp32') {
+    model = TINY;
+    device = 'wasm';
+    spec = 'q8';
+    label = 'q8';
+  }
+  if (model === BASE) markBase();
+  const t0 = performance.now();
+  note('whisper load start ' + model + ' device=' + device + ' dtype=' + label + ' ' + memLine());
+  try {
+    const made = await buildPipe(model, device, spec);
+    pipe = made;
+    pipeId = model;
+    pipeInfo = { ms: Math.round(performance.now() - t0), cached: false, device, dtype: label, model };
+    note('whisper load end ' + model + ' ' + pipeInfo.ms + 'ms ' + memLine());
+    return pipeInfo;
   } catch (err) {
-    delete loadings[id];
+    note('whisper load fail ' + (err && err.message || err) + ' ' + memLine());
+    clearBase();
+    await disposePipe('load-fail');
+    if (model === BASE) {
+      baseBanned = true;
+      note('whisper base not ready, using tiny');
+      return createPipe(TINY);
+    }
     throw err;
   }
 }
 
-function activePipe(){
-  return pipes[modelId()] || pipes['Xenova/whisper-tiny'] || null;
+export async function ensureModel(){
+  return locked(async () => {
+    noteCrashOnce();
+    lowerModelFetch();
+    if (wantsTiny() || baseBanned) {
+      if (pipe && pipeId !== TINY) await disposePipe('tiny');
+      return createPipe(TINY);
+    }
+    if (await baseFilesReady()) {
+      if (pipe && pipeId !== BASE) await disposePipe('base');
+      return createPipe(BASE);
+    }
+    note('whisper base not ready, using tiny');
+    if (pipe && pipeId !== TINY) await disposePipe('tiny');
+    return createPipe(TINY);
+  });
 }
+
+function activePipe(){ return pipe; }
 
 function rms(samples){
   let sum = 0;
@@ -277,17 +425,21 @@ export function recordUtterance(opts){
       settled = true;
       clearTimeout(cap);
       clearInterval(tick);
-      try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (_) {}
-      try { if (source) source.disconnect(); } catch (_) {}
-      try { if (mute) mute.disconnect(); } catch (_) {}
-      if (!keep || replaced) {
-        stopStream(stream);
-        if (!keep) { try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {} }
-      }
+      try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); proc = null; } } catch (_) {}
+      try { if (source) { source.disconnect(); source = null; } } catch (_) {}
+      try { if (mute) { mute.disconnect(); mute = null; } } catch (_) {}
+      stopStream(stream);
+      stream = null;
+      try { if (ctx && ctx.state !== 'closed') ctx.close(); } catch (_) {}
+      ctx = null;
       const full = audio && audio.length ? resample(audio, rate || TARGET_RATE) : new Float32Array(0);
-      let out = trimSilence(full, TARGET_RATE);
-      if (!out.length && full.length) out = full;
-      if (out.length > TARGET_RATE * 3) out = out.subarray(0, TARGET_RATE * 3);
+      let slice = trimSilence(full, TARGET_RATE);
+      if (!slice.length && full.length) slice = full;
+      if (slice.length > TARGET_RATE * 3) slice = slice.subarray(0, TARGET_RATE * 3);
+      const out = new Float32Array(slice.length);
+      if (slice.length) out.set(slice);
+      all.length = 0;
+      said.length = 0;
       try {
         log('cap rate ' + (rate || 0));
         log('pcm16k samples ' + full.length);
@@ -442,12 +594,7 @@ function recordWithRecorder(stream, ctx, log){
 }
 
 export async function warmUp(){
-  const pipe = activePipe();
-  if (!pipe) return;
-  const n = TARGET_RATE;
-  const audio = new Float32Array(n);
-  for (let i = 0; i < n; i++) audio[i] = (Math.random() * 2 - 1) * 0.01;
-  await pipe(audio, { task: 'transcribe', language: 'hebrew', return_timestamps: false, max_new_tokens: 4 });
+  return;
 }
 
 function cleanText(out){
@@ -456,9 +603,9 @@ function cleanText(out){
   return t;
 }
 
-export async function transcribe(audio, tag){
-  const pipe = activePipe();
-  if (!pipe) throw new Error('no model');
+async function runPipe(audio, tag){
+  const current = activePipe();
+  if (!current) throw new Error('no model');
   const language = whisperName(tag);
   const opts = {
     task: 'transcribe',
@@ -468,12 +615,50 @@ export async function transcribe(audio, tag){
   };
   if (language) opts.language = language;
   try {
-    return cleanText(await pipe(audio, opts));
-  } catch (_) {
+    return cleanText(await current(audio, opts));
+  } catch (err) {
+    const msg = String(err && err.message || err || '');
+    if (/device lost|out of memory|webgpu/i.test(msg)) throw err;
     const plain = { task: 'transcribe', return_timestamps: false };
     if (language) plain.language = language;
-    return cleanText(await pipe(audio, plain));
+    return cleanText(await current(audio, plain));
   }
+}
+
+async function fallBackTiny(){
+  clearBase();
+  baseBanned = true;
+  await disposePipe('fallback');
+  await createPipe(TINY);
+}
+
+export async function transcribe(audio, tag){
+  return locked(async () => {
+    if (!pipe) await createPipe(wantsTiny() || baseBanned ? TINY : (pipeId || TINY));
+    const model = pipeId;
+    if (model === BASE) markBase();
+    note('whisper infer start ' + model + ' ' + memLine());
+    try {
+      const text = await runPipe(audio, tag);
+      if (model === BASE) clearBase();
+      note('whisper infer end ' + model + ' ' + memLine());
+      return text;
+    } catch (err) {
+      note('whisper infer fail ' + (err && err.message || err) + ' ' + memLine());
+      if (model !== TINY) {
+        await fallBackTiny();
+        try {
+          const text = await runPipe(audio, tag);
+          note('whisper infer end tiny ' + memLine());
+          return text;
+        } catch (err2) {
+          note('whisper infer fail tiny ' + (err2 && err2.message || err2));
+        }
+      }
+      clearBase();
+      return '';
+    }
+  });
 }
 
 function logSumExp(data, offset, vocab){
@@ -497,33 +682,33 @@ function tokenList(tok, text){
   return ids.map(Number).filter(id => id >= 0 && id < 50257);
 }
 
-export async function scoreTexts(audio, tag, texts){
-  const pipe = activePipe();
-  if (!pipe || !pipe.model || !audio || !audio.length) return null;
+async function scoreOnce(audio, tag, texts){
+  const current = activePipe();
+  if (!current || !current.model || !audio || !audio.length) return null;
   const lang = whisperName(tag) || 'english';
   let cfg, init;
   try {
-    cfg = pipe.model._prepare_generation_config(null, { language: lang, task: 'transcribe', return_timestamps: false });
-    init = pipe.model._retrieve_init_tokens(cfg);
+    cfg = current.model._prepare_generation_config(null, { language: lang, task: 'transcribe', return_timestamps: false });
+    init = current.model._retrieve_init_tokens(cfg);
   } catch (_) { return null; }
   if (!init || !init.length) return null;
   let features;
   try {
-    features = await pipe.processor(audio);
+    features = await current.processor(audio);
   } catch (_) { return null; }
   const input_features = features && features.input_features;
   if (!input_features) return null;
   const eos = cfg.eos_token_id || 50257;
   const out = [];
   for (const text of texts) {
-    const word = tokenList(pipe.tokenizer, text);
+    const word = tokenList(current.tokenizer, text);
     if (!word.length) { out.push({ text: String(text), score: -99 }); continue; }
     const ids = init.concat(word, [eos]);
     let result;
     try {
-      result = await pipe.model({ input_features, decoder_input_ids: ids.slice(0, -1) });
+      result = await current.model({ input_features, decoder_input_ids: ids.slice(0, -1) });
     } catch (_) {
-      try { result = await pipe.model({ input_features, decoder_input_ids: [ids.slice(0, -1)] }); }
+      try { result = await current.model({ input_features, decoder_input_ids: [ids.slice(0, -1)] }); }
       catch (_) { return null; }
     }
     const logits = result && result.logits;
@@ -543,4 +728,28 @@ export async function scoreTexts(audio, tag, texts){
     out.push({ text: String(text), score: n ? Math.round((sum / n) * 1000) / 1000 : -99 });
   }
   return out;
+}
+
+export async function scoreTexts(audio, tag, texts){
+  return locked(async () => {
+    const model = pipeId;
+    if (model === BASE) markBase();
+    note('whisper infer start score ' + (model || 'none') + ' ' + memLine());
+    try {
+      const scored = await scoreOnce(audio, tag, texts);
+      if (model === BASE) clearBase();
+      note('whisper infer end score ' + memLine());
+      return scored;
+    } catch (err) {
+      note('whisper infer fail score ' + (err && err.message || err) + ' ' + memLine());
+      clearBase();
+      if (model && model !== TINY) {
+        try {
+          await fallBackTiny();
+          return await scoreOnce(audio, tag, texts);
+        } catch (_) { return null; }
+      }
+      return null;
+    }
+  });
 }

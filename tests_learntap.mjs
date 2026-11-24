@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.6 — the learning target mic starts like the game translation tap.
+ * HilinGo v4.13.7 — the learning target mic starts like the game translation tap.
  *   node tests_learntap.mjs
  */
 import { chromium } from 'playwright-core';

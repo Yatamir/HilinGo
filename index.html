@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.5" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.6" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -829,11 +829,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.5"></script>
-<script src="words.js?v=4.13.5" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.5"></script>
-<script src="cat_hints.js?v=4.13.5"></script>
-<script src="learn_dict.js?v=4.13.5"></script>
+<script src="config.js?v=4.13.6"></script>
+<script src="words.js?v=4.13.6" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.6"></script>
+<script src="cat_hints.js?v=4.13.6"></script>
+<script src="learn_dict.js?v=4.13.6"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1147,7 +1147,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.5';
+const HILINGO_VERSION='4.13.6';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -3793,6 +3793,9 @@ function releaseCapture(why){
   const s=held.stream;
   if(s && typeof s.then==='function') s.then(stop, ()=>{});
   else stop(s);
+  const ctx=capCtx;
+  capCtx=null;
+  try{ if(ctx && ctx.state!=='closed') ctx.close(); }catch(_){}
   if(why) diag('cap release '+why);
 }
 function heldStreamNow(){
@@ -4004,23 +4007,20 @@ async function whisperListen(r){
     diag('asr engine=apple');
     appleStart(r);
   };
-  let info=null;
   try{
     if(!asrMod) asrMod=await import('./asr.js');
     asrMod.setLogger(diag);
-    info=await asrMod.ensureModel();
   }catch(e){
     leaveApple(e&&(e.message||e.name)||e);
     return;
   }
-  diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
   const grab=async (fresh)=>{
     const primed=await captureForListen(!!fresh);
     if(!primed || !primed.stream) throw new Error('no-stream');
     return asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
-      keep:true,
+      keep:false,
       onVoice:()=>{ diag('speechstart'); },
       log:diag
     });
@@ -4031,13 +4031,23 @@ async function whisperListen(r){
     try{ recd=await grab(attempt>0); }
     catch(_){ recd=null; }
   }
+  releaseCapture('done');
   logWhisperAudio(recd);
   if(whisperNearSilent(recd)){
     whisperNotHeard();
     return;
   }
+  let info=null;
+  try{
+    info=await asrMod.ensureModel();
+  }catch(e){
+    leaveApple(e&&(e.message||e.name)||e);
+    return;
+  }
+  diag('whisper load ms '+(info&&info.ms||0)+' device='+(info&&info.device||'')+' dtype='+(info&&info.dtype||'')+' model='+(info&&info.model||''));
   showWhisperThink();
-  const audio=(recd&&recd.audio)||new Float32Array(0);
+  let audio=(recd&&recd.audio)||new Float32Array(0);
+  recd=null;
   diag('whisper transcribe start n='+audio.length);
   const tag=whisperLangTag(r);
   const exp=whisperExpected();
@@ -4050,6 +4060,7 @@ async function whisperListen(r){
         const best=scores.slice().sort((a,b)=>b.score-a.score)[0];
         const mine=scores.find(s=>s.text===exp.text);
         if(mine && best && best.text===exp.text && mine.score>-3){
+          audio=null;
           diag('whisper transcribe ms 0');
           deliverWhisper(r, exp.text);
           whisperOwns=false;
@@ -4067,6 +4078,7 @@ async function whisperListen(r){
     text='';
   }
   diag('whisper transcribe ms '+Math.round(performance.now()-t1));
+  audio=null;
   if(whisperJunk(text)){
     diag('whisper junk "'+text+'"');
     whisperNotHeard();

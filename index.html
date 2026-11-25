@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.21" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.22" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -735,7 +735,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
   <div class="setup">
     <div class="card" id="modeCard">
-      <div class="opts" id="modes"><button type="button" class="opt sel" id="modePlay" data-mode="play">משחק</button><button type="button" class="opt" id="modeLearn" data-mode="learn">למידה</button></div>
+      <div class="opts" id="modes"><button type="button" class="opt sel" id="modePlay" data-mode="play">משחק</button><button type="button" class="opt" id="modeLearn" data-mode="learn">לימוד</button></div>
     </div>
     <div class="card">
       <div class="opts" id="langs"><span class="optlbl hidden" id="nativeLbl">השפה שלי</span><button class="opt sel" data-lang="he">עברית</button><button class="opt" data-lang="en">English</button><button class="opt" data-lang="nl">Nederlands</button><button class="opt" data-lang="pt">Português</button><button class="opt" data-lang="es">Español</button><button class="opt" data-lang="it">Italiano</button></div>
@@ -840,11 +840,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.21"></script>
-<script src="words.js?v=4.13.21" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.21"></script>
-<script src="cat_hints.js?v=4.13.21"></script>
-<script src="learn_dict.js?v=4.13.21"></script>
+<script src="config.js?v=4.13.22"></script>
+<script src="words.js?v=4.13.22" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.22"></script>
+<script src="cat_hints.js?v=4.13.22"></script>
+<script src="learn_dict.js?v=4.13.22"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1208,7 +1208,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew, heWords:()=>DICTS.he||[] };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.21';
+const HILINGO_VERSION='4.13.22';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -1225,7 +1225,7 @@ const STR = {
  he:{ dir:'rtl', speech:'he-IL', title:'HilinGo', tagline:'משחק שרשרת מילים', arrow:' ← ', yourTurn:'" · תורך!"', player:i=>'שחקן '+i, playerAria:i=>'שם שחקן '+i,
   intro:'כל שחקן אומר מילה שמתחילה באות שבה הסתיימה המילה הקודמת. האות הראשונה של המילה שלך נמחקת מהלוח שלך. מי שמרוקן ראשון את הלוח – מנצח!',
   players:'מספר שחקנים:', lvl:{45:'קל · 45 שניות',30:'בינוני · 30 שניות',15:'קשה · 15 שניות'}, autoMic:'הפעלת מיקרופון אוטומטית בכל תור', micMode:'איך אומרים?', micTap:'לחיצה', micAuto:'אוטומטי', gateTitle:'הכניסו את הקוד שקיבלתם', gateLead:'הקוד פותח את המשחק במכשיר הזה.', gateGo:'כניסה', gateAria:'קוד', gateNeed:'הכניסו את הקוד שקיבלתם', gateBad:'הקוד לא נכון. נסו שוב.', gateUsed:'הקוד הזה כבר פעיל במכשיר אחר. פנו לתמיר', gateRevoked:'הקוד הזה כבר לא בתוקף. פנו לתמיר.', gateSlow:'יותר מדי ניסיונות. חכו רגע ונסו שוב.', gateOffline:'אין רשת כרגע. נסו שוב בעוד רגע.', sound:'צלילים', silentHint:'🔔 כבו את המצב השקט בטלפון כדי לשמוע ולדבר', silentOk:'בסדר', silentHide:'לא להציג שוב', go:'יאללה, מתחילים!',
-  modePlay:'משחק', modeLearn:'למידה', soloBtn:'שחקן 1', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
+  modePlay:'משחק', modeLearn:'לימוד', soloBtn:'שחקן 1', learnGo:'יאללה, לומדים!', nativeLbl:'השפה שלי', targetLbl:'אני לומד',
   learnIntro:'אמרו מילה או משפט שלם בשפה שלכם. זה יופיע בשפה השנייה, ואז תחזרו על זה.',
   learnSay:'אמרו מילה או משפט', learnRepeat:'עכשיו אמרו אותה', learnSkip:'דלגו', learnClear:'נקה', learnSaid:'אמרתי', learnBack:'חזרה',
   learnDictation:code=>code==='pt'
@@ -1236,7 +1236,7 @@ const STR = {
   learnListen:name=>'מקשיב: '+name+'…', learnSpeaking:'משמיע…',
   learnWordsNote:'נשמרות רק במכשיר הזה, לזוג השפות הזה.', learnWordsEmpty:'עוד אין מילים.',
   loading:'טוען מילון…', asrLoad:'רק רגע, מכינים את האוזן', asrThink:'רגע, חושב', dictFail:'המילון לא נטען',
-  rules:'<h3>כללים 🎲</h3><ul><li>כל אחד אומר מילה שמתחילה באות האחרונה של המילה שלפניה. כמה מילים? האות הבאה היא האות האחרונה של המילה האחרונה.</li><li>האות הראשונה של המילה שלך נמחקת מהלוח.</li><li>מי שמרוקן את הלוח ראשון — מנצח! 🏆</li><li>שחקן אחד: אתם נגד השעון.</li><li>שניים, שלושה או ארבעה: תור תור, לפי הסדר.</li><li>למידה: אומרים מילה או משפט שלם בשפה שלכם, שומעים ורואים את זה בשפה השנייה, חוזרים על זה ומקבלים ✅. זה נשמר ב״המילים שלי״.</li></ul><h3>חוקים 📜</h3><ul><li>אות סופית היא אות רגילה: ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ.</li><li>אסור לחזור על מילה שכבר נאמרה.</li><li>נגמר הזמן? התור עובר, ואותה אות נשארת.</li><li>אם כולם מפספסים את אותה אות ברצף, הבא בוחר אות חופשית.</li><li>שישה פספוסים ברצף (בשניים) או שני סיבובים מלאים (בשלושה–ארבעה) מסיימים את המשחק. מי שנשארו לו פחות אותיות — מנצח.</li><li><span class="rules-hint">💡 רמז</span> עד 3 רמזים בתור, רק למילים שעוד לא נאמרו. יש קטגוריה? הרמז הוא מילה מהסוג הזה. רמז = לא נמחקת אות באותו תור. שני תורות ברצף עם רמז? האות האחרונה שנמחקה חוזרת.</li><li>לפני המילה לוחצים על <span class="rules-sent">משפט</span>. הכפתור נדלק בצבע מלא, ואז אומרים מילה. זו מילה 1 במשפט של 5. טיפ: בחרו מילה שקשה להמשיך!</li><li>הבאים ממשיכים את המשפט, ועדיין מתחילים באות האחרונה.</li><li>מילות המשפט נהיות ירוקות. אין ביניהן חצים.</li><li>השחקן הבא יכול ללחוץ <span class="rules-no">לא הגיוני</span>. המילה יורדת, האות שהיא מחקה חוזרת, בלי נקודה ובלי עונש, והתור חוזר למי שאמר אותה.</li><li>🪄 נתקעתם במשפט? חייבים לומר הילי. המשפט מתבטל. שתי אותיות עונש נדלקות שוב על הלוח שלכם, אם הן כבר נמחקו קודם.</li><li>הילי אף פעם לא מתקבלת כמילה רגילה.</li><li>🎉 חמש מילים? קונפטי! כל מילה שווה נקודה, וכל נקודה מוחקת עוד אות אקראית. הנקודות מופיעות בסוף. אם הבונוס מרוקן לוח — זה ניצחון.</li><li>לפני המילה אפשר גם להדליק <span class="rules-cat ctry">ארץ</span> <span class="rules-cat city">עיר</span> <span class="rules-cat anim">חי</span> <span class="rules-cat plant">צומח</span>. התחרטתם? לוחצים על כפתור עמום אחר, והבחירה עוברת. האתגר הולך לשחקן הבא: מילה מהסוג הזה, שמתחילה באות האחרונה.</li><li>המשחק בודק ברשימה. לא בטוחים? קופץ „שייך לקטגוריה?” ולוחצים ✓ או ✗.</li><li>אין מילה? <span class="rules-pass">דלג</span> או נגמר הזמן, והתור עובר בלי עונש. אין בונוס. רק מילה אחת. אי אפשר יחד עם משפט.</li><li>פעם אחת בתור, לפני המילה, לוחצים <span class="rules-crazy">🤪</span> לעצמכם. אומרים מילה מצחיקה באות הנכונה. בלי נקודות, בלי מחיקה, והתור נשאר. השעון רץ. הילי אסורה גם כאן.</li></ul><h3>טיפים 🌟</h3><ul><li>🌐 תרגום: לפני המשחק בוחרים שפה, או בלי תרגום. אחרי מילה טובה השעון נעצר. רואים ושומעים את המילה בשפה השנייה, ויש ניסיון אחד לומר אותה. שמע שוב משמיע אותה כמה פעמים שרוצים. דלג מדלג. הצליח? אות בונוס נמחקת. לא הצליח? איקס לבן על אדום, והתור עובר. התרגום הוא של כל המשפט. נשארים עם האות האחרונה של המילה האחרונה. הזוג נשמר בבנק המילים שלי.</li><li>📚 בנק המילים שלי נמצא במסך הבית. כל זוג שתורגם נשמר במכשיר הזה, לכל השחקנים. לוחצים על הרמקול ושומעים שוב. כפתור התרגול מקשיב לבד, ומקבלים ✅ או X. אפשר גם למחוק זוג.</li><li>😜 הפרעה סודית, רק במשחק של שניים עד ארבעה: אם אתם הבאים בתור, הקשה כפולה על אמצע הלוח שלכם שולחת אפקט שקט ואקראי למי שמשחק עכשיו. פעם ב־20 שניות. לא בשחקן אחד, ולא בלמידה.</li><li>🙈 לא התור שלכם? לחצו על העין בפינת הלוח. הלוח מתכסה ל-10 שניות בצבע שלכם, עם ספירה גדולה. פעם אחת בכל תור, ואז העין נחה עד שהתור מתחלף. כשמגיע התור שלכם, הלוח חוזר מיד.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> ברירת המחדל היא לחיצה. לוחצים על לחצו ודברו ואומרים מילה אחת. הכפתור מהבהב וכתוב אני מקשיב. בערך 5 שניות בלי דיבור, והוא נח. לחיצה שנייה מבטלת. השעון רץ גם לפני הלחיצה. במסך הבית אפשר לבחור אוטומטי, ואז הוא מקשיב לבד. או לוחצים על <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>🔔 כבו את המצב השקט בטלפון כדי לשמוע ולדבר.</li><li>⏱️ בשחקן אחד השעון סופר למעלה. ״My New record״ נשמר רק אם סיימתם באמת, ורק במכשיר הזה.</li></ul>',
+  rules:'<h3>כללים 🎲</h3><ul><li>כל אחד אומר מילה שמתחילה באות האחרונה של המילה שלפניה. כמה מילים? האות הבאה היא האות האחרונה של המילה האחרונה.</li><li>האות הראשונה של המילה שלך נמחקת מהלוח.</li><li>מי שמרוקן את הלוח ראשון — מנצח! 🏆</li><li>שחקן אחד: אתם נגד השעון.</li><li>שניים, שלושה או ארבעה: תור תור, לפי הסדר.</li><li>לימוד: אומרים מילה או משפט שלם בשפה שלכם, שומעים ורואים את זה בשפה השנייה, חוזרים על זה ומקבלים ✅. זה נשמר ב״המילים שלי״.</li></ul><h3>חוקים 📜</h3><ul><li>אות סופית היא אות רגילה: ך=כ, ם=מ, ן=נ, ף=פ, ץ=צ.</li><li>אסור לחזור על מילה שכבר נאמרה.</li><li>נגמר הזמן? התור עובר, ואותה אות נשארת.</li><li>אם כולם מפספסים את אותה אות ברצף, הבא בוחר אות חופשית.</li><li>שישה פספוסים ברצף (בשניים) או שני סיבובים מלאים (בשלושה–ארבעה) מסיימים את המשחק. מי שנשארו לו פחות אותיות — מנצח.</li><li><span class="rules-hint">💡 רמז</span> עד 3 רמזים בתור, רק למילים שעוד לא נאמרו. יש קטגוריה? הרמז הוא מילה מהסוג הזה. רמז = לא נמחקת אות באותו תור. שני תורות ברצף עם רמז? האות האחרונה שנמחקה חוזרת.</li><li>לפני המילה לוחצים על <span class="rules-sent">משפט</span>. הכפתור נדלק בצבע מלא, ואז אומרים מילה. זו מילה 1 במשפט של 5. טיפ: בחרו מילה שקשה להמשיך!</li><li>הבאים ממשיכים את המשפט, ועדיין מתחילים באות האחרונה.</li><li>מילות המשפט נהיות ירוקות. אין ביניהן חצים.</li><li>השחקן הבא יכול ללחוץ <span class="rules-no">לא הגיוני</span>. המילה יורדת, האות שהיא מחקה חוזרת, בלי נקודה ובלי עונש, והתור חוזר למי שאמר אותה.</li><li>🪄 נתקעתם במשפט? חייבים לומר הילי. המשפט מתבטל. שתי אותיות עונש נדלקות שוב על הלוח שלכם, אם הן כבר נמחקו קודם.</li><li>הילי אף פעם לא מתקבלת כמילה רגילה.</li><li>🎉 חמש מילים? קונפטי! כל מילה שווה נקודה, וכל נקודה מוחקת עוד אות אקראית. הנקודות מופיעות בסוף. אם הבונוס מרוקן לוח — זה ניצחון.</li><li>לפני המילה אפשר גם להדליק <span class="rules-cat ctry">ארץ</span> <span class="rules-cat city">עיר</span> <span class="rules-cat anim">חי</span> <span class="rules-cat plant">צומח</span>. התחרטתם? לוחצים על כפתור עמום אחר, והבחירה עוברת. האתגר הולך לשחקן הבא: מילה מהסוג הזה, שמתחילה באות האחרונה.</li><li>המשחק בודק ברשימה. לא בטוחים? קופץ „שייך לקטגוריה?” ולוחצים ✓ או ✗.</li><li>אין מילה? <span class="rules-pass">דלג</span> או נגמר הזמן, והתור עובר בלי עונש. אין בונוס. רק מילה אחת. אי אפשר יחד עם משפט.</li><li>פעם אחת בתור, לפני המילה, לוחצים <span class="rules-crazy">🤪</span> לעצמכם. אומרים מילה מצחיקה באות הנכונה. בלי נקודות, בלי מחיקה, והתור נשאר. השעון רץ. הילי אסורה גם כאן.</li></ul><h3>טיפים 🌟</h3><ul><li>🌐 תרגום: לפני המשחק בוחרים שפה, או בלי תרגום. אחרי מילה טובה השעון נעצר. רואים ושומעים את המילה בשפה השנייה, ויש ניסיון אחד לומר אותה. שמע שוב משמיע אותה כמה פעמים שרוצים. דלג מדלג. הצליח? אות בונוס נמחקת. לא הצליח? איקס לבן על אדום, והתור עובר. התרגום הוא של כל המשפט. נשארים עם האות האחרונה של המילה האחרונה. הזוג נשמר בבנק המילים שלי.</li><li>📚 בנק המילים שלי נמצא במסך הבית. כל זוג שתורגם נשמר במכשיר הזה, לכל השחקנים. לוחצים על הרמקול ושומעים שוב. כפתור התרגול מקשיב לבד, ומקבלים ✅ או X. אפשר גם למחוק זוג.</li><li>😜 הפרעה סודית, רק במשחק של שניים עד ארבעה: אם אתם הבאים בתור, הקשה כפולה על אמצע הלוח שלכם שולחת אפקט שקט ואקראי למי שמשחק עכשיו. פעם ב־20 שניות. לא בשחקן אחד, ולא בלימוד.</li><li>🙈 לא התור שלכם? לחצו על העין בפינת הלוח. הלוח מתכסה ל-10 שניות בצבע שלכם, עם ספירה גדולה. פעם אחת בכל תור, ואז העין נחה עד שהתור מתחלף. כשמגיע התור שלכם, הלוח חוזר מיד.</li><li><span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span> ברירת המחדל היא לחיצה. לוחצים על לחצו ודברו ואומרים מילה אחת. הכפתור מהבהב וכתוב אני מקשיב. בערך 5 שניות בלי דיבור, והוא נח. לחיצה שנייה מבטלת. השעון רץ גם לפני הלחיצה. במסך הבית אפשר לבחור אוטומטי, ואז הוא מקשיב לבד. או לוחצים על <span class="rules-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0"/><path d="M12 17v3.2"/></svg></span>.</li><li>🔔 כבו את המצב השקט בטלפון כדי לשמוע ולדבר.</li><li>⏱️ בשחקן אחד השעון סופר למעלה. ״My New record״ נשמר רק אם סיימתם באמת, ורק במכשיר הזה.</li></ul>',
   speechOk:'זיהוי דיבור זמין 🎤 (יש לאשר גישה למיקרופון). אפשר גם להקליד.', speechNo:'הדפדפן הזה לא תומך בזיהוי דיבור – אפשר להקליד מילים. לזיהוי דיבור מומלץ Chrome.',
   micHint:' במידה והמיקרופון לא עובד, יש ללחוץ במשחק על 🎤',
   override:'זו מילה אמיתית – אשרו בכל זאת', micTitle:'דברו', inputPh:'הקלידו מילה', send:'שלח', endBtn:'סיום משחק', pause:'השהיה', resume:'המשך', again:'משחק חדש', trLbl:'תרגום:', trNone:'ללא תרגום', bankBtn:'בנק המילים שלי', trSay:'אמרו את המילה', trOk:'כל הכבוד!', trNo:'לא הפעם', trNoMic:'המיקרופון לא נפתח — התור עובר בלי עונש', trRetry:'נסו את המיקרופון', trTap:'הקש ודבר', trSkip:'דלג', trReplay:'שמע שוב', trBonus:l=>`✔ בונוס תרגום! האות ${l} נמחקה`, bankTitle:'בנק המילים שלי', bankEmpty:'עוד אין זוגות. שחקו עם תרגום והם יישמרו כאן.', bankAll:'הכל', bankGo:'תרגול', bankAsk:'למחוק?',
@@ -4049,6 +4049,13 @@ function primeCapture(){
   }catch(e){ diag('cap prime '+(e&&(e.message||e.name)||e)); }
 }
 async function captureForListen(forceFresh){
+  // After the spoken clip, the stream from before it (or from the pointerdown that raced playback) stays silent.
+  // Drop it and ask for the microphone again, the same fresh tap 4.13.19 used once the clip had ended.
+  if(postTtsReadyAt){
+    releaseCapture('after tts');
+    diag('cap fresh after tts');
+    forceFresh=false;
+  }
   if(forceFresh){
     releaseCapture('retry');
     await new Promise(r=>setTimeout(r, 160));
@@ -4144,11 +4151,6 @@ function whisperDistractors(expected){
   if(out.length<2){ add(expected.slice(0,-1)+(expected.slice(-1)==='a'?'o':'a')); add('שלום'); }
   return out;
 }
-function releaseTtsClip(){
-  try{ synthCancel(); }catch(_){}
-  try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio){ learnTtsAudio.onended=null; learnTtsAudio.onerror=null; teardownMicAudio(learnTtsAudio); } }catch(_){}
-  try{ document.querySelectorAll('audio').forEach(teardownMicAudio); }catch(_){}
-}
 function whisperPreferExpected(text){
   const raw=text||'';
   const exp=whisperExpected();
@@ -4221,7 +4223,7 @@ function whisperBudget(promise, ms){
     promise.then(v=>{ clearTimeout(t); resolve(v); }, e=>{ clearTimeout(t); reject(e); });
   });
 }
-let capBusy=false, capStop=null, lastUserTap=0, capGen=0;
+let capBusy=false, lastUserTap=0, capGen=0;
 function noteUserTap(){ lastUserTap=performance.now(); }
 function asrModCommitAllowed(tapAt, now){
   return !!(tapAt && now>=tapAt && (now-tapAt)<4000);
@@ -4229,7 +4231,7 @@ function asrModCommitAllowed(tapAt, now){
 async function whisperListen(r){
   const learningNow=!!($('#learn') && !$('#learn').classList.contains('hidden'));
   if(learningNow && !asrModCommitAllowed(lastUserTap, performance.now())){ diag('cap ignore no tap'); return; }
-  if(capBusy){ diag('cap stop tap'); if(capStop) capStop(); return; }
+  if(capBusy){ diag('cap busy ignore'); return; }
   capBusy=true;
   const listenGen=learnSession;
   const dropped=()=>learningNow && learnSession!==listenGen;
@@ -4273,13 +4275,11 @@ async function whisperListen(r){
     const primed=await captureForListen(false);
     if(!alive()) return;
     if(!primed || !primed.stream) throw new Error('no-stream');
-    try{ releaseTtsClip(); }catch(_){}
     recd=await asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
       keep:false,
       onVoice:()=>{ heardLive=true; diag('speechstart'); },
-      armStop(fn){ capStop=fn; },
       log:diag
     });
   }catch(err){
@@ -4431,7 +4431,7 @@ async function whisperListen(r){
     try{ releaseCapture('error'); }catch(_){}
     whisperOwns=false;
     try{ whisperNotHeard(); }catch(_){}
-  } finally { clearTimeout(watchT); capBusy=false; capStop=null; }
+  } finally { clearTimeout(watchT); capBusy=false; }
 }
 function unloadSpokenAudio(){
   const a=learnTtsAudio;
@@ -6680,7 +6680,6 @@ function learnMicTap(){
   if(!SR){ revertListening($('#learnMic')); return; }
   primeLearnAudio();
   learnTyping=false;
-  if(capBusy){ diag('cap stop tap'); if(capStop) capStop(); return; }
   if(srRunning && learnState==='LISTEN_NATIVE'){
     stopSession('tap').then(()=>enterIdleNative(false));
     return;
@@ -6710,7 +6709,6 @@ function learnRepeatTap(){
   if(deafEscalating){ learnLog('repeat tap during escalate'); return; }
   if(!SR){ revertListening($('#learnRepeatMic')); return; }
   if(learnState==='INTRO' || learnState==='SPEAK_TARGET'){ learnLog('repeat tap ignored '+learnState); revertListening($('#learnRepeatMic')); return; }
-  if(capBusy){ diag('cap stop tap'); if(capStop) capStop(); return; }
   if(srRunning && learnState==='LISTEN_TARGET'){
     stopSession('tap').then(()=>enterIdleTarget(false));
     return;
@@ -7002,14 +7000,13 @@ function wirePress(b, fn){
   };
   b.addEventListener('pointerup', ev=>{ b._upAt=performance.now(); up(ev); });
   b.addEventListener('touchend', ev=>{
-    if(b._upAt && performance.now()-b._upAt<1500){ diag('tr press drop touchend '+(b.id||'')); return; }
+    if(b._upAt && performance.now()-b._upAt<700){ diag('tr press drop touchend '+(b.id||'')); return; }
     up(ev);
   });
   b.onclick=ev=>{
     try{ if(ev){ ev.preventDefault(); ev.stopPropagation(); } }catch(_){}
     const now=performance.now();
-    if(b._upAt && now-b._upAt<2500){ diag('tr press drop click '+(b.id||'')); return; }
-    if(trHandledEl && now-trHandledAt<2500){
+    if(trHandledEl && now-trHandledAt<700){
       if(trHandledEl!==b) diag('tr ignore ghost click '+(b.id||''));
       return;
     }
@@ -7370,7 +7367,7 @@ function freshTapStart(tag, wire, deafN){
 function tapChallengeMic(deafN){
   diag('tr mic tap');
   if(!trLock||trScored||trKind!=='game'){ revertListening($('#trTap')); return; }
-  if(whisperOwns || capBusy || (trPhase==='listening' && rec)){ diag('tr mic tap already'); revertListening($('#trTap')); return; }
+  if(trPhase==='listening' && rec){ diag('tr mic tap already'); revertListening($('#trTap')); return; }
   diag('tr tts '+(ttsBusy()?'speaking':'idle'));
   const sess=++recSession;
   const tag=trLangTag();

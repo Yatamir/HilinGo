@@ -397,11 +397,18 @@ function trimSilence(audio, rate){
     }
   }
   if (first < 0) return { samples: new Float32Array(0), start: 0, end: 0 };
-  const pad = Math.round(rate * 0.25);
+  const pad = Math.round(rate * 0.3);
   const cap = Math.round(rate * 5);
+  const minKeep = Math.min(audio.length, Math.round(rate * 1.0));
   let a = Math.max(0, first - pad);
   let b = Math.min(audio.length, last + pad);
-  if (b - a > cap) b = a + cap;
+  if (b - a < minKeep) {
+    const mid = Math.floor((Math.max(0, first) + last) / 2);
+    a = Math.max(0, mid - Math.floor(minKeep / 2));
+    b = Math.min(audio.length, a + minKeep);
+    if (b - a < minKeep) a = Math.max(0, b - minKeep);
+  }
+  if (b - a > cap) b = Math.min(audio.length, a + cap);
   return { samples: audio.subarray(a, b), start: a, end: b };
 }
 export function trimPcm(audio, rate){ return trimSilence(audio, rate); }
@@ -765,13 +772,43 @@ export function tokenIds(tok, text){
   } catch (_) {}
   return [];
 }
-export function scoreDecision(scores, expected){
+export const TARGET_SCORE = -6;
+export const TARGET_MARGIN = 1;
+export function foldLatin(raw){
+  return String(raw || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+}
+function sameTarget(a, b){
+  if (String(a || '') === String(b || '')) return true;
+  const fa = foldLatin(a);
+  const fb = foldLatin(b);
+  return !!(fa && fb && fa === fb);
+}
+export function fuzzyTarget(heard, expected){
+  const h = foldLatin(heard);
+  const e = foldLatin(expected);
+  if (!h || !e || h[0] !== e[0]) return false;
+  if (h === e) return true;
+  const limit = Math.max(1, Math.round(e.length * 0.35));
+  return edits(h, e, limit) <= limit;
+}
+export function targetAccept(scores, expected, freeText){
   const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
-  if (!real.length || !expected) return '';
-  const best = real.slice().sort((a, b) => b.score - a.score)[0];
-  const mine = real.find(s => s.text === expected);
-  if (mine && best && best.text === expected && mine.score > -3) return expected;
-  return '';
+  const ranked = real.slice().sort((a, b) => b.score - a.score);
+  const mine = ranked.find(s => sameTarget(s.text, expected));
+  const best = ranked[0];
+  const next = ranked.find(s => s !== mine);
+  if (mine && best && sameTarget(best.text, expected)) {
+    const margin = next ? mine.score - next.score : null;
+    if (mine.score > TARGET_SCORE || (margin != null && margin >= TARGET_MARGIN)) {
+      return { accept: true, text: expected, why: 'score', score: mine.score };
+    }
+  }
+  if (freeText && fuzzyTarget(freeText, expected)) return { accept: true, text: expected, why: 'fuzzy' };
+  return { accept: false, text: String(freeText || ''), why: 'miss' };
+}
+export function scoreDecision(scores, expected){
+  const hit = targetAccept(scores, expected, '');
+  return hit.accept && hit.why === 'score' ? expected : '';
 }
 export function scoreBest(scores, min){
   const floor = min == null ? -3 : min;
@@ -961,7 +998,7 @@ export function learnRescore(raw, words){
   return { text: original, best: best || original, score: 'raw', candidates: seen, commit: false, ask: ask.filter(w => w !== best) };
 }
 
-async function scoreOnce(audio, tag, texts){
+async function scoreOnce(audio, tag, texts, earlyScore){
   const current = activePipe();
   if (!current || !current.model || !audio || !audio.length) return null;
   const lang = whisperName(tag) || 'english';
@@ -978,62 +1015,113 @@ async function scoreOnce(audio, tag, texts){
   const input_features = features && features.input_features;
   if (!input_features) { dropTensor(features); return null; }
   const eos = cfg.eos_token_id || 50257;
-  const out = [];
+  const jobs = [];
   for (const text of texts) {
     const word = tokenIds(current.tokenizer, text);
     note('whisper score tokens "' + text + '" n=' + word.length);
     if (!word.length) continue;
     const ids = init.concat(word, [eos]);
-    const row = ids.slice(0, -1);
-    let result = null;
-    try {
-      result = await current.model({ input_features, decoder_input_ids: row });
-    } catch (_) {
-      try {
-        const T = input_features.constructor;
-        const data = BigInt64Array.from(row.map(n => BigInt(n)));
-        result = await current.model({ input_features, decoder_input_ids: new T('int64', data, [1, row.length]) });
-      } catch (__) { dropTensor(result && result.logits); dropTensor(input_features); return null; }
-    }
-    const logits = result && result.logits;
-    const data = logits && logits.data;
-    const dims = logits && logits.dims;
-    if (!data || !dims) {
-      out.push({ text: String(text), score: -99 });
-      dropTensor(logits);
-      result = null;
-      continue;
-    }
-    const vocab = dims[dims.length - 1];
-    const from = Math.max(0, init.length - 1);
-    let sum = 0, n = 0;
-    for (let pos = from; pos < ids.length - 1; pos++) {
-      const offset = pos * vocab;
-      const target = ids[pos + 1];
-      if (target < 0 || target >= vocab) continue;
-      sum += data[offset + target] - logSumExp(data, offset, vocab);
-      n++;
-    }
-    out.push({ text: String(text), score: n ? Math.round((sum / n) * 1000) / 1000 : -99 });
-    dropTensor(logits);
-    result = null;
+    jobs.push({ text: String(text), ids, row: ids.slice(0, -1) });
   }
+  const scored = await scoreCandidates(current.model, input_features, jobs, { early: earlyScore, initLen: init.length });
   dropTensor(input_features);
   features = null;
-  return out;
+  if (!scored) return null;
+  note('whisper encoder runs ' + scored.encoderRuns);
+  return scored.scores;
+}
+function openEncoder(model){
+  const session = model && model.sessions && model.sessions.model;
+  const orig = session && typeof session.run === 'function' ? session.run.bind(session) : null;
+  let runs = 0;
+  let hidden = null;
+  if (orig) {
+    session.run = async function (feeds){
+      runs++;
+      const out = await orig(feeds);
+      if (!out || typeof out !== 'object') return out;
+      return new Proxy(out, {
+        set(target, prop, value){
+          target[prop] = value;
+          if (prop === 'last_hidden_state') hidden = value;
+          return true;
+        },
+      });
+    };
+  }
+  return {
+    runs(){ return runs; },
+    hidden(){ return hidden; },
+    restore(){ if (orig && session) session.run = orig; },
+  };
+}
+function scoreLogits(logits, ids, initLen){
+  const data = logits && logits.data;
+  const dims = logits && logits.dims;
+  if (!data || !dims) return -99;
+  const vocab = dims[dims.length - 1];
+  const from = Math.max(0, initLen - 1);
+  let sum = 0, n = 0;
+  for (let pos = from; pos < ids.length - 1; pos++) {
+    const offset = pos * vocab;
+    const target = ids[pos + 1];
+    if (target < 0 || target >= vocab) continue;
+    sum += data[offset + target] - logSumExp(data, offset, vocab);
+    n++;
+  }
+  return n ? Math.round((sum / n) * 1000) / 1000 : -99;
+}
+export async function scoreCandidates(model, input_features, jobs, opts){
+  if (!model || !input_features) return null;
+  const early = opts && opts.early;
+  const initLen = opts && opts.initLen || 0;
+  const share = openEncoder(model);
+  const scores = [];
+  try {
+    for (let i = 0; i < jobs.length; i++) {
+      const job = jobs[i];
+      const row = job.row || job.ids;
+      const args = { decoder_input_ids: row };
+      if (share.hidden()) args.encoder_outputs = share.hidden();
+      else args.input_features = input_features;
+      let result = null;
+      try {
+        result = await model(args);
+      } catch (_) {
+        try {
+          const T = input_features.constructor;
+          const data = BigInt64Array.from(row.map(n => BigInt(n)));
+          const retry = Object.assign({}, args, { decoder_input_ids: new T('int64', data, [1, row.length]) });
+          result = await model(retry);
+        } catch (__) {
+          dropTensor(result && result.logits);
+          return null;
+        }
+      }
+      const logits = result && result.logits;
+      const score = scoreLogits(logits, job.ids, initLen);
+      dropTensor(logits);
+      scores.push({ text: job.text, score });
+      if (i === 0 && typeof early === 'number' && score > early) break;
+    }
+  } finally {
+    share.restore();
+  }
+  return { scores, encoderRuns: share.runs() };
 }
 function dropTensor(t){
   try { if (t && typeof t.dispose === 'function') t.dispose(); } catch (_) {}
 }
 
-export async function scoreTexts(audio, tag, texts){
+export async function scoreTexts(audio, tag, texts, opts){
   const capped = (texts || []).slice(0, TOKEN_CAP);
+  const early = opts && typeof opts.early === 'number' ? opts.early : null;
   return locked(async () => {
     const model = pipeId;
     if (model === BASE) markBase();
     note('whisper infer start score ' + (model || 'none') + ' ' + memLine());
     try {
-      const scored = await scoreOnce(audio, tag, capped);
+      const scored = await scoreOnce(audio, tag, capped, early);
       if (model === BASE) clearBase();
       note('whisper infer end score ' + memLine());
       return scored;
@@ -1043,7 +1131,7 @@ export async function scoreTexts(audio, tag, texts){
       if (model && model !== TINY) {
         try {
           await fallBackTiny();
-          return await scoreOnce(audio, tag, capped);
+          return await scoreOnce(audio, tag, capped, early);
         } catch (_) { return null; }
       }
       return null;

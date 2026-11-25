@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.18" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.19" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -818,6 +818,7 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
       <div class="hhead"><span class="pname" id="learnOtherName"></span><button type="button" class="speakbtn hidden" id="learnSpeak"><span class="sp-ico">🔊</span><span class="sp-listen" aria-hidden="true"><svg class="ico-listen" xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#4060E0"/><g fill="#fff"><rect class="bar b1" x="13" y="16" width="5" height="16" rx="2.5"/><rect class="bar b2" x="21.5" y="10" width="5" height="28" rx="2.5"/><rect class="bar b3" x="30" y="16" width="5" height="16" rx="2.5"/></g></svg></span><span id="learnSpeakLbl"></span></button></div>
       <div class="word" id="learnOtherWord" dir="auto">&nbsp;</div>
       <div class="msg" id="learnOtherMsg"></div>
+      <div class="heard" id="learnOtherHeard"></div>
       <div class="learn-actions"><button type="button" class="smallbtn hidden" id="learnSaid"></button><button type="button" class="mic ptt hidden" id="learnRepeatMic"><svg class="ico-mic" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="11" rx="3" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.2 11.2a5.8 5.8 0 0 0 11.6 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M12 17v3.2" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="ml ml-off">לחצו ודברו</span><span class="ml ml-on">אני מקשיב</span></button><button type="button" class="smallbtn hidden" id="learnSkip"></button></div>
     </div>
   </div>
@@ -839,11 +840,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.18"></script>
-<script src="words.js?v=4.13.18" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.18"></script>
-<script src="cat_hints.js?v=4.13.18"></script>
-<script src="learn_dict.js?v=4.13.18"></script>
+<script src="config.js?v=4.13.19"></script>
+<script src="words.js?v=4.13.19" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.19"></script>
+<script src="cat_hints.js?v=4.13.19"></script>
+<script src="learn_dict.js?v=4.13.19"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1207,7 +1208,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew, heWords:()=>DICTS.he||[] };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.18';
+const HILINGO_VERSION='4.13.19';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -4264,16 +4265,22 @@ async function whisperListen(r){
   diag('whisper transcribe start n='+audio.length);
   const tag=whisperLangTag(r);
   const exp=whisperExpected();
+  const targetClock=exp && exp.kind==='learn' ? performance.now() : 0;
+  const logTarget=()=>{ if(targetClock) diag('target ms '+Math.round(performance.now()-targetClock)); };
+  let targetScores=null;
   if(exp && audio.length && asrMod.scoreTexts){
     try{
       const list=[exp.text].concat(whisperDistractors(exp.text));
-      const scores=await asrMod.scoreTexts(audio, tag, list);
+      const early=asrMod.TARGET_SCORE!=null ? asrMod.TARGET_SCORE : -6;
+      const scores=await asrMod.scoreTexts(audio, tag, list, { early:early });
+      targetScores=scores;
       if(scores && scores.length){
         scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
         const hit=asrMod.scoreDecision ? asrMod.scoreDecision(scores, exp.text) : '';
         if(hit){
           audio=null;
           diag('whisper transcribe ms 0');
+          logTarget();
           if(dropped()){ diag('cap drop stale'); return; }
           deliverWhisper(r, hit);
           markStage('');
@@ -4349,6 +4356,11 @@ async function whisperListen(r){
     else if(!snapped){ whisperNotHeard(); return; }
   }
   text=whisperPreferExpected(text);
+  if(exp && asrMod.targetAccept){
+    const decision=asrMod.targetAccept(targetScores||[], exp.text, text);
+    if(decision.accept && decision.text) text=decision.text;
+  }
+  logTarget();
   if(dropped()){ diag('cap drop stale'); audio=null; return; }
   deliverWhisper(r, text);
   markStage('');
@@ -5336,6 +5348,14 @@ function setLearnMsg(text, kind){
   e.textContent=text||'';
   e.className='msg'+(kind?' '+kind:'');
 }
+function setOtherMsg(text, kind){
+  const e=$('#learnOtherMsg'); if(!e) return;
+  e.textContent=text||'';
+  e.className='msg'+(kind?' '+kind:'');
+}
+function setOtherHeard(t){
+  const e=$('#learnOtherHeard'); if(e) e.textContent=t||'';
+}
 function showLearnShell(){
   stopLearnRec();
   $('#start').classList.add('hidden');
@@ -5717,8 +5737,13 @@ function wireSession(r, side, tag, isRetry, deafN){
     armTimeout();
     const shown=side==='target' ? (bestLearnRaw(alts, LEARN_TARGET)||alts[0]) : (displayLearn(LANG, bestLearnRaw(alts, LANG))||alts[0]);
     diag('res '+(finalSeen?'final':'interim')+' '+shown);
-    setLearnWord('own', shown, 'interim');
-    setLearnHeard(S.heard+shown);
+    if(side==='target'){
+      setLearnWord('other', shown, 'interim');
+      setOtherHeard(S.heard+shown);
+    }else{
+      setLearnWord('own', shown, 'interim');
+      setLearnHeard(S.heard+shown);
+    }
     clearTimeout(stableT);
     if(side==='target' && learnPair && learnMatch(alts, learnPair.t)){ take(alts, 'final'); return; }
     const commit=why=>{
@@ -5961,10 +5986,14 @@ function enterRetry(raw){
   setOwner('none');
   micOff();
   const heard=raw||'';
-  setLearnWord('own', heard||'\u00a0', 'bad');
-  setLearnMsg(S.learnWrong, 'err');
-  setLearnStatus(S.heard+heard);
-  setLearnHeard(S.heard+heard);
+  const native=(learnPair&&learnPair.n)||'';
+  setLearnWord('own', native||'\u00a0', '');
+  setLearnMsg('','');
+  setLearnHeard('');
+  setLearnWord('other', heard||'\u00a0', 'bad');
+  setOtherMsg(S.learnWrong, 'err');
+  setOtherHeard((S.heard||'')+heard);
+  setLearnStatus(S.learnWrong||'');
   const skip=$('#learnSkip'); if(skip) skip.classList.remove('hidden');
   showSpeaker(learnSpeakText|| (learnPair&&learnPair.t), LEARN_TARGET);
 }
@@ -6423,7 +6452,8 @@ function beginSay(){
   hideSpeaker();
   setLearnWord('own','');
   setLearnWord('other','');
-  const om=$('#learnOtherMsg'); if(om) om.textContent='';
+  setOtherMsg('','');
+  setOtherHeard('');
   setLearnMsg(S.learnSay,'');
   const inp=$('#learnIn'); if(inp){ inp.value=''; inp.placeholder=S.inputPh; }
   enterIdleNative(true);
@@ -6436,7 +6466,8 @@ function beginRepeat(pair, speak){
   setLearnWord('own', pair.n, '');
   setLearnWord('other', pair.t, '');
   setLearnMsg(S.learnRepeat,'');
-  const om=$('#learnOtherMsg'); if(om) om.textContent='';
+  setOtherMsg('','');
+  setOtherHeard('');
   const inp=$('#learnIn'); if(inp) inp.value='';
   showSpeaker(pair.t, LEARN_TARGET);
   if(speak===false){ enterIdleTarget(true); return; }
@@ -6480,7 +6511,8 @@ function acceptRepeat(alts){
     setState('OK');
     setOwner('none');
     setLearnWord('other', '✅', 'bigok');
-    const om=$('#learnOtherMsg'); if(om) om.textContent=pair.t;
+    setOtherMsg(pair.t, '');
+    setOtherHeard('');
     setLearnWord('own', pair.n, 'ok');
     setLearnMsg(S.learnOk+' '+S.learnAgain, 'good');
     setLearnStatus('✅');
@@ -6572,7 +6604,8 @@ function dropNativeRound(){
   learnSpeakText='';
   hideSpeaker();
   setLearnWord('other','');
-  const om=$('#learnOtherMsg'); if(om){ om.textContent=''; om.className='msg'; }
+  setOtherMsg('','');
+  setOtherHeard('');
   setLearnMsg(S.learnSay,'');
   const skip=$('#learnSkip'); if(skip) skip.classList.add('hidden');
 }
@@ -6640,7 +6673,8 @@ function clearLearnRound(){
   hideSpeaker();
   setLearnWord('own','');
   setLearnWord('other','');
-  const om=$('#learnOtherMsg'); if(om){ om.textContent=''; om.className='msg'; }
+  setOtherMsg('','');
+  setOtherHeard('');
   setLearnMsg('','');
   setLearnHeard('');
   const inp=$('#learnIn'); if(inp) inp.value='';

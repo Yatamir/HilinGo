@@ -572,9 +572,10 @@ export function recordUtterance(opts){
         const preMax = Math.round(rate * PRE_MS / 1000);
         const pre = [];
         let preSamples = 0;
-        let voiced = false;
-        let lastVoice = 0;
-        const captureStart = performance.now();
+    let voiced = false;
+    let lastVoice = 0;
+    let restarted = false;
+    const captureStart = performance.now();
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
           const copy = new Float32Array(ev.inputBuffer.getChannelData(0));
@@ -605,7 +606,22 @@ export function recordUtterance(opts){
             said.push(copy);
             if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
           }
-          if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
+          if (!restarted && !heard && now - captureStart >= 1600 && peak < 1e-6) {
+          restarted = true;
+          try { log('cap zero restart'); } catch (_) {}
+          const again = (opts && opts.reacquire) ? opts.reacquire() : freshMic();
+          Promise.resolve(again).then(next => {
+            if (settled || !next) return;
+            try { if (source) source.disconnect(); } catch (_) {}
+            stopStream(stream);
+            stream = next;
+            try { watchTrack(captureTrack(stream), log); } catch (_) {}
+            source = ctx.createMediaStreamSource(stream);
+            source.connect(proc);
+            peak = 0;
+          }).catch(() => {});
+        }
+        if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
         tick = setInterval(report, 1000);
         setTimeout(() => {
@@ -772,8 +788,12 @@ export function tokenIds(tok, text){
   } catch (_) {}
   return [];
 }
-export const TARGET_SCORE = -6;
-export const TARGET_MARGIN = 1;
+export const TARGET_FLOOR = -5.2;
+export const TARGET_MARGIN = 0.3;
+export const TARGET_BIG = 1;
+export function zeroRestartDue(elapsedMs, peak, restarted){
+  return !restarted && elapsedMs >= 1600 && !(peak > 1e-6);
+}
 export function foldLatin(raw){
   return String(raw || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
 }
@@ -791,24 +811,113 @@ export function fuzzyTarget(heard, expected){
   const limit = Math.max(1, Math.round(e.length * 0.35));
   return edits(h, e, limit) <= limit;
 }
-export function targetAccept(scores, expected, freeText){
-  const real = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
-  const ranked = real.slice().sort((a, b) => b.score - a.score);
-  const mine = ranked.find(s => sameTarget(s.text, expected));
-  const best = ranked[0];
-  const next = ranked.find(s => s !== mine);
-  if (mine && best && sameTarget(best.text, expected)) {
-    const margin = next ? mine.score - next.score : null;
-    if (mine.score > TARGET_SCORE || (margin != null && margin >= TARGET_MARGIN)) {
-      return { accept: true, text: expected, why: 'score', score: mine.score };
-    }
-  }
-  if (freeText && fuzzyTarget(freeText, expected)) return { accept: true, text: expected, why: 'fuzzy' };
-  return { accept: false, text: String(freeText || ''), why: 'miss' };
+export function clearlyDifferent(heard, expected){
+  const h = foldLatin(heard);
+  const e = foldLatin(expected);
+  if (!h || !e || h[0] === e[0]) return false;
+  const d = edits(h, e, Math.max(h.length, e.length));
+  return d > Math.max(h.length, e.length) * 0.5;
 }
-export function scoreDecision(scores, expected){
-  const hit = targetAccept(scores, expected, '');
-  return hit.accept && hit.why === 'score' ? expected : '';
+export function targetAccept(scores, expected, freeText){
+  const rows = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
+  const mine = rows.find(s => sameTarget(s.text, expected));
+  const rivals = rows.filter(s => !sameTarget(s.text, expected));
+  if (freeText && fuzzyTarget(freeText, expected)) {
+    return { accept: true, text: expected, why: 'fuzzy', score: mine ? mine.score : 0, scores: rows };
+  }
+  const different = !!(freeText && clearlyDifferent(freeText, expected));
+  if (!freeText || !mine) {
+    return { accept: false, text: String(freeText || ''), why: different ? 'different' : 'miss', score: mine ? mine.score : null, scores: rows };
+  }
+  let gap = rivals.length ? Infinity : -Infinity;
+  for (const row of rivals) gap = Math.min(gap, mine.score - row.score);
+  const need = different ? TARGET_BIG : TARGET_MARGIN;
+  if (mine.score > TARGET_FLOOR && gap >= need) {
+    return { accept: true, text: expected, why: 'score', score: mine.score, scores: rows };
+  }
+  return { accept: false, text: String(freeText || ''), why: different ? 'different' : 'miss', score: mine.score, scores: rows };
+}
+export function scoreDecision(scores, expected, freeText){
+  const hit = targetAccept(scores, expected, freeText || '');
+  return hit.accept ? expected : '';
+}
+const HE_PLACES = ['באר שבע'];
+const SKEL_DROP = { 'א': 1, 'ע': 1, 'ה': 1, 'י': 1 };
+const SKEL_MAP = { 'ח': 'כ', 'ט': 'ת', 'ק': 'כ', 'ס': 'ש', 'ב': 'ו', 'ו': 'ו' };
+export function hebSkeleton(raw){
+  const folded = heFold(String(raw || '')).replace(/[^\u05D0-\u05EA]/g, '');
+  let out = '';
+  for (const ch of folded) {
+    if (SKEL_DROP[ch]) continue;
+    out += SKEL_MAP[ch] || ch;
+  }
+  return out;
+}
+function hebShow(word){
+  const text = String(word || '').replace(/\s+/g, ' ').trim();
+  return text;
+}
+export function resolveHebrew(raw, letter, words){
+  const tokens = heToks(raw).map(heFold);
+  const joined = tokens.join('');
+  if (!joined) return { text: '', candidates: [] };
+  const sk = hebSkeleton(joined);
+  const hits = [];
+  const push = (text) => {
+    const shown = hebShow(text);
+    const letters = heFold(shown).replace(/[^\u05D0-\u05EA]/g, '');
+    if (!letters) return;
+    if (letter && letters[0] !== letter) return;
+    if (hebSkeleton(shown) !== sk) return;
+    const diff = Math.abs(letters.length - joined.length);
+    if (!hits.some(h => h.text === shown)) hits.push({ text: shown, diff });
+  };
+  for (const place of HE_PLACES) push(place);
+  if (words) for (const item of words) push(item);
+  const place = HE_PLACES.find(p => hebSkeleton(p) === sk && (!letter || heFold(p).replace(/[^\u05D0-\u05EA]/g, '')[0] === letter));
+  hits.sort((a, b) => {
+    const ap = a.text === place ? 0 : 1;
+    const bp = b.text === place ? 0 : 1;
+    return ap - bp || a.diff - b.diff || a.text.length - b.text.length;
+  });
+  const near = hits.filter(h => h.diff <= 3 || h.text === place);
+  const candidates = near.map(h => h.text).slice(0, 8);
+  return { text: (place && near.some(h => h.text === place)) ? place : (candidates[0] || ''), candidates, skeleton: sk };
+}
+export function targetVariants(expected, words){
+  const raw = String(expected || '').trim();
+  const fold = foldLatin(raw);
+  const out = [];
+  const seen = new Set();
+  const add = (w) => {
+    const s = String(w || '').trim();
+    const key = s.toLowerCase();
+    if (!s || !key || key === raw.toLowerCase() || seen.has(key) || out.length >= 6) return;
+    seen.add(key);
+    out.push(s);
+  };
+  const vowels = 'aeiou';
+  if (fold) {
+    let swaps = 0;
+    for (let i = 0; i < fold.length && swaps < 2; i++) {
+      const at = vowels.indexOf(fold[i]);
+      if (at < 0) continue;
+      add(fold.slice(0, i) + vowels[(at + 1) % vowels.length] + fold.slice(i + 1));
+      swaps++;
+    }
+    if (fold.length > 3) add(fold.slice(0, -2));
+    add(fold + fold.slice(-1));
+  }
+  const want = fold.length || raw.length;
+  const similar = [];
+  for (const w of words || []) {
+    const n = foldLatin(w);
+    if (!n || n === fold || Math.abs(n.length - want) > 1) continue;
+    similar.push(String(w));
+  }
+  const step = Math.max(1, Math.floor(similar.length / 3));
+  for (let i = 0; i < similar.length && out.length < 6; i += step) add(similar[i]);
+  return out;
 }
 export function scoreBest(scores, min){
   const floor = min == null ? -3 : min;
@@ -953,6 +1062,13 @@ export function learnRescore(raw, words){
   const joined = tokens.join('');
   if (!joined) return { text: original, best: '', score: 'none', candidates: 0, commit: false, ask: [] };
   if (dictHas(words, joined)) return { text: joined, best: joined, score: 0, candidates: 1, commit: true, ask: [] };
+  const skHit = resolveHebrew(joined, joined[0], words);
+  if (skHit.text && skHit.candidates.length && hebSkeleton(skHit.text) === hebSkeleton(joined)) {
+    const letters = heFold(skHit.text).replace(/[^\u05D0-\u05EA]/g, '');
+    if (Math.abs(letters.length - joined.length) <= 2 && skHit.candidates.length === 1) {
+      return { text: skHit.text, best: skHit.text, score: 0, candidates: 1, commit: true, ask: [] };
+    }
+  }
   const maxEdits = Math.floor(joined.length * 0.25);
   const weak = new Set(['א', 'ה', 'ע']);
   const penalty = (a, b) => {
@@ -1109,12 +1225,116 @@ export async function scoreCandidates(model, input_features, jobs, opts){
   }
   return { scores, encoderRuns: share.runs() };
 }
+async function forwardJob(model, input_features, share, job){
+  const row = job.row || job.ids;
+  const args = { decoder_input_ids: row };
+  if (share.hidden()) args.encoder_outputs = share.hidden();
+  else args.input_features = input_features;
+  let result = null;
+  try {
+    result = await model(args);
+  } catch (_) {
+    const T = input_features.constructor;
+    const data = BigInt64Array.from(row.map(n => BigInt(n)));
+    result = await model(Object.assign({}, args, { decoder_input_ids: new T('int64', data, [1, row.length]) }));
+  }
+  return result;
+}
+export async function hearWithModel(model, features, jobs, decode, makeJob, opts){
+  if (!model || !features) return null;
+  const share = openEncoder(model);
+  const initLen = opts && opts.initLen || 0;
+  const scores = [];
+  let text = '';
+  try {
+    for (const job of jobs || []) {
+      const result = await forwardJob(model, features, share, job);
+      const logits = result && result.logits;
+      scores.push({ text: job.text, score: scoreLogits(logits, job.ids, initLen), tokens: job.ids.length });
+      dropTensor(logits);
+    }
+    if (decode) text = await decode(features, share.hidden()) || '';
+    if (text && makeJob && !scores.some(s => sameTarget(s.text, text))) {
+      const job = makeJob(text);
+      if (job) {
+        const result = await forwardJob(model, features, share, job);
+        const logits = result && result.logits;
+        scores.push({ text: job.text, score: scoreLogits(logits, job.ids, initLen), tokens: job.ids.length });
+        dropTensor(logits);
+      }
+    }
+  } finally {
+    share.restore();
+  }
+  return { scores, text, encoderRuns: share.runs() };
+}
+async function greedyOrPipe(current, audio, features, hidden, tag){
+  const lang = whisperName(tag);
+  if (hidden && current.model && current.model.generate) {
+    try {
+      const gen = await current.model.generate(features, {
+        encoder_outputs: hidden,
+        language: lang || undefined,
+        task: 'transcribe',
+        return_timestamps: false,
+        max_new_tokens: 16,
+      });
+      const seq = Array.isArray(gen) ? (gen[0] || gen) : (gen && (gen.sequences || gen));
+      if (current.tokenizer && current.tokenizer.decode && seq) {
+        const text = current.tokenizer.decode(seq, { skip_special_tokens: true });
+        if (text && String(text).trim()) return cleanText({ text });
+      }
+    } catch (err) {
+      note('whisper greedy ' + (err && err.message || err));
+    }
+  }
+  return runPipe(audio, tag);
+}
+export async function targetHear(audio, tag, texts){
+  return locked(async () => {
+    const current = activePipe();
+    if (!current || !current.model || !audio || !audio.length) return { scores: [], text: '', encoderRuns: 0 };
+    const lang = whisperName(tag) || 'english';
+    let cfg, init;
+    try {
+      cfg = current.model._prepare_generation_config(null, { language: lang, task: 'transcribe', return_timestamps: false });
+      init = current.model._retrieve_init_tokens(cfg);
+    } catch (_) { return { scores: [], text: '', encoderRuns: 0 }; }
+    if (!init || !init.length) return { scores: [], text: '', encoderRuns: 0 };
+    let features;
+    try { features = await current.processor(audio); }
+    catch (_) { return { scores: [], text: '', encoderRuns: 0 }; }
+    const input_features = features && features.input_features;
+    if (!input_features) { dropTensor(features); return { scores: [], text: '', encoderRuns: 0 }; }
+    const eos = cfg.eos_token_id || 50257;
+    const jobs = [];
+    for (const text of (texts || []).slice(0, 8)) {
+      const word = tokenIds(current.tokenizer, text);
+      note('whisper score tokens "' + text + '" n=' + word.length);
+      if (!word.length) continue;
+      const ids = init.concat(word, [eos]);
+      jobs.push({ text: String(text), ids, row: ids.slice(0, -1) });
+    }
+    note('whisper infer start score ' + (pipeId || 'none') + ' ' + memLine());
+    const heard = await hearWithModel(current.model, input_features, jobs, (feat, hidden) => greedyOrPipe(current, audio, feat, hidden, tag), (text) => {
+      const word = tokenIds(current.tokenizer, text);
+      if (!word.length) return null;
+      const ids = init.concat(word, [eos]);
+      return { text: String(text), ids, row: ids.slice(0, -1) };
+    }, { initLen: init.length });
+    dropTensor(input_features);
+    note('whisper encoder runs ' + ((heard && heard.encoderRuns) || 0));
+    note('whisper infer end score ' + memLine());
+    return heard || { scores: [], text: '', encoderRuns: 0 };
+  });
+}
 function dropTensor(t){
   try { if (t && typeof t.dispose === 'function') t.dispose(); } catch (_) {}
 }
 
 export async function scoreTexts(audio, tag, texts, opts){
-  const capped = (texts || []).slice(0, TOKEN_CAP);
+  const cap = opts && opts.limit ? opts.limit : TOKEN_CAP;
+  const capped = (texts || []).slice(0, cap);
   const early = opts && typeof opts.early === 'number' ? opts.early : null;
   return locked(async () => {
     const model = pipeId;

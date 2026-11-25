@@ -8,24 +8,72 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { trimPcm, scoreDecision, targetAccept, scoreCandidates, TARGET_SCORE } from './asr.js';
+import { readFileSync } from 'node:fs';
+import { trimPcm, scoreDecision, targetAccept, scoreCandidates, hearWithModel, resolveHebrew, zeroRestartDue, TARGET_FLOOR } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
 function ok(msg){ console.log('  ok  ', msg); }
 
+const pageSrc = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+const asrSrc = readFileSync(new URL('./asr.js', import.meta.url), 'utf8');
+if (!asrSrc.includes("log('cap zero restart')")) bad('no zero restart');
+else ok('a dead-silent capture logs cap zero restart');
+if (!pageSrc.includes("trPhase='hold'") || !pageSrc.includes('function showTrMiss') || !pageSrc.includes('resolveHebrew')) bad('page wiring');
+else ok('the voice word waits on the bar, a miss can be retried, and Hebrew uses the skeleton');
+
 const logged = [
   { text: 'uno', score: -3.734 },
   { text: 'una', score: -5.207 },
-  { text: 'שלום', score: -9.061 },
+  { text: 'Uuh', score: -4.4 },
 ];
-const won = scoreDecision(logged, 'uno');
+const won = scoreDecision(logged, 'uno', 'Uuh');
 if (won !== 'uno') bad('log scores ' + won);
-else ok('uno wins the logged scores by margin and stays above ' + TARGET_SCORE);
+else ok('uno still beats a worse free decode and stays above ' + TARGET_FLOOR);
 
 const kept = targetAccept(logged, 'uno', 'Uuh!');
 if (!kept.accept || kept.text !== 'uno' || kept.why !== 'score') bad('free text overrode ' + JSON.stringify(kept));
 else ok('Uuh! does not override a passing uno score');
+
+for (const row of [
+  ['uno', -3.6, 'Uno'],
+  ['cosa', -3.96, 'cosa'],
+  ['ciao', -3.9, 'Ciao!'],
+  ['sistema', -4.65, 'sistema'],
+]) {
+  const hit = targetAccept([{ text: row[0], score: row[1] }, { text: 'grazie', score: row[1] - 1.2 }], row[0], row[2]);
+  if (!hit.accept || hit.text !== row[0]) bad('correct ' + row[0] + ' ' + JSON.stringify(hit));
+  else ok(row[0] + ' ' + row[1] + ' is accepted (' + hit.why + ')');
+}
+const byScore = targetAccept([
+  { text: 'sistema', score: -4.65 },
+  { text: 'ciao', score: -6.4 },
+], 'sistema', 'ciao');
+if (!byScore.accept || byScore.why !== 'score') bad('big margin ' + JSON.stringify(byScore));
+else ok('a correct word that beats a different free decode by a wide margin is accepted');
+
+const wrongCiao = targetAccept([
+  { text: 'ciao', score: -3.917 },
+  { text: 'grazie', score: -3.4 },
+  { text: 'uno', score: -4.2 },
+], 'ciao', 'grazie');
+if (wrongCiao.accept) bad('grazie accepted ' + JSON.stringify(wrongCiao));
+else ok('ciao does not win when the free decode is grazie');
+const wrongDay = targetAccept([
+  { text: 'ciao', score: -3.9 },
+  { text: 'buongiorno', score: -3.2 },
+], 'ciao', 'buongiorno');
+if (wrongDay.accept || wrongDay.why !== 'different') bad('buongiorno ' + JSON.stringify(wrongDay));
+else ok('ciao is rejected when the free decode is buongiorno');
+const alone = targetAccept([{ text: 'Capisci quello che sto dicendo?', score: -4.416 }], 'Capisci quello che sto dicendo?', '');
+if (alone.accept) bad('blanket accept ' + JSON.stringify(alone));
+else ok('a target score alone, with no free decode, is not accepted');
+const rishon = targetAccept([
+  { text: 'Rishon LeZion', score: -8.28 },
+  { text: 'E la vi', score: -2.1 },
+], 'Rishon LeZion', 'E la vi');
+if (rishon.accept) bad('rishon accepted ' + JSON.stringify(rishon));
+else ok('a wrong translation repeat stays rejected');
 
 const both = targetAccept([{ text: 'uno', score: -8.2 }, { text: 'una', score: -8.4 }], 'uno', 'Uuh!');
 if (both.accept) bad('both-fail accepted ' + JSON.stringify(both));
@@ -38,6 +86,15 @@ else ok('Uno! fuzzy-matches uno when the score does not pass');
 const far = targetAccept([], 'uno', 'Eccord!');
 if (far.accept) bad('Eccord accepted ' + JSON.stringify(far));
 else ok('Eccord! is not uno');
+
+const beer = resolveHebrew('ברשב', 'ב', ['במשב', 'בעשב', 'בקשב', 'אחד']);
+if (beer.text !== 'באר שבע' || beer.candidates[0] !== 'באר שבע') bad('beer ' + JSON.stringify(beer));
+else ok('ברשב with chain letter ב is באר שבע');
+const beerOther = resolveHebrew('ברשב', 'א', ['באר שבע']);
+if (beerOther.text) bad('wrong letter ' + beerOther.text);
+else ok('a ב word is not offered when the chain letter is א');
+if (!zeroRestartDue(1700, 0, false) || zeroRestartDue(1700, 0.2, false) || zeroRestartDue(400, 0, false) || zeroRestartDue(1700, 0, true)) bad('zero restart rule');
+else ok('exact silence for 1.6s restarts the mic once');
 
 {
   const rate = 16000;
@@ -90,11 +147,12 @@ const jobs = [
   { text: 'una', ids: [1, 2, 4], row: [1, 2] },
   { text: 'שלום', ids: [1, 5, 6], row: [1, 5] },
 ];
-const early = await scoreCandidates(model, { fake: true }, jobs, { early: TARGET_SCORE, initLen: 1 });
-if (!early || early.encoderRuns !== 1 || early.scores.length !== 1 || early.scores[0].text !== 'uno') bad('early ' + JSON.stringify(early));
-else ok('a clear uno score skips the other candidates after one encoder run');
-if (scoreDecision(early.scores, 'uno') !== 'uno') bad('early decision ' + JSON.stringify(early.scores));
-else ok('the single passing score is accepted');
+const heardOnce = await hearWithModel(model, { fake: true }, jobs, async (features, hidden) => {
+  if (!hidden || !hidden.hf) throw new Error('decode ran before the encoder');
+  return 'grazie';
+}, (text) => ({ text, ids: [1, 9, 9], row: [1, 9] }), { initLen: 1 });
+if (!heardOnce || heardOnce.encoderRuns !== 1 || heardOnce.text !== 'grazie' || heardOnce.scores.length !== 4) bad('hear ' + JSON.stringify(heardOnce && { n: heardOnce.scores.length, runs: heardOnce.encoderRuns, text: heardOnce.text }));
+else ok('free decode and every candidate share one encoder run');
 
 runs = 0;
 decoded.length = 0;

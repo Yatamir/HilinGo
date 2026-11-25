@@ -576,9 +576,6 @@ export function recordUtterance(opts){
         let lastVoice = 0;
         let speechAt = 0;
         const captureStart = performance.now();
-        if (opts && typeof opts.armStop === 'function') {
-          opts.armStop(() => { if (!settled) finishProcessor(heard ? 'pause' : 'tap'); });
-        }
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
           const copy = new Float32Array(ev.inputBuffer.getChannelData(0));

@@ -17,8 +17,9 @@ function ok(msg){ console.log('  ok  ', msg); }
 
 const pageSrc = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const asrSrc = readFileSync(new URL('./asr.js', import.meta.url), 'utf8');
-if (asrSrc.includes("log('cap zero restart')") || pageSrc.includes('freshAfterTts') || pageSrc.includes('cap busy ignore')) bad('zero restart still present');
-else ok('a quiet start is not restarted');
+if (asrSrc.includes("log('cap zero restart')") || pageSrc.includes('freshAfterTts') || pageSrc.includes('releaseTtsClip') || pageSrc.includes('cap stop tap')) bad('capture regression still present');
+else if (!pageSrc.includes("diag('cap busy ignore')") || !pageSrc.includes("diag('cap fresh after tts')")) bad('post-tts fresh mic missing');
+else ok('a quiet start is not restarted, and the tap after speech asks for the mic again');
 if (!pageSrc.includes("trPhase='hold'") || !pageSrc.includes('function showTrMiss') || !pageSrc.includes('resolveHebrew')) bad('page wiring');
 else ok('the voice word waits on the bar, a miss can be retried, and Hebrew uses the skeleton');
 

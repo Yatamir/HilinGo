@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'node:fs';
-import { trimPcm, scoreDecision, targetAccept, scoreCandidates, hearWithModel, resolveHebrew, zeroRestartDue, TARGET_FLOOR } from './asr.js';
+import { trimPcm, scoreDecision, targetAccept, scoreCandidates, hearWithModel, resolveHebrew, pickHebrew, followCapture, TARGET_FLOOR } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -17,8 +17,8 @@ function ok(msg){ console.log('  ok  ', msg); }
 
 const pageSrc = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const asrSrc = readFileSync(new URL('./asr.js', import.meta.url), 'utf8');
-if (!asrSrc.includes("log('cap zero restart')")) bad('no zero restart');
-else ok('a dead-silent capture logs cap zero restart');
+if (asrSrc.includes("log('cap zero restart')") || pageSrc.includes('freshAfterTts') || pageSrc.includes('cap busy ignore')) bad('zero restart still present');
+else ok('a quiet start is not restarted');
 if (!pageSrc.includes("trPhase='hold'") || !pageSrc.includes('function showTrMiss') || !pageSrc.includes('resolveHebrew')) bad('page wiring');
 else ok('the voice word waits on the bar, a miss can be retried, and Hebrew uses the skeleton');
 
@@ -91,10 +91,29 @@ const beer = resolveHebrew('ברשב', 'ב', ['במשב', 'בעשב', 'בקשב'
 if (beer.text !== 'באר שבע' || beer.candidates[0] !== 'באר שבע') bad('beer ' + JSON.stringify(beer));
 else ok('ברשב with chain letter ב is באר שבע');
 const beerOther = resolveHebrew('ברשב', 'א', ['באר שבע']);
-if (beerOther.text) bad('wrong letter ' + beerOther.text);
-else ok('a ב word is not offered when the chain letter is א');
-if (!zeroRestartDue(1700, 0, false) || zeroRestartDue(1700, 0.2, false) || zeroRestartDue(400, 0, false) || zeroRestartDue(1700, 0, true)) bad('zero restart rule');
-else ok('exact silence for 1.6s restarts the mic once');
+if (!beerOther.candidates.includes('באר שבע')) bad('place dropped ' + JSON.stringify(beerOther));
+else ok('באר שבע stays a candidate even when the chain letter differs');
+const vav = resolveHebrew('ו', 'א', ['אב', 'או', 'אחד', 'בא']);
+if (vav.text || (vav.candidates || []).length) bad('ו snapped ' + JSON.stringify(vav));
+else ok('ו is not snapped to אב');
+const picked = pickHebrew('ו', 'א', [{ text: 'אב', score: -5.86 }, { text: 'או', score: -4.66 }]);
+if (picked.text) bad('short pick ' + JSON.stringify(picked));
+else ok('a one-letter hear is not replaced by the best score');
+const best = pickHebrew('אחד', 'א', [{ text: 'אב', score: -5.86 }, { text: 'או', score: -4.66 }]);
+if (best.text !== 'או') bad('best score ' + JSON.stringify(best));
+else ok('the higher score wins, not the first candidate');
+const wrongLetter = pickHebrew('שלום', 'א', [{ text: 'שלום', score: -1.2 }, { text: 'אבא', score: -3 }]);
+if (wrongLetter.why !== 'letter' || wrongLetter.text !== 'שלום') bad('letter ' + JSON.stringify(wrongLetter));
+else ok('a closer word with the wrong letter is rejected as the wrong letter');
+{
+  const events = [];
+  for (let t = 0; t <= 2000; t += 100) events.push({ ms: t, rms: 0 });
+  for (let t = 2100; t <= 3200; t += 100) events.push({ ms: t, rms: 0.2 });
+  for (let t = 3300; t <= 5200; t += 100) events.push({ ms: t, rms: 0 });
+  const kept = followCapture(events);
+  if (!kept.heard || kept.restarted || kept.end < 3500) bad('zeros then speech ' + JSON.stringify(kept));
+  else ok('two seconds of zeros then speech is kept (' + kept.end + 'ms), with no restart');
+}
 
 {
   const rate = 16000;

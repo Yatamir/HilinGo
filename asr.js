@@ -572,10 +572,13 @@ export function recordUtterance(opts){
         const preMax = Math.round(rate * PRE_MS / 1000);
         const pre = [];
         let preSamples = 0;
-    let voiced = false;
-    let lastVoice = 0;
-    let restarted = false;
-    const captureStart = performance.now();
+        let voiced = false;
+        let lastVoice = 0;
+        let speechAt = 0;
+        const captureStart = performance.now();
+        if (opts && typeof opts.armStop === 'function') {
+          opts.armStop(() => { if (!settled) finishProcessor(heard ? 'pause' : 'tap'); });
+        }
         proc.onaudioprocess = (ev) => {
           if (settled || usedRecorder) return;
           const copy = new Float32Array(ev.inputBuffer.getChannelData(0));
@@ -594,6 +597,7 @@ export function recordUtterance(opts){
           if (level >= VOICE_RMS) {
             if (!heard) {
               heard = true;
+              speechAt = now;
               lastVoice = now;
               for (const c of pre) said.push(c);
               pre.length = 0;
@@ -604,24 +608,9 @@ export function recordUtterance(opts){
             }
           } else if (heard) {
             said.push(copy);
-            if (now - lastVoice >= SILENCE_MS) { finishProcessor('pause'); return; }
+            if (shouldCloseCapture(now, speechAt, lastVoice, heard)) { finishProcessor('pause'); return; }
           }
-          if (!restarted && !heard && now - captureStart >= 1600 && peak < 1e-6) {
-          restarted = true;
-          try { log('cap zero restart'); } catch (_) {}
-          const again = (opts && opts.reacquire) ? opts.reacquire() : freshMic();
-          Promise.resolve(again).then(next => {
-            if (settled || !next) return;
-            try { if (source) source.disconnect(); } catch (_) {}
-            stopStream(stream);
-            stream = next;
-            try { watchTrack(captureTrack(stream), log); } catch (_) {}
-            source = ctx.createMediaStreamSource(stream);
-            source.connect(proc);
-            peak = 0;
-          }).catch(() => {});
-        }
-        if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
+          if (now - captureStart >= MAX_MS) finishProcessor(heard ? 'max' : 'no-speech');
         };
         tick = setInterval(report, 1000);
         setTimeout(() => {
@@ -791,8 +780,26 @@ export function tokenIds(tok, text){
 export const TARGET_FLOOR = -5.2;
 export const TARGET_MARGIN = 0.3;
 export const TARGET_BIG = 1;
-export function zeroRestartDue(elapsedMs, peak, restarted){
-  return !restarted && elapsedMs >= 1600 && !(peak > 1e-6);
+export function shouldCloseCapture(now, speechAt, lastVoice, heard){
+  if (!heard || !speechAt) return false;
+  return now - lastVoice >= SILENCE_MS && now - speechAt >= 1500;
+}
+export function followCapture(events){
+  let speechAt = 0;
+  let lastVoice = 0;
+  let heard = false;
+  let end = 0;
+  for (const ev of events || []) {
+    end = ev.ms;
+    if (ev.rms >= 0.012) {
+      if (!heard) speechAt = ev.ms;
+      heard = true;
+      lastVoice = ev.ms;
+    } else if (shouldCloseCapture(ev.ms, speechAt, lastVoice, heard)) {
+      return { heard, end: ev.ms, speechAt, restarted: false };
+    }
+  }
+  return { heard, end, speechAt, restarted: false };
 }
 export function foldLatin(raw){
   return String(raw || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
@@ -857,32 +864,45 @@ function hebShow(word){
   const text = String(word || '').replace(/\s+/g, ' ').trim();
   return text;
 }
+function skelDist(a, b){
+  const longer = Math.max(a.length, b.length);
+  if (!longer) return 1;
+  const d = edits(a, b, longer);
+  return d / longer;
+}
 export function resolveHebrew(raw, letter, words){
   const tokens = heToks(raw).map(heFold);
   const joined = tokens.join('');
-  if (!joined) return { text: '', candidates: [] };
   const sk = hebSkeleton(joined);
+  if (!joined || joined.length < 3) return { text: '', candidates: [], skeleton: sk, tooShort: true };
   const hits = [];
   const push = (text) => {
     const shown = hebShow(text);
     const letters = heFold(shown).replace(/[^\u05D0-\u05EA]/g, '');
     if (!letters) return;
-    if (letter && letters[0] !== letter) return;
-    if (hebSkeleton(shown) !== sk) return;
+    const skN = hebSkeleton(shown);
+    if (!skN || skelDist(sk, skN) > 0.35) return;
     const diff = Math.abs(letters.length - joined.length);
-    if (!hits.some(h => h.text === shown)) hits.push({ text: shown, diff });
+    if (diff > 3 && !HE_PLACES.includes(shown)) return;
+    if (!hits.some(h => h.text === shown)) hits.push({ text: shown, diff, dist: skelDist(sk, skN), first: letters[0] });
   };
   for (const place of HE_PLACES) push(place);
   if (words) for (const item of words) push(item);
-  const place = HE_PLACES.find(p => hebSkeleton(p) === sk && (!letter || heFold(p).replace(/[^\u05D0-\u05EA]/g, '')[0] === letter));
-  hits.sort((a, b) => {
-    const ap = a.text === place ? 0 : 1;
-    const bp = b.text === place ? 0 : 1;
-    return ap - bp || a.diff - b.diff || a.text.length - b.text.length;
-  });
-  const near = hits.filter(h => h.diff <= 3 || h.text === place);
-  const candidates = near.map(h => h.text).slice(0, 8);
-  return { text: (place && near.some(h => h.text === place)) ? place : (candidates[0] || ''), candidates, skeleton: sk };
+  hits.sort((a, b) => a.dist - b.dist || a.diff - b.diff || a.text.length - b.text.length);
+  const place = hits.find(h => HE_PLACES.includes(h.text) && h.dist === 0 && (!letter || h.first === letter));
+  const candidates = hits.map(h => h.text).slice(0, 8);
+  return { text: place ? place.text : '', candidates, skeleton: sk, tooShort: false };
+}
+export function pickHebrew(raw, letter, scores){
+  const letters = heFold(String(raw || '')).replace(/[^\u05D0-\u05EA]/g, '');
+  if (letters.length < 3) return { text: '', why: 'short' };
+  const ranked = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20)
+    .slice().sort((a, b) => b.score - a.score);
+  if (!ranked.length) return { text: '', why: 'none' };
+  const best = ranked[0];
+  const first = heFold(best.text).replace(/[^\u05D0-\u05EA]/g, '')[0];
+  if (letter && first && first !== letter) return { text: best.text, why: 'letter' };
+  return { text: best.text, why: 'ok' };
 }
 export function targetVariants(expected, words){
   const raw = String(expected || '').trim();
@@ -1063,11 +1083,8 @@ export function learnRescore(raw, words){
   if (!joined) return { text: original, best: '', score: 'none', candidates: 0, commit: false, ask: [] };
   if (dictHas(words, joined)) return { text: joined, best: joined, score: 0, candidates: 1, commit: true, ask: [] };
   const skHit = resolveHebrew(joined, joined[0], words);
-  if (skHit.text && skHit.candidates.length && hebSkeleton(skHit.text) === hebSkeleton(joined)) {
-    const letters = heFold(skHit.text).replace(/[^\u05D0-\u05EA]/g, '');
-    if (Math.abs(letters.length - joined.length) <= 2 && skHit.candidates.length === 1) {
-      return { text: skHit.text, best: skHit.text, score: 0, candidates: 1, commit: true, ask: [] };
-    }
+  if (!skHit.tooShort && skHit.text && skHit.candidates.length === 1 && hebSkeleton(skHit.text) === hebSkeleton(joined)) {
+    return { text: skHit.text, best: skHit.text, score: 0, candidates: 1, commit: true, ask: [] };
   }
   const maxEdits = Math.floor(joined.length * 0.25);
   const weak = new Set(['א', 'ה', 'ע']);

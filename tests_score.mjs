@@ -34,24 +34,24 @@ else ok('an empty word has no tokens');
 const won = scoreDecision([
   { text: 'uno', score: -1.2 },
   { text: 'una', score: -4.5 },
-  { text: 'שלום', score: -6 },
-], 'uno');
+  { text: 'uuh', score: -2.0 },
+], 'uno', 'uuh');
 if (won !== 'uno') bad('accept ' + won);
-else ok('the expected word wins when it scores best and above -3');
+else ok('the expected word wins when it beats the free decode and the distractors');
 
 const broken = scoreDecision([
   { text: 'uno', score: -99 },
-  { text: 'una', score: -99 },
-], 'uno');
+  { text: 'grazie', score: -99 },
+], 'uno', 'grazie');
 if (broken) bad('broken scores accepted ' + broken);
 else ok('a -99 from a failed tokenize is not a hit');
 
 const close = scoreDecision([
   { text: 'uno', score: -1.1 },
-  { text: 'una', score: -0.4 },
-], 'uno');
+  { text: 'grazie', score: -0.4 },
+], 'uno', 'grazie');
 if (close) bad('loser accepted ' + close);
-else ok('a better distractor is not accepted');
+else ok('a better free decode is not accepted');
 
 const cands = nearWords('איך עד?', 'א', ['אחד', 'איך', 'עד', 'שלום', 'בית']);
 if (cands.indexOf('אחד') < 0) bad('אחד missing ' + cands.join(','));

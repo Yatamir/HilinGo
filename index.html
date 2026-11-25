@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="preload" href="audio/hilingo.mp3?v=4.13.19" as="audio">
+<link rel="preload" href="audio/hilingo.mp3?v=4.13.20" as="audio">
 <meta name="apple-mobile-web-app-title" content="HilinGo">
 <meta name="theme-color" content="#3A1FA8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -840,11 +840,11 @@ label.chk input{accent-color:var(--p1);width:16px;height:16px}
   </div>
 </div>
 
-<script src="config.js?v=4.13.19"></script>
-<script src="words.js?v=4.13.19" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
-<script src="hints.js?v=4.13.19"></script>
-<script src="cat_hints.js?v=4.13.19"></script>
-<script src="learn_dict.js?v=4.13.19"></script>
+<script src="config.js?v=4.13.20"></script>
+<script src="words.js?v=4.13.20" onerror="__showErr('words.js לא נטען – המילון חסר')"></script>
+<script src="hints.js?v=4.13.20"></script>
+<script src="cat_hints.js?v=4.13.20"></script>
+<script src="learn_dict.js?v=4.13.20"></script>
 <script>
 /* ======================= LOGIC (pure, testable) ======================= */
 // Languages: he (default, 22 letters, finals folded), en / nl / pt (A–Z; diacritics folded, incl. á/à/â/ã/é/ê/í/ó/ô/õ/ú/ç → base letter; Dutch IJ = I + J).
@@ -1208,7 +1208,7 @@ const WG = (()=>{
     addCustomWord, removeCustomWord, customWords, isInactive, chainLetter, snapHebrew, nearHebrew, heWords:()=>DICTS.he||[] };
 })();
 window.WG = WG;
-const HILINGO_VERSION='4.13.19';
+const HILINGO_VERSION='4.13.20';
 window.HILINGO_VERSION=HILINGO_VERSION;
 function paintAppVersion(){
   const meta=document.querySelector('meta[name="hilingo-version"]');
@@ -1692,7 +1692,7 @@ const STR = {
  },
 };
 let LANG='he', S=STR.he, NPLAYERS=2, SOLO=false, MODE='play', LEARN_TARGET='pt', TR='';
-let trLock=false, trSpeaker=-1, trScored=false, trDeaf=false, trTarget='', trAlts=[], trTimer=0, trRestartT=0, trRestarts=0, trFroze=false, trKind='game', bankFilter='all', bankAsk=-1;
+let trLock=false, trSpeaker=-1, trScored=false, trDeaf=false, trTarget='', trAlts=[], trTimer=0, trRestartT=0, trRestarts=0, trFroze=false, trKind='game', bankFilter='all', bankAsk=-1, trCaptureDone=false, trMissTries=0;
 let trPhase='off', trListenUntil=0, trHardUntil=0, trTryUntil=0, trBootTimer=0, micGapUntil=0, trSessHandled=0, trOpening=false, trStable=false, trPrevEnd=0, trInst=0, trHearT=0, trTagIdx=0, trAbortStreak=0, gameLangOk=false, gameDeaf=0, trOpenGen=0, trHeardSpeech=false, trDeafRestarts=0, trDeafT=0, trPassT=0, trFailCounted=0, trShownFrom='', trTapFails=0, trTapT=0, trCardT=0;
 // Before any startup call. applyLang() paints a saved solo record, and that
 // reads SOLO_CAP. A const later in the script is still in the temporal dead zone.
@@ -2581,7 +2581,8 @@ function finishSentence(){
 function submit(p,raw,force=false,src='typed'){
   if(!G||G.over||paused||p!==G.turn) return false;
   if(catJudge && src!=='catyes') catJudge=null;
-  $('#in'+p).value='';
+  if(src!=='voice') $('#in'+p).value='';
+  else { const typed=$('#in'+p); if(typed) typed.value=''; }
   if(isHili(raw)){
     if(sent){ cancelSentence(p); return true; }
   }
@@ -2626,6 +2627,10 @@ function submit(p,raw,force=false,src='typed'){
   if(doTr){ trSpeaker=p; stopRec(true); }
   else stopRec();
   showWord(p, r.word, 'ok', r.link); sndOk();
+  if(src==='voice'){
+    const inp=$('#in'+p);
+    if(inp) inp.value=r.word;
+  }
   const f0=WG.firstLetter(r.word);
   if(r.hinted) setMsg(p, S.hintNoDel+(r.restored?' · '+S.hintRestored(r.restored):''), 'hintm');
   else setMsg(p, r.removed ? S.okRemoved(r.removed) : S.okKept(f0), 'good');
@@ -2636,7 +2641,26 @@ function submit(p,raw,force=false,src='typed'){
   if(!G.over) notePlayedWord(p, r);
   render();
   if(savedHere) showSavedToast();
-  if(doTr){ void runTranslation(p, r.word); return true; }
+  if(doTr){
+    if(src==='voice'){
+      const shown=r.word;
+      const inp=$('#in'+p);
+      trLock=true; trPhase='hold';
+      setTimeout(()=>{
+        if(!trLock || trPhase!=='hold') return;
+        if(inp && inp.value===shown) inp.value='';
+        void runTranslation(p, shown);
+      }, 1200);
+      return true;
+    }
+    void runTranslation(p, r.word);
+    return true;
+  }
+  if(src==='voice'){
+    const shown=r.word;
+    const inp=$('#in'+p);
+    setTimeout(()=>{ if(inp && inp.value===shown) inp.value=''; }, 1200);
+  }
   afterTurnChange();
   return true;
 }
@@ -4106,10 +4130,30 @@ function whisperExpected(){
 }
 function whisperDistractors(expected){
   const out=[];
-  const add=w=>{ const s=String(w||'').trim(); if(s && s!==expected && out.indexOf(s)<0 && out.length<3) out.push(s); };
+  const add=w=>{ const s=String(w||'').trim(); if(s && s.toLowerCase()!==String(expected||'').toLowerCase() && out.indexOf(s)<0 && out.length<6) out.push(s); };
   try{ (readLearnWords()||[]).forEach(row=>add(row.t)); }catch(_){}
+  let pool=[];
+  try{
+    const lang=(typeof LEARN_TARGET!=='undefined' && LEARN_TARGET)||TR||'';
+    const order={en:0,he:1,pt:2,nl:3,es:4,it:5};
+    const idx=order[lang];
+    const rows=window.LEARN_DICT||[];
+    if(idx!=null) rows.forEach(row=>{ if(row&&row[idx]) pool.push(row[idx]); });
+  }catch(_){}
+  try{ if(asrMod&&asrMod.targetVariants) asrMod.targetVariants(expected, pool).forEach(add); }catch(_){}
   if(out.length<2){ add(expected.slice(0,-1)+(expected.slice(-1)==='a'?'o':'a')); add('שלום'); }
   return out;
+}
+function releaseTtsClip(){
+  try{ synthCancel(); }catch(_){}
+  try{ if(typeof learnTtsAudio!=='undefined' && learnTtsAudio){ learnTtsAudio.onended=null; learnTtsAudio.onerror=null; teardownMicAudio(learnTtsAudio); } }catch(_){}
+  try{ document.querySelectorAll('audio').forEach(teardownMicAudio); }catch(_){}
+}
+function freshAfterTts(){
+  releaseTtsClip();
+  try{ setAudioSession('play-and-record', 'cap-zero'); }catch(_){}
+  try{ releaseCapture('zero'); }catch(_){}
+  return navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 } });
 }
 function whisperPreferExpected(text){
   const raw=text||'';
@@ -4121,13 +4165,19 @@ function whisperPreferExpected(text){
   }catch(_){}
   return raw;
 }
-function whisperNotUnderstood(){
+function showHeardInBar(text){
+  if(!G || typeof G.turn!=='number') return;
+  const inp=$('#in'+G.turn);
+  if(inp && text) inp.value=text;
+}
+function whisperNotUnderstood(raw){
   diag('whisper not understood');
   whisperOwns=false;
   const line=(S&&S.notGot)||'לא הבנתי, נסו שוב';
+  if(raw) showHeardInBar(raw);
   if(G && typeof G.turn==='number'){
     const m=$('#mic'+G.turn); if(m) m.classList.remove('on');
-    setHeard(G.turn, line);
+    setHeard(G.turn, raw ? ((S&&S.heard)||'שמעתי: ')+raw : line);
   }
 }
 function whisperNotHeard(){
@@ -4146,8 +4196,7 @@ function whisperNotHeard(){
     return;
   }
   if(typeof trLock!=='undefined' && trLock){
-    try{ paintTrListen(false); showTrTap(true); }catch(_){}
-    const ask=$('#trAsk'); if(ask) ask.textContent=(S&&S.trSay)||'';
+    try{ trCaptureDone=true; showTrMiss('silent'); }catch(_){}
     return;
   }
   if(G && typeof G.turn==='number'){
@@ -4230,11 +4279,13 @@ async function whisperListen(r){
     const primed=await captureForListen(false);
     if(!alive()) return;
     if(!primed || !primed.stream) throw new Error('no-stream');
+    try{ releaseTtsClip(); }catch(_){}
     recd=await asrMod.recordUtterance({
       ctx:primed.ctx,
       stream:primed.stream,
       keep:false,
       onVoice:()=>{ heardLive=true; diag('speechstart'); },
+      reacquire:freshAfterTts,
       log:diag
     });
   }catch(err){
@@ -4265,29 +4316,39 @@ async function whisperListen(r){
   diag('whisper transcribe start n='+audio.length);
   const tag=whisperLangTag(r);
   const exp=whisperExpected();
-  const targetClock=exp && exp.kind==='learn' ? performance.now() : 0;
+  const targetClock=exp ? performance.now() : 0;
   const logTarget=()=>{ if(targetClock) diag('target ms '+Math.round(performance.now()-targetClock)); };
   let targetScores=null;
-  if(exp && audio.length && asrMod.scoreTexts){
+  let freeText='';
+  if(exp && audio.length && asrMod.targetHear){
     try{
       const list=[exp.text].concat(whisperDistractors(exp.text));
-      const early=asrMod.TARGET_SCORE!=null ? asrMod.TARGET_SCORE : -6;
-      const scores=await asrMod.scoreTexts(audio, tag, list, { early:early });
-      targetScores=scores;
-      if(scores && scores.length){
-        scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
-        const hit=asrMod.scoreDecision ? asrMod.scoreDecision(scores, exp.text) : '';
-        if(hit){
-          audio=null;
-          diag('whisper transcribe ms 0');
-          logTarget();
-          if(dropped()){ diag('cap drop stale'); return; }
-          deliverWhisper(r, hit);
-          markStage('');
-          whisperOwns=false;
-          return;
-        }
+      const heard=await asrMod.targetHear(audio, tag, list);
+      targetScores=heard&&heard.scores||[];
+      freeText=heard&&heard.text||'';
+      (targetScores||[]).forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+      const decision=asrMod.targetAccept?asrMod.targetAccept(targetScores, exp.text, freeText):{accept:false, why:'miss', text:freeText};
+      const bits=(decision.scores||targetScores||[]).map(s=>'"'+s.text+'" '+s.score).join(' ');
+      diag('target decision accept='+(decision.accept?'yes':'no')+' why='+(decision.why||'')+' free="'+(freeText||'')+'" '+bits);
+      logTarget();
+      audio=null;
+      if(dropped()){ diag('cap drop stale'); return; }
+      if(decision.accept && decision.text){
+        deliverWhisper(r, decision.text);
+        markStage('');
+        whisperOwns=false;
+        return;
       }
+      if(exp.kind==='tr') trCaptureDone=true;
+      if(freeText){
+        deliverWhisper(r, freeText);
+        markStage('');
+        whisperOwns=false;
+        return;
+      }
+      if(exp.kind==='tr'){ showTrMiss('silent'); return; }
+      whisperNotHeard();
+      return;
     }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
   }
   const t1=performance.now();
@@ -4315,33 +4376,35 @@ async function whisperListen(r){
       return;
     } else if(choice.text){ text=choice.text; }
   }
-  if(!exp && text && !learningNow && G && (G.lang==='he'||LANG==='he') && asrMod.nearWords && asrMod.scoreTexts && asrMod.scoreBest){
+  if(!exp && text && !learningNow && G && (G.lang==='he'||LANG==='he') && asrMod.resolveHebrew && asrMod.scoreTexts){
     const cleaned=String(text).replace(/[^\u05D0-\u05EA\s]/g,'').replace(/\s+/g,' ').trim();
     const tokens=cleaned.match(/[\u05D0-\u05EA]+/g)||[];
     const one=tokens.length===1?tokens[0]:'';
     const known=!!(one && WG.isWord(one) && (!G.required || WG.firstLetter(one)===G.required));
     if(known){ diag('game rescore raw="'+one+'" best="'+one+'" score=exact candidates=0'); text=one; }
     else {
-      const pool=[];
-      try{
-        const dict=WG.nearHebrew ? WG.nearHebrew(cleaned, G.required) : [];
-        dict.forEach(w=>{ if(pool.indexOf(w)<0) pool.push(w); });
-      }catch(_){}
-      if(!pool.length){
-        audio=null;
-        whisperNotUnderstood();
-        return;
-      }
+      let found={ text:'', candidates:[] };
+      try{ found=asrMod.resolveHebrew(cleaned, G.required||'', WG.heWords?WG.heWords():[])||found; }catch(_){}
+      const pool=(found.candidates||[]).slice(0, 8);
+      diag('game rescore raw="'+cleaned+'" skeleton="'+(found.skeleton||'')+'" candidates='+pool.join('|'));
       let best=null;
-      try{
-        const scores=await asrMod.scoreTexts(audio, tag, pool.slice(0, 3));
-        if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
-        best=asrMod.scoreBest(scores, -3);
-      }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
-      diag('game rescore raw="'+cleaned+'" best="'+(best&&best.text||'')+'" score='+(best?best.score:'none')+' candidates='+pool.length);
+      if(pool.length && audio.length){
+        try{
+          const scores=await asrMod.scoreTexts(audio, tag, pool, { limit:8 });
+          if(scores) scores.forEach(s=>diag('whisper score "'+s.text+'" '+s.score));
+          const ranked=(scores||[]).filter(s=>s&&typeof s.score==='number'&&s.score>-20).sort((a,b)=>b.score-a.score);
+          const top=ranked[0];
+          const next=ranked[1];
+          const sk=found.text && ranked.find(s=>s.text===found.text);
+          if(found.text) best=sk||{ text:found.text, score:'skeleton' };
+          else if(top && top.score>-6 && (!next || top.score-next.score>=0.3)) best=top;
+        }catch(e){ diag('whisper score fail '+(e&&e.message||e)); }
+      }
+      diag('game rescore raw="'+cleaned+'" best="'+(best&&best.text||found.text||'')+'" score='+(best?best.score:'none')+' candidates='+pool.length);
       audio=null;
-      if(!best){ whisperNotUnderstood(); return; }
-      text=best.text;
+      if(best&&best.text) text=best.text;
+      else if(found.text) text=found.text;
+      else { showHeardInBar(cleaned); whisperNotUnderstood(cleaned); return; }
     }
   }
   audio=null;
@@ -6939,7 +7002,7 @@ function wirePress(b, fn){
   };
   b.addEventListener('pointerup', ev=>{ b._upAt=performance.now(); up(ev); });
   b.addEventListener('touchend', ev=>{
-    if(b._upAt && performance.now()-b._upAt<700){ diag('tr press drop touchend '+(b.id||'')); return; }
+    if(b._upAt && performance.now()-b._upAt<1500){ diag('tr press drop touchend '+(b.id||'')); return; }
     up(ev);
   });
   b.onclick=ev=>{
@@ -7199,13 +7262,45 @@ function offerIpadTap(why){
   showTrSkip(true);
   if(trSpeaker>=0) lightMic(trSpeaker);
 }
+function showTrMiss(why){
+  if(!trLock) return;
+  diag('tr miss '+(why||''));
+  clearTimeout(trTimer); clearTimeout(trRestartT); clearTimeout(trBootTimer); clearTimeout(trHearT); clearTimeout(trDeafT); clearTimeout(trTapT); clearTimeout(trCardT);
+  trBootTimer=0; trOpening=false; trTapT=0;
+  try{ stopRec(true); }catch(_){}
+  paintTrListen(false);
+  whisperOwns=false;
+  const line=(S&&S.learnDeaf)||'לא שמעתי, נסו שוב';
+  const last=trMissTries>=1;
+  showTrFace(trShownFrom, trTarget, line, '❌');
+  const ov=$('#trOv'); if(ov){ ov.classList.remove('good'); ov.classList.add('bad'); }
+  if(trSpeaker>=0) setMsg(trSpeaker, line, 'err');
+  if(last){
+    trScored=true;
+    trPhase='off';
+    showTrTap(false);
+    clearTimeout(trPassT);
+    trPassT=setTimeout(endTranslation, 1400);
+    return;
+  }
+  trMissTries++;
+  trScored=false;
+  trPhase='arming';
+  trCaptureDone=false;
+  showTrTap(true);
+  showTrSkip(true);
+  armCardEscape();
+}
 function armCardEscape(){
   clearTimeout(trCardT);
   trCardT=setTimeout(()=>{
     if(!trLock||trScored) return;
-    if(trPhase==='listening' && micArmedAt && performance.now()-micArmedAt<6500){ armCardEscape(); return; }
+    if(whisperOwns || capBusy || trPhase==='tts' || trPhase==='hold' || trPhase==='listening'){
+      armCardEscape();
+      return;
+    }
     diag('tr card timeout');
-    releaseChallenge('timeout');
+    showTrMiss('timeout');
   }, 12000);
 }
 function releaseChallenge(why){
@@ -7274,7 +7369,7 @@ function freshTapStart(tag, wire, deafN){
 function tapChallengeMic(deafN){
   diag('tr mic tap');
   if(!trLock||trScored||trKind!=='game'){ revertListening($('#trTap')); return; }
-  if(trPhase==='listening' && rec){ diag('tr mic tap already'); revertListening($('#trTap')); return; }
+  if(whisperOwns || capBusy || (trPhase==='listening' && rec)){ diag('tr mic tap already'); revertListening($('#trTap')); return; }
   diag('tr tts '+(ttsBusy()?'speaking':'idle'));
   const sess=++recSession;
   const tag=trLangTag();
@@ -7471,7 +7566,7 @@ function endTranslation(){
   }
 }
 async function runTranslation(p, word){
-  trKind='game'; trLock=true; trDeaf=true; trScored=false; trRestarts=0; trAlts=[]; trTarget='';
+  trKind='game'; trLock=true; trDeaf=true; trScored=false; trRestarts=0; trAlts=[]; trTarget=''; trCaptureDone=false; trMissTries=0;
   trPhase='tts'; trSpeaker=p; lightMic(p); micHoldAuto=false; hideRestartChip();
   trFailCounted=0; trTapFails=0; trShownFrom=word; showTrRetry(false); clearTimeout(trTapT); trTapT=0;
   if(SOLO && typeof soloRunning!=='undefined' && soloRunning && !soloFrozen){ freezeSolo(); trFroze=true; }

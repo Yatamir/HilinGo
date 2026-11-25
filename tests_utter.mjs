@@ -1,5 +1,5 @@
 /**
- * HilinGo v4.13.19 — keep the whole utterance, and do not fail an iPad challenge
+ * HilinGo v4.13.20 — keep the whole utterance, and do not fail an iPad challenge
  * that never manages to listen.
  *   node tests_utter.mjs
  */
@@ -153,7 +153,7 @@ try {
   const beforeTap = await page.evaluate(() => window.__langs.filter(l => l === 'it-IT').length);
   if (beforeTap) bad('Italian started before the tap ' + beforeTap);
   else ok('iPad waits for a tap before opening Italian');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v41319-tap.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v41320-tap.png' });
   const hit = await page.evaluate(() => {
     const b = document.getElementById('trTap');
     const r = b.getBoundingClientRect();
@@ -253,7 +253,7 @@ try {
   const micOn = await page.evaluate(() => document.getElementById('trMic').classList.contains('on'));
   if (!micOn) bad('translation card has no listening mic');
   else ok('the translation card shows a listening mic');
-  await page.screenshot({ path: '/opt/cursor/artifacts/v41319-listening.png' });
+  await page.screenshot({ path: '/opt/cursor/artifacts/v41320-listening.png' });
 
   await page.goto(`http://127.0.0.1:${port}/mictest.html`, { waitUntil: 'domcontentloaded' });
   const info = await page.locator('#info').innerText();

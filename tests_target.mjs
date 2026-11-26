@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'node:fs';
-import { trimPcm, scoreDecision, targetAccept, scoreCandidates, hearWithModel, resolveHebrew, pickHebrew, followCapture, TARGET_FLOOR } from './asr.js';
+import { trimPcm, scoreDecision, targetAccept, scoreCandidates, hearWithModel, resolveHebrew, pickHebrew, followCapture, learnRescore, greedyOptions, TARGET_FLOOR } from './asr.js';
 
 const problems = [];
 function bad(msg){ problems.push(msg); console.log('  FAIL', msg); }
@@ -52,6 +52,29 @@ const byScore = targetAccept([
 ], 'sistema', 'ciao');
 if (!byScore.accept || byScore.why !== 'score') bad('big margin ' + JSON.stringify(byScore));
 else ok('a correct word that beats a different free decode by a wide margin is accepted');
+
+const comeFar = targetAccept([
+  { text: 'come', score: -4.229 },
+  { text: 'comi', score: -4.51 },
+  { text: "Un'volto.", score: -2.934 },
+], 'come', "Un'volto.");
+if (!comeFar.accept || comeFar.text !== 'come') bad('come volto ' + JSON.stringify(comeFar));
+else ok('come at -4.229 is accepted when the free decode is Un\'volto.');
+const comeNear = targetAccept([
+  { text: 'come', score: -2.746 },
+  { text: 'ciao', score: -5.162 },
+  { text: 'uno', score: -5.684 },
+  { text: 'comi', score: -4.313 },
+  { text: 'Ommè.', score: -2.225 },
+], 'come', 'Ommè.');
+if (!comeNear.accept || comeNear.text !== 'come') bad('come omme ' + JSON.stringify(comeNear));
+else ok('Ommè. is close enough to come to accept');
+const finals = learnRescore('איך', ['איכ', 'איך', 'אחד']);
+if (finals.text !== 'איך') bad('final letter ' + JSON.stringify(finals));
+else ok('איך keeps its final kaf instead of איכ');
+const opts = greedyOptions({ input: 1 }, { hidden: 1 }, 'italian');
+if (opts.input_features.input !== 1 || !opts.encoder_outputs || opts.language !== 'italian') bad('greedy options ' + JSON.stringify(opts));
+else ok('greedy decode is given input_features and the shared encoder output');
 
 const wrongCiao = targetAccept([
   { text: 'ciao', score: -3.917 },

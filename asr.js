@@ -775,7 +775,7 @@ export function tokenIds(tok, text){
   return [];
 }
 export const TARGET_FLOOR = -5.2;
-export const TARGET_MARGIN = 0.3;
+export const TARGET_MARGIN = 0.28;
 export const TARGET_BIG = 1;
 export function shouldCloseCapture(now, speechAt, lastVoice, heard){
   if (!heard || !speechAt) return false;
@@ -807,13 +807,39 @@ function sameTarget(a, b){
   const fb = foldLatin(b);
   return !!(fa && fb && fa === fb);
 }
-export function fuzzyTarget(heard, expected){
-  const h = foldLatin(heard);
-  const e = foldLatin(expected);
-  if (!h || !e || h[0] !== e[0]) return false;
+function squashLatin(raw){
+  return foldLatin(raw).replace(/(.)\1+/g, '$1');
+}
+function consonantSkeleton(raw){
+  return squashLatin(raw).replace(/[aeiou]/g, '');
+}
+export function phoneticTarget(heard, expected){
+  const h = squashLatin(heard);
+  const e = squashLatin(expected);
+  if (!h || !e) return false;
+  const spokenGap = Math.abs(foldLatin(heard).length - foldLatin(expected).length);
+  if (spokenGap > 2) return false;
   if (h === e) return true;
-  const limit = Math.max(1, Math.round(e.length * 0.35));
-  return edits(h, e, limit) <= limit;
+  if (h[0] === e[0]) {
+    const limit = Math.max(1, Math.round(Math.max(h.length, e.length) * 0.35));
+    if (edits(h, e, limit) <= limit) return true;
+  }
+  const hc = consonantSkeleton(heard);
+  const ec = consonantSkeleton(expected);
+  if (!hc || !ec) return false;
+  const longer = hc.length >= ec.length ? hc : ec;
+  const shorter = longer === hc ? ec : hc;
+  if (edits(hc, ec, Math.max(hc.length, ec.length)) > 1) return false;
+  let i = 0;
+  for (const ch of longer) if (ch === shorter[i]) i++;
+  return i === shorter.length;
+}
+export function fuzzyTarget(heard, expected){
+  return phoneticTarget(heard, expected);
+}
+function cleanRealWord(raw){
+  const s = String(raw || '').trim().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return /^[A-Za-z]{3,}$/.test(s);
 }
 export function clearlyDifferent(heard, expected){
   const h = foldLatin(heard);
@@ -825,21 +851,34 @@ export function clearlyDifferent(heard, expected){
 export function targetAccept(scores, expected, freeText){
   const rows = (scores || []).filter(s => s && typeof s.score === 'number' && s.score > -20);
   const mine = rows.find(s => sameTarget(s.text, expected));
-  const rivals = rows.filter(s => !sameTarget(s.text, expected));
-  if (freeText && fuzzyTarget(freeText, expected)) {
+  if (freeText && phoneticTarget(freeText, expected)) {
     return { accept: true, text: expected, why: 'fuzzy', score: mine ? mine.score : 0, scores: rows };
   }
-  const different = !!(freeText && clearlyDifferent(freeText, expected));
   if (!freeText || !mine) {
-    return { accept: false, text: String(freeText || ''), why: different ? 'different' : 'miss', score: mine ? mine.score : null, scores: rows };
+    return { accept: false, text: String(freeText || ''), why: 'miss', score: mine ? mine.score : null, scores: rows };
   }
-  let gap = rivals.length ? Infinity : -Infinity;
-  for (const row of rivals) gap = Math.min(gap, mine.score - row.score);
-  const need = different ? TARGET_BIG : TARGET_MARGIN;
-  if (mine.score > TARGET_FLOOR && gap >= need) {
-    return { accept: true, text: expected, why: 'score', score: mine.score, scores: rows };
+  const freeFold = foldLatin(freeText);
+  const freeRow = rows.find(s => !sameTarget(s.text, expected) && foldLatin(s.text) === freeFold);
+  const distractors = rows.filter(s => !sameTarget(s.text, expected) && foldLatin(s.text) !== freeFold);
+  const freeIsReal = !!(freeRow && cleanRealWord(freeText) && clearlyDifferent(freeText, expected));
+  const rivals = freeIsReal ? distractors.concat([freeRow]) : distractors;
+  let gap = rivals.length ? Infinity : 0;
+  let ahead = null;
+  for (const row of rivals) {
+    const lead = mine.score - row.score;
+    if (lead < gap) { gap = lead; ahead = row; }
   }
-  return { accept: false, text: String(freeText || ''), why: different ? 'different' : 'miss', score: mine.score, scores: rows };
+  if (gap < TARGET_MARGIN) {
+    const why = (freeIsReal && freeRow && mine.score < freeRow.score - TARGET_BIG) || (ahead && clearlyDifferent(ahead.text, expected)) ? 'different' : 'miss';
+    return { accept: false, text: String(freeText), why, score: mine.score, scores: rows };
+  }
+  if (mine.score <= TARGET_FLOOR) {
+    return { accept: false, text: String(freeText), why: 'miss', score: mine.score, scores: rows };
+  }
+  if (freeIsReal && mine.score < freeRow.score - TARGET_BIG) {
+    return { accept: false, text: String(freeText), why: 'different', score: mine.score, scores: rows };
+  }
+  return { accept: true, text: expected, why: 'score', score: mine.score, scores: rows };
 }
 export function scoreDecision(scores, expected, freeText){
   const hit = targetAccept(scores, expected, freeText || '');
@@ -1067,18 +1106,32 @@ export function cheapScores(raw, words){
     return { text: w, score };
   });
 }
-function dictHas(words, w){
-  if (!words || !w) return false;
-  if (typeof words.has === 'function') return words.has(w);
-  for (const item of words) if (heFold(item) === w) return true;
-  return false;
+function dictSurface(words, folded, rawJoined){
+  const raw = String(rawJoined || '');
+  let plain = '';
+  let finals = '';
+  for (const item of words || []) {
+    const shown = String(item).trim();
+    if (!shown) continue;
+    const flat = shown.replace(/\s/g, '');
+    if (flat === raw || shown === raw) return shown;
+    if (heFold(flat) !== folded && heFold(shown) !== folded) continue;
+    if (/[ךםןףץ]/.test(flat)) finals = finals || shown;
+    else plain = plain || shown;
+  }
+  if (finals) return finals;
+  if (/[ךםןףץ]/.test(raw) && heFold(raw) === folded) return raw;
+  return plain;
 }
 export function learnRescore(raw, words){
   const original = String(raw || '').replace(/[^\u05D0-\u05EA\s]/g, '').replace(/\s+/g, ' ').trim();
-  const tokens = heToks(original).map(heFold);
+  const rawTokens = heToks(original);
+  const joinedRaw = rawTokens.join('');
+  const tokens = rawTokens.map(heFold);
   const joined = tokens.join('');
   if (!joined) return { text: original, best: '', score: 'none', candidates: 0, commit: false, ask: [] };
-  if (dictHas(words, joined)) return { text: joined, best: joined, score: 0, candidates: 1, commit: true, ask: [] };
+  const exact = dictSurface(words, joined, joinedRaw);
+  if (exact && heFold(exact.replace(/\s/g, '')) === joined) return { text: exact, best: exact, score: 0, candidates: 1, commit: true, ask: [] };
   const skHit = resolveHebrew(joined, joined[0], words);
   if (!skHit.tooShort && skHit.text && skHit.candidates.length === 1 && hebSkeleton(skHit.text) === hebSkeleton(joined)) {
     return { text: skHit.text, best: skHit.text, score: 0, candidates: 1, commit: true, ask: [] };
@@ -1095,13 +1148,15 @@ export function learnRescore(raw, words){
     return p;
   };
   let best = '';
+  let bestShown = '';
   let bestD = maxEdits + 1;
   let bestP = 99;
   let seen = 0;
   const ask = [];
   if (maxEdits >= 1 && words) {
     for (const item of words) {
-      const n = heFold(item);
+      const shown = String(item).trim();
+      const n = heFold(shown);
       if (!n || n === joined) continue;
       const diff = Math.abs(n.length - joined.length);
       if (diff > maxEdits) continue;
@@ -1113,19 +1168,19 @@ export function learnRescore(raw, words){
       const norm = d / Math.max(joined.length, n.length);
       const p = penalty(joined, n);
       if (d < bestD || (d === bestD && diff < Math.abs(best.length - joined.length)) || (d === bestD && diff === Math.abs(best.length - joined.length) && p < bestP)) {
-        bestD = d; best = n; bestP = p;
+        bestD = d; best = n; bestShown = shown; bestP = p;
       }
-      if (ask.length < 3 && norm <= 0.25 && diff === 0 && ask.indexOf(n) < 0) ask.push(n);
+      if (ask.length < 3 && norm <= 0.25 && diff === 0 && ask.indexOf(shown) < 0) ask.push(shown);
     }
   }
-  if (best) {
+  if (bestShown) {
     const norm = bestD / Math.max(joined.length, best.length);
     const ratio = Math.max(best.length, joined.length) / Math.min(best.length, joined.length);
     if (norm <= 0.25 && ratio <= 1.25 && !(joined.length >= 5 && best.length <= 3)) {
-      return { text: best, best, score: Math.round(-norm * 1000) / 1000, candidates: seen, commit: true, ask: [] };
+      return { text: bestShown, best: bestShown, score: Math.round(-norm * 1000) / 1000, candidates: seen, commit: true, ask: [] };
     }
   }
-  return { text: original, best: best || original, score: 'raw', candidates: seen, commit: false, ask: ask.filter(w => w !== best) };
+  return { text: joinedRaw || original, best: bestShown || joinedRaw || original, score: 'raw', candidates: seen, commit: false, ask: ask.filter(w => w !== bestShown) };
 }
 
 async function scoreOnce(audio, tag, texts, earlyScore){
@@ -1282,27 +1337,38 @@ export async function hearWithModel(model, features, jobs, decode, makeJob, opts
   }
   return { scores, text, encoderRuns: share.runs() };
 }
+export function greedyOptions(features, hidden, lang){
+  const opts = {
+    input_features: features,
+    task: 'transcribe',
+    return_timestamps: false,
+    max_new_tokens: 16,
+  };
+  if (lang) opts.language = lang;
+  if (hidden) opts.encoder_outputs = hidden;
+  return opts;
+}
 async function greedyOrPipe(current, audio, features, hidden, tag){
   const lang = whisperName(tag);
-  if (hidden && current.model && current.model.generate) {
+  const started = Date.now();
+  if (features && current.model && current.model.generate) {
     try {
-      const gen = await current.model.generate(features, {
-        encoder_outputs: hidden,
-        language: lang || undefined,
-        task: 'transcribe',
-        return_timestamps: false,
-        max_new_tokens: 16,
-      });
+      const gen = await current.model.generate(features, greedyOptions(features, hidden, lang));
       const seq = Array.isArray(gen) ? (gen[0] || gen) : (gen && (gen.sequences || gen));
       if (current.tokenizer && current.tokenizer.decode && seq) {
         const text = current.tokenizer.decode(seq, { skip_special_tokens: true });
-        if (text && String(text).trim()) return cleanText({ text });
+        if (text && String(text).trim()) {
+          note('whisper greedy ms ' + (Date.now() - started));
+          return cleanText({ text });
+        }
       }
     } catch (err) {
       note('whisper greedy ' + (err && err.message || err));
     }
   }
-  return runPipe(audio, tag);
+  const text = await runPipe(audio, tag);
+  note('whisper greedy fallback ms ' + (Date.now() - started));
+  return text;
 }
 export async function targetHear(audio, tag, texts){
   return locked(async () => {
